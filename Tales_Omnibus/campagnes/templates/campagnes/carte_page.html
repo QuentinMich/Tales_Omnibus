@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-carte-detail">
+
+    {% if page.title %}
+        <h1>{{ page.title }}</h1>
+    {% endif %}
+
+    {# Image de la carte #}
+    {% if page.main_image %}
+        <div class="carte-view">
+            {% image page.main_image fill-1200x700 alt=page.title class="map-full-img" %}
+        </div>
+    {% endif %}
+
+    {% if page.intro %}
+        <div class="carte-intro">
+            {{ page.intro|richtext }}
+        </div>
+    {% endif %}
+
+    {# Liste des lieux associés à cette carte #}
+    {% if lieux %}
+        <section class="section-lieux">
+            <h2>Lieux sur cette carte</h2>
+            <ul class="lieux-list">
+                {% for lieu in lieux %}
+                    <li><a href="{% pageurl lieu %}">{{ lieu.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {# NAVIGATION VERS LES AUTRES CARTES (Conditionnelle : uniquement si au moins une autre carte existe) #}
+    {% if autres_cartes %}
+        <hr class="section-divider">
+        <section class="section-autres-cartes">
+            <h2>Autres cartes de la campagne</h2>
+            <div class="cartes-secondaires-grid">
+                {% for c in autres_cartes %}
+                    {% with carte_soeur=c.specific %}
+                        <article class="carte-card-small">
+                            <a href="{% pageurl carte_soeur %}">
+                                {% if carte_soeur.main_image %}
+                                    {% image carte_soeur.main_image fill-300x180 alt=carte_soeur.title %}
+                                {% endif %}
+                                {% if carte_soeur.title %}
+                                    <h3>{{ carte_soeur.title }}</h3>
+                                {% endif %}
+                            </a>
+                        </article>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+</main>
+{% endblock %}

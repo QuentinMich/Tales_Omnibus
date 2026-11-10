@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="contact-container">
+    <h1>{{ page.title }}</h1>
+
+    {# Image d'illustration si renseignée #}
+    {% if page.main_image %}
+        <div class="contact-image">
+            {% image page.main_image fill-800x400 alt=page.title %}
+        </div>
+    {% endif %}
+
+    {# Zone de texte des prestations #}
+    <div class="contact-intro">
+        {{ page.intro|richtext }}
+    </div>
+
+    {# Formulaire généré dynamiquement #}
+    <form action="{% pageurl page %}" method="POST" class="contact-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-submit">Envoyer le message</button>
+    </form>
+</main>
+{% endblock %}

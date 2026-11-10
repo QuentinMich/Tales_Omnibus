@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-chronologie-detail">
+
+    <header class="chrono-header">
+        {% if page.title %}
+            <h1>{{ page.title }}</h1>
+        {% endif %}
+        
+        {% if page.systeme_datation %}
+            <span class="badge-datation">Système de datation : {{ page.systeme_datation }}</span>
+        {% endif %}
+    </header>
+
+    {% if page.intro %}
+        <section class="chrono-intro richtext-content">
+            {{ page.intro|richtext }}
+        </section>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    {# FRISE CHRONOLOGIQUE DES ÉVÉNEMENTS #}
+    {% if evenements %}
+        <section class="timeline-container">
+            <h2>Événements marquants</h2>
+            
+            <div class="timeline-list">
+                {% for evt in evenements %}
+                    <article class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-card">
+                            {% if evt.date_affichage %}
+                                <span class="event-date">{{ evt.date_affichage }}</span>
+                            {% endif %}
+                            
+                            {% if evt.title %}
+                                <h3><a href="{% pageurl evt %}">{{ evt.title }}</a></h3>
+                            {% endif %}
+
+                            {% if evt.intro %}
+                                <div class="event-summary">
+                                    {{ evt.intro|richtext|truncatewords_html:25 }}
+                                </div>
+                            {% endif %}
+
+                            <a href="{% pageurl evt %}" class="btn-more">Lire l'événement &rarr;</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% else %}
+        <p class="no-data">Aucun événement n'est encore enregistré dans cette chronologie.</p>
+    {% endif %}
+
+</main>
+{% endblock %}

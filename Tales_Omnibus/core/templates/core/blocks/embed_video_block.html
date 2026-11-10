@@ -1,0 +1,10 @@
+{% load wagtailembeds_tags %}
+
+<div class="block-embed-video">
+    {% if value.title %}
+        <h3>{{ value.title }}</h3>
+    {% endif %}
+    <div class="video-container">
+        {% embed value.video.url %}
+    </div>
+</div>

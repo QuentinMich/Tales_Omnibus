@@ -1,0 +1,8 @@
+{% load wagtailimages_tags %}
+
+<figure class="block-single-image">
+    {% image value.image min-500x250 alt=value.alt_text|default:value.image.title %}
+    {% if value.caption %}
+        <figcaption>{{ value.caption }}</figcaption>
+    {% endif %}
+</figure>

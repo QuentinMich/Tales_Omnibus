@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-campagne-detail">
+
+    {# --- BANNIÈRE / EN-TÊTE --- #}
+    <header class="campagne-header">
+        {% if page.banner_image %}
+            <div class="banner-wrapper">
+                {% image page.banner_image fill-1200x450 alt=page.title class="banner-img" %}
+                <div class="banner-overlay">
+                    {% if page.title %}
+                        <h1>{{ page.title }}</h1>
+                    {% endif %}
+                    {% if page.subtitle %}
+                        <p class="subtitle">{{ page.subtitle }}</p>
+                    {% endif %}
+                    {% if page.get_status_display %}
+                        <span class="status-badge status-{{ page.status }}">{{ page.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            {% if page.title %}
+                <h1>{{ page.title }}</h1>
+            {% endif %}
+            {% if page.subtitle %}
+                <p class="subtitle">{{ page.subtitle }}</p>
+            {% endif %}
+        {% endif %}
+    </header>
+
+    {# --- SYNOPSIS & STREAMFIELD --- #}
+    {% if page.synopsis %}
+        <section class="campagne-synopsis">
+            <h2>Synopsis</h2>
+            <div class="richtext-content">
+                {{ page.synopsis|richtext }}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if page.body %}
+        <section class="campagne-body">
+            {% include_block page.body %}
+        </section>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    {# --- SECTION HÉROS --- #}
+    {% if heros %}
+        <section class="campagne-section section-heros">
+            <h2>Héros & Personnages</h2>
+            <div class="heros-grid">
+                {% for hero in heros %}
+                    {% with h=hero.specific %}
+                        <article class="hero-card">
+                            <a href="{% pageurl h %}" class="card-link">
+                                <div class="hero-avatar">
+                                    {% if h.main_image %}
+                                        {% image h.main_image fill-200x200 alt=h.title class="avatar-img" %}
+                                    {% else %}
+                                        <div class="avatar-placeholder"></div>
+                                    {% endif %}
+                                </div>
+                                {% if h.title %}
+                                    <h3>{{ h.title }}</h3>
+                                {% endif %}
+                                {% if h.joueur_nom %}
+                                    <span class="joueur-tag">Joué par {{ h.joueur_nom }}</span>
+                                {% endif %}
+                            </a>
+                        </article>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+
+{# --- SECTION CARTE PRINCIPALE UNIQUE --- #}
+    {% if carte_principale %}
+        <section class="campagne-section section-carte-principale">
+            {% if carte_principale.title %}
+                <h2>Géographie & Carte</h2>
+            {% endif %}
+            
+            <article class="carte-card main-map-card">
+                <a href="{% pageurl carte_principale %}" class="card-link">
+                    <div class="carte-preview">
+                        {% if carte_principale.main_image %}
+                            {% image carte_principale.main_image fill-900x450 alt=carte_principale.title class="carte-img-main" %}
+                        {% else %}
+                            <div class="carte-placeholder-main"></div>
+                        {% endif %}
+                    </div>
+                    <div class="carte-info">
+                        {% if carte_principale.title %}
+                            <h3>{{ carte_principale.title }}</h3>
+                        {% endif %}
+                        {% if carte_principale.intro %}
+                            <div class="carte-intro">{{ carte_principale.intro|richtext|truncatewords_html:20 }}</div>
+                        {% endif %}
+                        <span class="btn-discover">Explorer la carte &rarr;</span>
+                    </div>
+                </a>
+            </article>
+        </section>
+    {% endif %}
+
+    {# --- SECTION CHRONOLOGIE UNIQUE --- #}
+    {% if chronologie %}
+        {% with ch=chronologie.specific %}
+            <section class="campagne-section section-chronologie-unique">
+                <h2>Chronologie & Annales</h2>
+                <article class="chrono-banner-card">
+                    <a href="{% pageurl ch %}" class="chrono-link">
+                        <div class="chrono-content">
+                            {% if ch.title %}
+                                <h3>{{ ch.title }}</h3>
+                            {% endif %}
+                            {% if ch.intro %}
+                                <div class="chrono-intro">{{ ch.intro|richtext|truncatewords_html:30 }}</div>
+                            {% endif %}
+                        </div>
+                        <span class="btn-discover">Consulter la chronologie &rarr;</span>
+                    </a>
+                </article>
+            </section>
+        {% endwith %}
+    {% endif %}
+
+</main>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container">
+    {# --- EN-TÊTE & CONTENU DE LA FICHE HÉROS --- #}
+    <h1>{{ page.title }}</h1>
+
+    {% if page.main_image %}
+        {% image page.main_image fill-400x200 alt=value.alt_text class="hero-main-img" %}
+    {% endif %}
+
+    <div class="intro">
+        {{ page.intro|richtext }}
+    </div>
+
+    <div class="body-content">
+        {% include_block page.body %}
+    </div>
+
+    {# --- SECTION DU JOUEUR --- #}
+    {% if page.joueur_nom %}
+        <section class="joueur-section">
+            <h2>Présentation du joueur</h2>
+            <p><strong>{{ page.joueur_nom }}</strong></p>
+            {% if page.joueur_bio %}
+                <p>{{ page.joueur_bio|richtext }}</p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# --- FORMULAIRE DE CONTACT INTÉGRÉ --- #}
+    {% if page.enable_contact and contact_form %}
+        <section class="hero-contact-section">
+            <h2>Contacter le joueur de {{ page.title }}</h2>
+            
+            <form action="" method="POST" class="hero-contact-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.nom.id_for_label }}">Nom</label>
+                    {{ contact_form.nom }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ contact_form.email.id_for_label }}">Email</label>
+                    {{ contact_form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ contact_form.raison.id_for_label }}">Raison du message</label>
+                    {{ contact_form.raison }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ contact_form.message.id_for_label }}">Message</label>
+                    {{ contact_form.message }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Envoyer</button>
+            </form>
+        </section>
+    {% endif %}
+
+</main>
+{% endblock %}

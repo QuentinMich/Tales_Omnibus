@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-lieu-detail">
+
+    {# EN-TÊTE DU LIEU #}
+    <header class="lieu-header">
+        {% if page.title %}
+            <h1>{{ page.title }}</h1>
+        {% endif %}
+
+        {% if page.categorie %}
+            <div class="lieu-badge-categorie" style="--cat-color: {{ page.categorie.couleur_marqueur|default:'#FF0000' }};">
+                {% if page.categorie.icone %}
+                    {% image page.categorie.icone fill-32x32 class="cat-icon" alt="" %}
+                {% endif %}
+                <span class="cat-name">{{ page.categorie.nom }}</span>
+            </div>
+        {% endif %}
+    </header>
+
+    {# IMAGE PRINCIPALE #}
+    {% if page.main_image %}
+        <div class="lieu-media">
+            {% image page.main_image fill-1000x500 alt=page.title class="lieu-img" %}
+        </div>
+    {% endif %}
+
+    {# INTRO / ACCROCHE #}
+    {% if page.intro %}
+        <section class="lieu-intro richtext-content">
+            {{ page.intro|richtext }}
+        </section>
+    {% endif %}
+
+    {# STREAMFIELD / CONTENU LIBRE #}
+    {% if page.body %}
+        <section class="lieu-body">
+            {% include_block page.body %}
+        </section>
+    {% endif %}
+
+    {# TAGS #}
+    {% if page.tags.all %}
+        <div class="tags-container">
+            <h3>Mots-clés :</h3>
+            <ul class="tags-list">
+                {% for tag in page.tags.all %}
+                    <li class="tag-item">{{ tag.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {# RETOUR À LA CARTE PARENTE #}
+    {% with parent_carte=page.get_parent.specific %}
+        <footer class="lieu-footer">
+            <a href="{% pageurl parent_carte %}" class="btn-back">
+                &larr; Retour à la carte : {{ parent_carte.title }}
+            </a>
+        </footer>
+    {% endwith %}
+
+</main>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-evenement-detail">
+
+    <header class="event-header">
+        {% if page.date_affichage %}
+            <span class="event-date-badge">{{ page.date_affichage }}</span>
+        {% endif %}
+        
+        {% if page.title %}
+            <h1>{{ page.title }}</h1>
+        {% endif %}
+    </header>
+
+    {% if page.main_image %}
+        <div class="event-media">
+            {% image page.main_image fill-1000x450 alt=page.title class="event-img" %}
+        </div>
+    {% endif %}
+
+    {% if page.intro %}
+        <section class="event-intro richtext-content">
+            {{ page.intro|richtext }}
+        </section>
+    {% endif %}
+
+    {% if page.body %}
+        <section class="event-body">
+            {% include_block page.body %}
+        </section>
+    {% endif %}
+
+    {# TAGS DE L'ÉVÉNEMENT #}
+    {% if page.tags.all %}
+        <div class="tags-container">
+            <h3>Mots-clés / Entités liées :</h3>
+            <ul class="tags-list">
+                {% for tag in page.tags.all %}
+                    <li class="tag-item">{{ tag.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {# RETOUR À LA CHRONOLOGIE #}
+    {% with parent_chrono=page.get_parent.specific %}
+        <footer class="event-footer">
+            <a href="{% pageurl parent_chrono %}" class="btn-back">
+                &larr; Retour à la chronologie : {{ parent_chrono.title }}
+            </a>
+        </footer>
+    {% endwith %}
+
+</main>
+{% endblock %}

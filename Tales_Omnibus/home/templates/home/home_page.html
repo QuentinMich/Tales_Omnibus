@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags wagtailembeds_tags %}
+
+{% block content %}
+<main class="home-container">
+
+    {# 1. DIV EMBED VIDEO / STREAM #}
+    <section class="section-embed">
+        {% if page.video_embed %}
+            {% for block in page.video_embed %}
+                {% include_block block %}
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    {# 2. RAPPEL DES CAMPAGNES ENFANTS (Bannière/Image + Titre) #}
+    <section class="section-campagnes">
+        <h2>Nos Campagnes</h2>
+        <div class="campagnes-grid">
+            {% for campagne in campagnes %}
+                <article class="campagne-card">
+                    <a href="{% pageurl campagne %}">
+                        {# Affichage de l'image de la campagne avec son point focal #}
+                        {% if campagne.banner_image %}
+                            {% image campagne.banner_image fill-400x225 alt=campagne.title class="campagne-banner" %}
+                        {% endif %}
+                        
+                        <h3>{{ campagne.title }}</h3>
+                        {% if campagne.subtitle %}
+                            <p class="subtitle">{{ campagne.subtitle }}</p>
+                        {% endif %}
+                    </a>
+                </article>
+            {% empty %}
+                <p>Aucune campagne disponible pour le moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# 3. SECTION UNIVERS (Lien vers la ForeignKey page_univers) #}
+    {% if page.page_univers %}
+        <section class="section-univers">
+            <h2>Univers : {{ page.page_univers.title }}</h2>
+            <div class="univers-intro">
+                {% if page.page_univers.specific.intro %}
+                    <p>{{ page.page_univers.specific.intro }}</p>
+                {% endif %}
+                <a href="{% pageurl page.page_univers %}" class="btn">Découvrir l'univers</a>
+            </div>
+        </section>
+    {% endif %}
+
+    <div class="home-duo-grid">
+        {# 4. SECTION ENCYCLOPÉDIE (StreamField avec PageChooserBlock) #}
+        <section class="section-encyclopedie">
+            <h2>Encyclopédie</h2>
+            <ul class="encyclopedie-list">
+                {% for block in page.encyclopedie_a_la_une %}
+                    {% with lore=block.value %}
+                        <li>
+                            <a href="{% pageurl lore %}">
+                                <h3>{{ lore.title }}</h3>
+                                {% if lore.specific.intro %}
+                                    <p>{{ lore.specific.intro|truncatewords:15 }}</p>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endwith %}
+                {% empty %}
+                    <li>Aucune fiche mise en avant.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        {# 5. SECTION CONTACT (ForeignKey page_contact) #}
+        {% if page.page_contact %}
+            <section class="section-contact">
+                <h2>Contact & Prestations</h2>
+                <div class="contact-preview">
+                    {% if page.page_contact.specific.intro %}
+                        <div>{{ page.page_contact.specific.intro|richtext }}</div>
+                    {% endif %}
+                    <a href="{% pageurl page.page_contact %}" class="btn">Nous contacter</a>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+
+</main>
+{% endblock content %}
