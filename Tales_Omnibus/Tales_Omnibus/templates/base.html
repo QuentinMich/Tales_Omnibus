@@ -1,8 +1,8 @@
-{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags%}
+{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags %}
 {% get_settings %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
     <head>
         <meta charset="utf-8" />
         <title>
@@ -35,32 +35,43 @@
     <body class="{% block body_class %}{% endblock %}">
         {% wagtailuserbar %}
         <header class="site-title">
-            <div class= "logo-container">
+            <div class="logo-container">
                 {% if settings.core.NavigationSettings.logo %}
                     {% image settings.core.NavigationSettings.logo max-60x60 alt=settings.core.NavigationSettings.site_name class="site-logo" %}
                 {% endif %}
-                <span class="site-title">
-                    {{ settings.core.NavigationSettings.site_name}}
-                    pouet
+                <span class="site-name">
+                    {{ settings.core.NavigationSettings.site_name }}
                 </span>
             </div>
 
+            {# Menu généré depuis l'arbre Wagtail : sous-pages de l'accueil #}
+            {# avec "Afficher dans les menus" coché (onglet Promotion)    #}
+            {% wagtail_site as current_site %}
             <nav>
                 <ul>
-                    <li><a href="/"> Acceuil </a></li>
-                    <li><a href="/univers/"> Univers </a></li>
-                    <li><a href="/campagnes/"> Campagnes </a></li>
-                    <li><a href="/encyclopedie/"> Encyclopédie </a></li>
-                    <li><a href="/contact/"> Contact </a></li>
+                    <li><a href="{% pageurl current_site.root_page %}">Accueil</a></li>
+                    {% for menu_page in current_site.root_page.get_children.live.in_menu %}
+                        <li><a href="{% pageurl menu_page %}">{{ menu_page.title }}</a></li>
+                    {% endfor %}
                 </ul>
             </nav>
         </header>
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li class="flash-{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         {% block content %}{% endblock %}
         <footer class="site-footer">
             <p>&copy; {% now "Y" %} {{ settings.core.NavigationSettings.site_name }} - Tous droits réservés.</p>
             <ul>
-                <li><a href="/mentions-legales/"> Mentions légales </a></li>
-                <li><a href="/contact/"> Contacts </a></li>
+                {% slugurl "mentions-legales" as url_mentions %}
+                {% slugurl "contact" as url_contact %}
+                {% if url_mentions %}<li><a href="{{ url_mentions }}">Mentions légales</a></li>{% endif %}
+                {% if url_contact %}<li><a href="{{ url_contact }}">Contact</a></li>{% endif %}
             </ul>
         </footer>
         {# Global javascript #}

@@ -7,7 +7,7 @@
     <h1>{{ page.title }}</h1>
 
     {% if page.main_image %}
-        {% image page.main_image fill-400x200 alt=value.alt_text class="hero-main-img" %}
+        {% image page.main_image fill-400x200 alt=page.title class="hero-main-img" %}
     {% endif %}
 
     <div class="intro">
@@ -24,38 +24,27 @@
             <h2>Présentation du joueur</h2>
             <p><strong>{{ page.joueur_nom }}</strong></p>
             {% if page.joueur_bio %}
-                <p>{{ page.joueur_bio|richtext }}</p>
+                <div class="joueur-bio">{{ page.joueur_bio|richtext }}</div>
             {% endif %}
         </section>
     {% endif %}
 
     {# --- FORMULAIRE DE CONTACT INTÉGRÉ --- #}
-    {% if page.enable_contact and contact_form %}
+    {% if contact_form %}
         <section class="hero-contact-section">
             <h2>Contacter le joueur de {{ page.title }}</h2>
             
-            <form action="" method="POST" class="hero-contact-form">
+            <form action="{% pageurl page %}" method="POST" class="hero-contact-form" novalidate>
                 {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="{{ contact_form.nom.id_for_label }}">Nom</label>
-                    {{ contact_form.nom }}
-                </div>
+                {{ contact_form.non_field_errors }}
 
-                <div class="form-group">
-                    <label for="{{ contact_form.email.id_for_label }}">Email</label>
-                    {{ contact_form.email }}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ contact_form.raison.id_for_label }}">Raison du message</label>
-                    {{ contact_form.raison }}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ contact_form.message.id_for_label }}">Message</label>
-                    {{ contact_form.message }}
-                </div>
+                {% for field in contact_form %}
+                    <div class="form-group{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
 
                 <button type="submit" class="btn btn-primary">Envoyer</button>
             </form>

@@ -25,9 +25,9 @@ BASE_DIR = PROJECT_DIR.parent
 
 INSTALLED_APPS = [
     "home",
-    "pages",        # <-- À ajouter ici !
-    "core",         # (Si tu la crées aussi)
-    "encyclopedie", # (Si tu la crées aussi)
+    "pages",
+    "core",
+    "encyclopedie",
     "campagnes",
     "search",
     "wagtail.contrib.forms",
@@ -120,9 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "fr"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Paris"
 
 USE_I18N = True
 

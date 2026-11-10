@@ -1,7 +1,11 @@
 env/
 __pycache__/
 *.pyc
+*.sqlite3
 .DS_Store
-/media/
-/static/
 .env
+
+# Dossiers générés à la racine du projet Django uniquement
+# (le "/" devant évite d'ignorer aussi les dossiers static/ des apps)
+/Tales_Omnibus/media/
+/Tales_Omnibus/static/

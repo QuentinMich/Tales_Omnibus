@@ -9,12 +9,7 @@
             <h1>{{ page.title }}</h1>
         {% endif %}
         
-        {# On s'assure d'extraire la valeur texte nettoyée de intro #}
-        {% if page.intro and page.intro.value %}
-            <div class="intro-text">
-                {{ page.intro|richtext }}
-            </div>
-        {% elif page.intro %}
+        {% if page.intro %}
             <div class="intro-text">
                 {{ page.intro|richtext }}
             </div>

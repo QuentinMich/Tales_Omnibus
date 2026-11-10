@@ -3,11 +3,11 @@
 
 {% block content %}
 <main class="container">
-    {# --- EN-TÊTE & CONTENU DE LA FICHE HÉROS --- #}
+    {# --- EN-TÊTE & CONTENU DE LA FICHE LORE --- #}
     <h1>{{ page.title }}</h1>
 
     {% if page.main_image %}
-        {% image page.main_image fill-400x200 alt=value.alt_text class="hero-main-img" %}
+        {% image page.main_image fill-400x200 alt=page.title class="hero-main-img" %}
     {% endif %}
 
     <div class="intro">

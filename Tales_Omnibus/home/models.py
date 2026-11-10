@@ -1,12 +1,10 @@
 from django.db import models
 from wagtail.models import Page
 from wagtail.fields import StreamField
-from wagtail.blocks import PageChooserBlock, StreamBlock
+from wagtail.blocks import PageChooserBlock  # utilisé par encyclopedie_a_la_une (à réactiver)
 from wagtail.admin.panels import FieldPanel
 
-# Import des modèles depuis tes autres apps métier !
-from pages.models import ContactPage, StandardPage
-from core.blocks import EmbedVideoBlock  # (ou ton block dans core)
+from core.blocks import EmbedVideoBlock
 
 class HomePage(Page):
     # 1. DIV EMBED : StreamField ou EmbedBlock
