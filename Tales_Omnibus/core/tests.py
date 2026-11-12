@@ -1,3 +1,4 @@
+import os
 from django.test import RequestFactory, TestCase
 from wagtail.blocks.struct_block import StructBlockValidationError
 
@@ -59,3 +60,57 @@ class StreamPlayerBlockTests(TestCase):
     def test_youtube_accepte_un_id_de_chaine(self):
         valeur = self.block.clean(self.valeur('youtube', 'UC' + 'a' * 22))
         self.assertIn('live_stream?channel=UC', self.block.render(valeur))
+
+
+class SlugAutomatiqueTests(TestCase):
+    """Le client ne gère jamais les adresses : elles suivent le titre ou sont fixes."""
+
+    def setUp(self):
+        self.home = HomePage.objects.first()
+        self.index = self.home.add_child(instance=CampagnesIndexPage(title="Tales", slug="tales"))
+        self.campagne = self.index.add_child(instance=CampagnePage(title="Saison 1"))
+
+    def test_page_unique_slug_fixe(self):
+        # Peu importe le titre (ou le slug saisi), l'index s'appelle "campagnes"
+        self.assertEqual(self.index.slug, "campagnes")
+
+    def test_slug_suit_le_titre_sans_accent(self):
+        self.campagne.title = "L'Éveil du Dragon"
+        self.campagne.save_revision().publish()
+        self.campagne.refresh_from_db()
+        self.assertEqual(self.campagne.slug, "leveil-du-dragon")
+
+    def test_renommer_cree_une_redirection(self):
+        ancienne_url = self.campagne.url
+        self.campagne.title = "Saison 2"
+        # Wagtail crée la redirection "au commit" de la transaction ; un TestCase
+        # ne commite jamais, donc on exécute ces callbacks à la main.
+        with self.captureOnCommitCallbacks(execute=True):
+            self.campagne.save_revision().publish()
+        self.assertRedirects(self.client.get(ancienne_url), "/campagnes/saison-2/",
+                             status_code=301)
+
+    def test_deux_soeurs_meme_titre(self):
+        jumelle = self.index.add_child(instance=CampagnePage(title="Saison 1"))
+        self.assertEqual(jumelle.slug, "saison-1-2")
+
+    def test_formulaire_admin_ignore_le_slug(self):
+        # Le champ est en lecture seule : il n'est même pas dans le formulaire
+        form_class = CampagnePage.get_edit_handler().get_form_class()
+        self.assertNotIn("slug", form_class.base_fields)
+
+    def test_commande_synchro_garde_les_adresses_des_enfants(self):
+        # Simule une base d'avant le mixin : l'index s'appelle encore "tales"
+        # (update() court-circuite save(), donc le mixin n'intervient pas)
+        from django.core.management import call_command
+        from wagtail.models import Page
+        racine = self.home.url_path
+        Page.objects.filter(id=self.index.id).update(slug="tales", url_path=f"{racine}tales/")
+        Page.objects.filter(id=self.campagne.id).update(url_path=f"{racine}tales/saison-1/")
+
+        call_command("synchroniser_slugs", stdout=open(os.devnull, "w"))
+
+        # Bug corrigé : l'enfant ne doit pas être réenregistré avec l'ancienne adresse
+        self.campagne.refresh_from_db()
+        self.assertEqual(self.campagne.url_path, f"{racine}campagnes/saison-1/")
+        self.assertEqual(self.client.get("/campagnes/saison-1/").status_code, 200)

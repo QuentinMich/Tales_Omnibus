@@ -11,11 +11,14 @@ from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin, SO
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
+from core.slugs import SlugAutomatiqueMixin
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from taggit.models import TaggedItemBase
 
-class CampagnesIndexPage(Page):
+class CampagnesIndexPage(SlugAutomatiqueMixin, Page):
+    slug_fixe = "campagnes"  # = le lien « Campagnes » du menu
+
     class Meta:
         verbose_name = "Index des campagnes"
         verbose_name_plural = "Index des campagnes"
@@ -48,7 +51,7 @@ class CampagnesIndexPage(Page):
         return context
 
 # 1. CAMPAGNE (Conteneur principal de la saison)
-class CampagnePage(Page):
+class CampagnePage(SlugAutomatiqueMixin, Page):
     class Meta:
         verbose_name = "Campagne"
         verbose_name_plural = "Campagnes"

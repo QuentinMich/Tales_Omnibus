@@ -82,6 +82,13 @@ cd Tales_Omnibus
   (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
   réutilise le composant `.timeline` de la chronologie.
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
+- **Slugs automatiques** (`core/slugs.py`, `SlugAutomatiqueMixin`, placé AVANT
+  `Page` dans l'héritage) : le slug est recalculé dans `full_clean()` à chaque
+  enregistrement. Fiches (`BaseFichePage`) et campagnes : slug = titre, sans
+  accent, suffixe `-2` si une page sœur l'a déjà. Pages uniques : `slug_fixe`
+  (`campagnes`, `encyclopedie`, `univers`, `contact`). Le champ slug est en
+  lecture seule dans l'onglet Promotion. Quand le slug d'une page publiée
+  change, `wagtail.contrib.redirects` crée une redirection 301.
 
 ## Pièges connus
 
@@ -105,6 +112,11 @@ cd Tales_Omnibus
   paramètre `parent` (domaine du site, calculé depuis la requête) ; YouTube
   exige l'ID de chaîne `UC…`, pas le @pseudo.
 
+- **Après un pull qui contient `core/slugs.py`** : lancer une fois
+  `manage.py synchroniser_slugs` pour aligner les slugs des pages existantes.
+  La commande recharge chaque page avant de l'enregistrer : sinon un enfant
+  chargé avant le renommage de son parent serait réenregistré avec l'ancien
+  `url_path` (boucle de redirections).
 - **Après un pull qui contient `campagnes 0014`** : `migrate` puis
   `manage.py ranger_lieux` (déplace les lieux encore rangés sous une carte
   vers l'encyclopédie ; sans effet si c'est déjà fait).

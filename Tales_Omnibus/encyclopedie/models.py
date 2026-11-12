@@ -9,11 +9,14 @@ from wagtail.fields import RichTextField
 from wagtail.models import Page
 
 from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
+from core.slugs import SlugAutomatiqueMixin
 from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin
 
 
 # 1. INDEX DE L'ENCYCLOPÉDIE : rassemble TOUTES les fiches taguables du site
-class EncyclopedieIndexPage(Page):
+class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
+    slug_fixe = "encyclopedie"
+
     class Meta:
         verbose_name = "Encyclopédie"
 

@@ -7,6 +7,7 @@ from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
 from wagtail.snippets.models import register_snippet
 
 from core.blocks import BaseStreamBlock
+from core.slugs import SlugAutomatiqueMixin
 
 
 from encyclopedie.models import EncyclopedieIndexPage
@@ -24,7 +25,9 @@ class StandardPage(Page):
 
 
 # 1 bis. Page UNIVERS : le MJ d'un côté, le monde qu'il a construit de l'autre
-class UniversPage(Page):
+class UniversPage(SlugAutomatiqueMixin, Page):
+    slug_fixe = "univers"
+
     class Meta:
         verbose_name = "Univers"
 
@@ -88,7 +91,9 @@ class ContactFormField(AbstractFormField):
 
 
 # 3. Modèle pour la page de contact
-class ContactPage(AbstractEmailForm):
+class ContactPage(SlugAutomatiqueMixin, AbstractEmailForm):
+    slug_fixe = "contact"
+
     intro = RichTextField(blank=True, verbose_name="Texte de présentation")
     thank_you_text = RichTextField(blank=True, verbose_name="Message de confirmation")
     

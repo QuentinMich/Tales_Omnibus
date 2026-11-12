@@ -10,6 +10,7 @@ from wagtail.fields import StreamField, RichTextField
 from wagtail.admin.panels import FieldPanel, InlinePanel
 
 from core.blocks import BaseStreamBlock
+from core.slugs import SlugAutomatiqueMixin
 
 # Liste unique des réseaux sociaux, partagée par le site et les fiches Héros
 SOCIAL_PLATFORMS = [
@@ -93,7 +94,7 @@ class CategorieLieu(models.Model):
         verbose_name = "Catégorie de lieu"
         verbose_name_plural = "Catégories de lieux"
 
-class BaseFichePage(Page):
+class BaseFichePage(SlugAutomatiqueMixin, Page):
     intro = RichTextField(
         blank=True,
         verbose_name="Présentation / Accroche",
