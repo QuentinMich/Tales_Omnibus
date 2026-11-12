@@ -9,3 +9,6 @@ __pycache__/
 # (le "/" devant évite d'ignorer aussi les dossiers static/ des apps)
 /Tales_Omnibus/media/
 /Tales_Omnibus/static/
+
+# Config locale de Claude Code (serveur de preview)
+.claude/

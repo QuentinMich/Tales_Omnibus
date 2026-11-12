@@ -11,22 +11,27 @@ from wagtail.admin.panels import FieldPanel, InlinePanel
 
 from core.blocks import BaseStreamBlock
 
+# Liste unique des réseaux sociaux, partagée par le site et les fiches Héros
+SOCIAL_PLATFORMS = [
+    ('twitch', 'Twitch'),
+    ('youtube', 'YouTube'),
+    ('discord', 'Discord'),
+    ('twitter', 'X / Twitter'),
+    ('instagram', 'Instagram'),
+    ('bluesky', 'Bluesky'),
+    ('tiktok', 'TikTok'),
+]
+
 # Modèle pour chaque réseau social
 class SocialMediaLink(Orderable):
     setting = ParentalKey(
-        'NavigationSettings', 
-        related_name='social_links', 
+        'NavigationSettings',
+        related_name='social_links',
         on_delete=models.CASCADE
     )
     platform = models.CharField(
-        max_length=50, 
-        choices=[
-            ('twitch', 'Twitch'),
-            ('youtube', 'YouTube'),
-            ('discord', 'Discord'),
-            ('twitter', 'X / Twitter'),
-            ('instagram', 'Instagram'),
-        ],
+        max_length=50,
+        choices=SOCIAL_PLATFORMS,
         verbose_name="Plateforme"
     )
     url = models.URLField(verbose_name="Lien du profil")

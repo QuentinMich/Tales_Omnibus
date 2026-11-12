@@ -6,7 +6,7 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
-from core.models import BaseFichePage, CategorieLieu
+from core.models import BaseFichePage, CategorieLieu, SOCIAL_PLATFORMS
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
@@ -283,14 +283,7 @@ class HeroSocialLink(Orderable):
     )
     platform = models.CharField(
         max_length=50, 
-        choices=[
-            ('twitch', 'Twitch'),
-            ('youtube', 'YouTube'),
-            ('twitter', 'X / Twitter'),
-            ('instagram', 'Instagram'),
-            ('bluesky', 'Bluesky'),
-            ('tiktok', 'TikTok'),
-        ],
+        choices=SOCIAL_PLATFORMS,
         verbose_name="Plateforme"
     )
     url = models.URLField(verbose_name="Lien du profil joueur")

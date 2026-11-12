@@ -1,27 +1,63 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block body_class %}template-contact{% endblock %}
+
 {% block content %}
-<main class="contact-container">
-    <h1>{{ page.title }}</h1>
+<main class="container page-contact">
 
-    {# Image d'illustration si renseignée #}
-    {% if page.main_image %}
-        <div class="contact-image">
-            {% image page.main_image fill-800x400 alt=page.title %}
+    {# --- 1. PRÉSENTATION : titre + texte sur les prestations (wireframe) --- #}
+    <section class="panel panel--rounded">
+        <h1 class="page-title page-title--left">{{ page.title }}</h1>
+
+        <div class="panel panel--accent panel--rounded richtext">
+            {% if page.main_image %}
+                {% image page.main_image fill-800x400 alt="" %}
+            {% endif %}
+            {{ page.intro|richtext }}
         </div>
-    {% endif %}
+    </section>
 
-    {# Zone de texte des prestations #}
-    <div class="contact-intro">
-        {{ page.intro|richtext }}
-    </div>
+    {# --- 2. ME RETROUVER : réseaux du site (Paramètres > Navigation) --- #}
+    {% with links=settings.core.NavigationSettings.social_links.all %}
+        {% if links %}
+            <section class="panel social-section">
+                <h2 class="panel-title">Me retrouver</h2>
+                <ul class="social-links">
+                    {% for link in links %}
+                        <li>
+                            <a href="{{ link.url }}" class="social-link social-{{ link.platform }}" target="_blank" rel="noopener">
+                                {{ link.get_platform_display }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endwith %}
 
-    {# Formulaire généré dynamiquement #}
-    <form action="{% pageurl page %}" method="POST" class="contact-form">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn-submit">Envoyer le message</button>
-    </form>
+    {# --- 3. FORMULAIRE : mêmes classes que le formulaire des héros --- #}
+    {# Les champs se créent dans l'admin (« Champs du formulaire »).      #}
+    {# Un champ texte long (textarea) prend la colonne de droite,          #}
+    {# quel que soit son nom : le client peut renommer « Message ».       #}
+    <section class="panel panel--accent">
+        <form action="{% pageurl page %}" method="POST" class="contact-form" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            {% for field in form %}
+                <div class="form-group form-group--{{ field.name }}{% if field.widget_type == 'textarea' and field.name != 'message' %} form-group--message{% endif %}{% if field.errors %} has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% empty %}
+                <p class="no-data">Aucun champ n'est encore configuré pour ce formulaire.</p>
+            {% endfor %}
+
+            <button type="submit" class="btn">Envoyer le message</button>
+        </form>
+    </section>
+
 </main>
 {% endblock %}

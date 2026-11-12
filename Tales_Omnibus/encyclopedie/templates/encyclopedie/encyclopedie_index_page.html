@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<main class="container page-encyclopedie">
+    <h1>{{ page.title }}</h1>
+
+    {% if page.intro %}
+        <div class="intro">{{ page.intro|richtext }}</div>
+    {% endif %}
+
+    {% if fiches %}
+        <ul class="encyclopedie-liste">
+            {% for fiche in fiches %}
+                <li class="encyclopedie-item">
+                    <a href="{% pageurl fiche %}">
+                        {% if fiche.main_image %}
+                            {% image fiche.main_image fill-200x200 %}
+                        {% endif %}
+                        <span>{{ fiche.title }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-data">Aucune fiche n'est encore publiée dans l'encyclopédie.</p>
+    {% endif %}
+</main>
+{% endblock %}
