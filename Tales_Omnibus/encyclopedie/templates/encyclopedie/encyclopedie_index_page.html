@@ -92,13 +92,15 @@
     {# --- 4. LES FICHES : même composant que la frise de la chronologie --- #}
     {#     (image à gauche puis à droite, carte foncée au titre jaune)     #}
     <p class="filtres-resultat" role="status">
-        {{ fiches|length }} fiche{{ fiches|length|pluralize }}
+        {{ fiches.paginator.count }} fiche{{ fiches.paginator.count|pluralize }}
+        {% if fiches.paginator.num_pages > 1 %}· page {{ fiches.number }} sur {{ fiches.paginator.num_pages }}{% endif %}
     </p>
 
     {% if fiches %}
         <ul class="timeline">
             {% for fiche in fiches %}
-                <li class="timeline-item">
+                {# data-type : chaque type de fiche a sa couleur (section 11 du CSS) #}
+                <li class="timeline-item fiche-typee{% if fiche.epinglee %} is-epinglee{% endif %}" data-type="{{ fiche.type_cle }}">
                     <a href="{% pageurl fiche %}" class="timeline-media" tabindex="-1" aria-hidden="true">
                         {% if fiche.main_image %}
                             {% image fiche.main_image fill-300x240 alt="" class="timeline-img" %}
@@ -107,7 +109,8 @@
                         {% endif %}
                     </a>
                     <div class="timeline-card">
-                        <span class="timeline-type">{{ fiche.type_libelle }}</span>
+                        <span class="fiche-type">{{ fiche.type_libelle }}</span>
+                        {% if fiche.epinglee %}<span class="fiche-epingle">Épinglée</span>{% endif %}
                         <h2 class="timeline-title"><a href="{% pageurl fiche %}">{{ fiche.title }}</a></h2>
                         {% if fiche.intro %}
                             <div class="timeline-summary">{{ fiche.intro|richtext|truncatewords_html:25 }}</div>
@@ -116,6 +119,19 @@
                 </li>
             {% endfor %}
         </ul>
+
+        {# --- PAGINATION : {% querystring %} garde les filtres de l'URL et ne change que "page" --- #}
+        {% if fiches.has_other_pages %}
+            <nav class="pagination" aria-label="Pages de l'encyclopédie">
+                {% if fiches.has_previous %}
+                    <a href="{% querystring page=fiches.previous_page_number %}" class="btn">&larr; Précédentes</a>
+                {% endif %}
+                <span class="pagination-info">{{ fiches.number }} / {{ fiches.paginator.num_pages }}</span>
+                {% if fiches.has_next %}
+                    <a href="{% querystring page=fiches.next_page_number %}" class="btn">Suivantes &rarr;</a>
+                {% endif %}
+            </nav>
+        {% endif %}
     {% else %}
         <p class="no-data">Aucune fiche ne correspond à ces filtres.</p>
     {% endif %}

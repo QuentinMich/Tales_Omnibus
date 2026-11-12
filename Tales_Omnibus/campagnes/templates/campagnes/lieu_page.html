@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
 
 {% block body_class %}template-lieu{% endblock %}
 
@@ -34,7 +34,8 @@
         <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
-    {# --- "DANS UNE AUTRE CAMPAGNE" (wireframe) : à venir avec l'encyclopédie --- #}
+    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
+    {% fiches_liees page %}
 
 </main>
 {% endblock %}

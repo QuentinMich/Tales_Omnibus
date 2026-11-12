@@ -30,6 +30,13 @@
     --color-highlight: #FFD952;       /* titres / détails sur fond accent ou foncé */
     --color-title: #8C782C;           /* titres de pages */
 
+    /* --- Couleurs : types de fiches (encyclopédie, fiches liées) --- */
+    --color-type-heros: #A23B3B;      /* rouge */
+    --color-type-lieux: #3B6EA2;      /* bleu */
+    --color-type-evenements: #4E8A3E; /* vert */
+    --color-type-lore: #6B4C9A;       /* violet */
+    --color-type-text: #FFFFFF;
+
     /* --- Typographie --- */
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-title: var(--font-body);
@@ -123,6 +130,7 @@ figure {
 .errorlist,
 .lieux-list,
 .timeline,
+.cards-grid,
 .prestations {
     margin: 0;
     padding: 0;
@@ -1003,8 +1011,7 @@ figure {
     color: var(--color-surface-strong-text);
 }
 
-.timeline-date,
-.timeline-type {
+.timeline-date {
     font-size: 0.85rem;
     opacity: 0.8;
 }
@@ -1222,6 +1229,70 @@ html:has(.template-home) {
 }
 
 .filtres-resultat {
+    color: var(--color-text-muted);
+}
+
+/* --- Couleur par type de fiche ---
+   Le HTML porte data-type="lieux" ; ici chaque type choisit SA variable,
+   et tout le reste utilise --type-color. Un thème peut changer les couleurs
+   en redéfinissant seulement --color-type-… dans :root. */
+.fiche-typee[data-type="heros"] { --type-color: var(--color-type-heros); }
+.fiche-typee[data-type="lieux"] { --type-color: var(--color-type-lieux); }
+.fiche-typee[data-type="evenements"] { --type-color: var(--color-type-evenements); }
+.fiche-typee[data-type="lore"] { --type-color: var(--color-type-lore); }
+
+/* Liseré de couleur sur le côté de la carte */
+.timeline-item.fiche-typee {
+    border-left: 0.5rem solid var(--type-color, transparent);
+}
+
+.mini-card.fiche-typee {
+    border-top: 0.35rem solid var(--type-color, transparent);
+}
+
+/* Petite étiquette du type, dans la couleur du type */
+.fiche-type,
+.fiche-epingle {
+    display: inline-block;
+    margin-right: var(--space-xs);
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-pill);
+    background: var(--type-color, var(--color-accent));
+    color: var(--color-type-text);
+    font-size: 0.8rem;
+}
+
+.fiche-epingle {
+    background: var(--color-highlight);
+    color: var(--color-text);
+}
+
+/* Une fiche épinglée se repère aussi au contour */
+.timeline-item.is-epinglee {
+    outline: 2px solid var(--color-highlight);
+    outline-offset: -2px;
+}
+
+.mini-card .fiche-type {
+    display: table; /* l'étiquette sur sa propre ligne, au-dessus du titre */
+    margin-bottom: var(--space-xs);
+}
+
+.fiches-liees .mini-card {
+    color: var(--color-text);
+}
+
+/* --- Pagination --- */
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-md);
+    margin-block: var(--space-lg);
+}
+
+.pagination-info {
     color: var(--color-text-muted);
 }
 

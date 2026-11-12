@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
 
 {% block body_class %}template-lore{% endblock %}
 
@@ -25,6 +25,9 @@
     {% endif %}
 
     {% include "core/includes/tags_list.html" with tags=page.tags.all %}
+
+    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
+    {% fiches_liees page %}
 
 </main>
 {% endblock %}

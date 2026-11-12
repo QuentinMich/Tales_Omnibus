@@ -6,7 +6,7 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
-from core.models import BaseFichePage, CategorieLieu, SOCIAL_PLATFORMS
+from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin, SOCIAL_PLATFORMS
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
@@ -179,7 +179,7 @@ class LieuPageTag(TaggedItemBase):
         related_name='tagged_items'
     )
 
-class LieuPage(BaseFichePage):
+class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
     class Meta:
         verbose_name = "Lieu"
         verbose_name_plural = "Lieux"
@@ -213,6 +213,7 @@ class LieuPage(BaseFichePage):
             FieldPanel('coord_y'),
         ], heading="Géolocalisation & Typologie"),
         FieldPanel("tags"),
+        FieldPanel("epinglee"),
     ]
 
 # 4. CHRONOLOGIE (Conteneur d'événements)
@@ -246,7 +247,7 @@ class ChronologiePage(BaseFichePage):
 class EvenementPageTag(TaggedItemBase):
     content_object = ParentalKey('EvenementPage', on_delete=models.CASCADE, related_name='tagged_items')
 
-class EvenementPage(BaseFichePage):
+class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
     class Meta:
         verbose_name = "Événement"
         verbose_name_plural = "Événements"
@@ -273,6 +274,7 @@ class EvenementPage(BaseFichePage):
             FieldPanel('date_affichage'),
         ], heading="Horodatage"),
         FieldPanel("tags"),
+        FieldPanel("epinglee"),
     ]
 
 class HeroSocialLink(Orderable):
@@ -300,7 +302,7 @@ class HeroPageTag(TaggedItemBase):
         related_name='tagged_items'
     )
 
-class HeroPage(BaseFichePage):
+class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
     class Meta:
         verbose_name = "Héros"
         verbose_name_plural = "Héros"
@@ -327,7 +329,9 @@ class HeroPage(BaseFichePage):
         FieldPanel('enable_contact'),
         InlinePanel('hero_social_links', label="Réseaux sociaux du joueur"),
         FieldPanel("tags"),
-        ])]
+        ]),
+        FieldPanel("epinglee"),
+    ]
 
     @property
     def contact_actif(self):

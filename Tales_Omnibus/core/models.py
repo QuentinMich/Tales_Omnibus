@@ -121,3 +121,19 @@ class BaseFichePage(Page):
 
     class Meta:
         abstract = True
+
+class FicheEncyclopedieMixin(models.Model):
+    """
+    Ce qu'ont en commun les fiches qui apparaissent dans l'encyclopédie
+    (Héros, Lieu, Événement, Lore). Un "mixin" : un modèle abstrait qu'on
+    ajoute en plus de BaseFichePage, pour que les Cartes et Chronologies
+    (qui héritent aussi de BaseFichePage) n'aient pas cette case inutile.
+    """
+    epinglee = models.BooleanField(
+        default=False,
+        verbose_name="Épingler dans l'encyclopédie",
+        help_text="Les fiches épinglées apparaissent en tête de liste."
+    )
+
+    class Meta:
+        abstract = True

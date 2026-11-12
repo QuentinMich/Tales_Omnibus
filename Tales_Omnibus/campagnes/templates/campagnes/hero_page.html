@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
 
 {% block body_class %}template-hero{% endblock %}
 
@@ -77,6 +77,9 @@
             </form>
         </section>
     {% endif %}
+
+    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
+    {% fiches_liees page %}
 
 </main>
 {% endblock %}
