@@ -1,56 +1,76 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags l10n %}
+
+{% block body_class %}template-carte{% endblock %}
 
 {% block content %}
 <main class="container page-carte-detail">
 
-    {% if page.title %}
-        <h1>{{ page.title }}</h1>
-    {% endif %}
+    <h1 class="page-title page-title--left">{{ page.title }}</h1>
 
-    {# Image de la carte #}
-    {% if page.main_image %}
-        <div class="carte-view">
-            {% image page.main_image fill-1200x700 alt=page.title class="map-full-img" %}
-        </div>
-    {% endif %}
+    {# --- CARTE + MARQUEURS --- #}
+    {# width-1400 et pas fill-... : l'image ne doit PAS être recadrée, #}
+    {# sinon les coordonnées en % des lieux ne tombent plus au bon endroit. #}
+    <div class="carte-map">
+        {% if page.main_image %}
+            {% image page.main_image width-1400 alt=page.title class="carte-map-img" %}
+        {% else %}
+            <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
+        {% endif %}
+
+        {% for lieu in lieux %}
+            {% if lieu.coord_x is not None and lieu.coord_y is not None %}
+                {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
+                <a href="{% pageurl lieu %}" class="map-marker"
+                   style="left: {{ lieu.coord_x|unlocalize }}%; top: {{ lieu.coord_y|unlocalize }}%;{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
+                    <span class="map-marker-label">{{ lieu.title }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
 
     {% if page.intro %}
-        <div class="carte-intro">
-            {{ page.intro|richtext }}
-        </div>
+        <section class="panel carte-intro">
+            <h2 class="panel-title">Accroche</h2>
+            <div class="richtext">{{ page.intro|richtext }}</div>
+        </section>
     {% endif %}
 
-    {# Liste des lieux associés à cette carte #}
+    {% if page.body %}
+        <section class="section richtext">{% include_block page.body %}</section>
+    {% endif %}
+
+    {# --- LISTE DES LIEUX (accessible au clavier / lecteur d'écran) --- #}
     {% if lieux %}
-        <section class="section-lieux">
-            <h2>Lieux sur cette carte</h2>
+        <section class="section section-lieux">
+            <h2 class="section-title section-title--left">Lieux de cette carte</h2>
             <ul class="lieux-list">
                 {% for lieu in lieux %}
-                    <li><a href="{% pageurl lieu %}">{{ lieu.title }}</a></li>
+                    <li>
+                        <a href="{% pageurl lieu %}" class="lieu-chip"{% if lieu.categorie %} style="--marker-color: {{ lieu.categorie.couleur_marqueur }};"{% endif %}>
+                            {{ lieu.title }}{% if lieu.categorie %} <small>({{ lieu.categorie.nom }})</small>{% endif %}
+                        </a>
+                    </li>
                 {% endfor %}
             </ul>
         </section>
     {% endif %}
 
-    {# NAVIGATION VERS LES AUTRES CARTES (Conditionnelle : uniquement si au moins une autre carte existe) #}
+    {# --- AUTRES CARTES DE LA CAMPAGNE --- #}
     {% if autres_cartes %}
-        <hr class="section-divider">
-        <section class="section-autres-cartes">
-            <h2>Autres cartes de la campagne</h2>
-            <div class="cartes-secondaires-grid">
+        <section class="section section-autres-cartes">
+            <h2 class="section-title section-title--left">Autres cartes de la campagne</h2>
+            <div class="cards-grid">
                 {% for c in autres_cartes %}
                     {% with carte_soeur=c.specific %}
-                        <article class="carte-card-small">
-                            <a href="{% pageurl carte_soeur %}">
-                                {% if carte_soeur.main_image %}
-                                    {% image carte_soeur.main_image fill-300x180 alt=carte_soeur.title %}
-                                {% endif %}
-                                {% if carte_soeur.title %}
-                                    <h3>{{ carte_soeur.title }}</h3>
-                                {% endif %}
-                            </a>
-                        </article>
+                        <a href="{% pageurl carte_soeur %}" class="mini-card">
+                            {% if carte_soeur.main_image %}
+                                {% image carte_soeur.main_image fill-400x240 alt="" class="mini-card-img" %}
+                            {% else %}
+                                <span class="img-placeholder mini-card-img" aria-hidden="true"></span>
+                            {% endif %}
+                            <span class="mini-card-title">{{ carte_soeur.title }}</span>
+                        </a>
                     {% endwith %}
                 {% endfor %}
             </div>

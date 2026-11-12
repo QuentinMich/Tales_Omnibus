@@ -1,0 +1,8 @@
+{# Usage : {% include "core/includes/tags_list.html" with tags=page.tags.all %} #}
+{% if tags %}
+    <ul class="tags-list" aria-label="Mots-clés">
+        {% for tag in tags %}
+            <li class="tag">{{ tag.name }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}

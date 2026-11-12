@@ -1,52 +1,79 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block body_class %}template-hero{% endblock %}
+
 {% block content %}
-<main class="container">
-    {# --- EN-TÊTE & CONTENU DE LA FICHE HÉROS --- #}
-    <h1>{{ page.title }}</h1>
+<main class="container page-fiche page-hero">
 
-    {% if page.main_image %}
-        {% image page.main_image fill-400x200 alt=page.title class="hero-main-img" %}
-    {% endif %}
-
-    <div class="intro">
-        {{ page.intro|richtext }}
+    {# --- PRÉSENTATION DU HÉROS + PORTRAIT --- #}
+    <div class="fiche-top">
+        <div class="fiche-card">
+            <h1 class="fiche-title">{{ page.title }}</h1>
+            {% if page.intro %}
+                <div class="richtext">{{ page.intro|richtext }}</div>
+            {% endif %}
+        </div>
+        {% if page.main_image %}
+            <figure class="fiche-media">
+                {% image page.main_image fill-600x850 alt=page.title %}
+            </figure>
+        {% endif %}
     </div>
 
-    <div class="body-content">
-        {% include_block page.body %}
-    </div>
-
-    {# --- SECTION DU JOUEUR --- #}
+    {# --- PRÉSENTATION DU JOUEUR --- #}
     {% if page.joueur_nom %}
-        <section class="joueur-section">
-            <h2>Présentation du joueur</h2>
-            <p><strong>{{ page.joueur_nom }}</strong></p>
+        <section class="panel joueur-section">
+            <h2 class="panel-title">Présentation du joueur</h2>
+            <p class="joueur-nom"><strong>{{ page.joueur_nom }}</strong></p>
             {% if page.joueur_bio %}
-                <div class="joueur-bio">{{ page.joueur_bio|richtext }}</div>
+                <div class="richtext">{{ page.joueur_bio|richtext }}</div>
             {% endif %}
         </section>
     {% endif %}
 
+    {% if page.body %}
+        <section class="section richtext">{% include_block page.body %}</section>
+    {% endif %}
+
+    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
+
+    {# --- RÉSEAUX DU JOUEUR --- #}
+    {% with links=page.hero_social_links.all %}
+        {% if links %}
+            <section class="panel social-section">
+                <h2 class="panel-title">Me retrouver</h2>
+                <ul class="social-links">
+                    {% for link in links %}
+                        <li>
+                            <a href="{{ link.url }}" class="social-link social-{{ link.platform }}" target="_blank" rel="noopener">
+                                {{ link.get_platform_display }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endwith %}
+
     {# --- FORMULAIRE DE CONTACT INTÉGRÉ --- #}
     {% if contact_form %}
-        <section class="hero-contact-section">
-            <h2>Contacter le joueur de {{ page.title }}</h2>
-            
-            <form action="{% pageurl page %}" method="POST" class="hero-contact-form" novalidate>
+        <section class="panel panel--accent hero-contact-section">
+            <h2 class="panel-title">Contacter le joueur de {{ page.title }}</h2>
+
+            <form action="{% pageurl page %}" method="POST" class="contact-form" novalidate>
                 {% csrf_token %}
                 {{ contact_form.non_field_errors }}
 
                 {% for field in contact_form %}
-                    <div class="form-group{% if field.errors %} has-error{% endif %}">
+                    <div class="form-group form-group--{{ field.name }}{% if field.errors %} has-error{% endif %}">
                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                         {{ field.errors }}
                     </div>
                 {% endfor %}
 
-                <button type="submit" class="btn btn-primary">Envoyer</button>
+                <button type="submit" class="btn">Envoyer</button>
             </form>
         </section>
     {% endif %}

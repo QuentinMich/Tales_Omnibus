@@ -115,9 +115,15 @@ class CampagnePage(Page):
 
         context['carte_principale'] = carte_principale
 
-        context['chronologie'] = self.get_children().live().type(ChronologiePage).first()
+        chronologie = ChronologiePage.objects.child_of(self).live().first()
+        context['chronologie'] = chronologie
+        # Bloc "Événements récents" du wireframe : les 4 derniers dans l'ordre de l'histoire
+        context['evenements_recents'] = (
+            EvenementPage.objects.child_of(chronologie).live().order_by('-date_ordre')[:4]
+            if chronologie else []
+        )
 
-        context['heros'] = self.get_children().live().type(HeroPage)
+        context['heros'] = HeroPage.objects.child_of(self).live()
         return context
 
 # 2. CARTE (Conteneur de lieux)
@@ -144,7 +150,8 @@ class CartePage(BaseFichePage):
     def get_context(self, request):
         context = super().get_context(request)
         # Récupère automatiquement tous les lieux de CETTE carte
-        context['lieux'] = self.get_children().live().type(LieuPage)
+        # (LieuPage.objects -> pages "spécifiques" : on a accès à coord_x, coord_y, categorie)
+        context['lieux'] = LieuPage.objects.child_of(self).live().select_related('categorie')
 
         parent_campagne = self.get_parent().specific
         autres_cartes = parent_campagne.get_children().live().type(CartePage).not_page(self)

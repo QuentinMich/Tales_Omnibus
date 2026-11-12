@@ -1,21 +1,30 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
-{% block content %}
-<main class="container">
-    {# --- EN-TÊTE & CONTENU DE LA FICHE LORE --- #}
-    <h1>{{ page.title }}</h1>
+{% block body_class %}template-lore{% endblock %}
 
-    {% if page.main_image %}
-        {% image page.main_image fill-400x200 alt=page.title class="hero-main-img" %}
+{% block content %}
+<main class="container page-fiche page-lore">
+
+    <div class="fiche-top">
+        <div class="fiche-card">
+            <h1 class="fiche-title">{{ page.title }}</h1>
+            {% if page.intro %}
+                <div class="richtext">{{ page.intro|richtext }}</div>
+            {% endif %}
+        </div>
+        {% if page.main_image %}
+            <figure class="fiche-media">
+                {% image page.main_image fill-600x850 alt=page.title %}
+            </figure>
+        {% endif %}
+    </div>
+
+    {% if page.body %}
+        <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
-    <div class="intro">
-        {{ page.intro|richtext }}
-    </div>
+    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
 
-    <div class="body-content">
-        {% include_block page.body %}
-    </div>
 </main>
 {% endblock %}

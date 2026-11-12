@@ -1,135 +1,103 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block body_class %}template-campagne{% endblock %}
+
 {% block content %}
 <main class="container page-campagne-detail">
 
-    {# --- BANNIÈRE / EN-TÊTE --- #}
-    <header class="campagne-header">
+    {# --- EN-TÊTE : titre, sous-titre, statut (bannière en fond si présente) --- #}
+    <header class="campagne-header{% if page.banner_image %} has-banner{% endif %}">
         {% if page.banner_image %}
-            <div class="banner-wrapper">
-                {% image page.banner_image fill-1200x450 alt=page.title class="banner-img" %}
-                <div class="banner-overlay">
-                    {% if page.title %}
-                        <h1>{{ page.title }}</h1>
-                    {% endif %}
-                    {% if page.subtitle %}
-                        <p class="subtitle">{{ page.subtitle }}</p>
-                    {% endif %}
-                    {% if page.get_status_display %}
-                        <span class="status-badge status-{{ page.status }}">{{ page.get_status_display }}</span>
-                    {% endif %}
-                </div>
-            </div>
-        {% else %}
-            {% if page.title %}
-                <h1>{{ page.title }}</h1>
-            {% endif %}
-            {% if page.subtitle %}
-                <p class="subtitle">{{ page.subtitle }}</p>
-            {% endif %}
+            {% image page.banner_image fill-1400x500 alt="" class="campagne-banner" %}
         {% endif %}
+        <div class="campagne-titles">
+            <h1 class="page-title">{{ page.title }}</h1>
+            {% if page.subtitle %}
+                <p class="page-subtitle">{{ page.subtitle }}</p>
+            {% endif %}
+        </div>
+        <span class="status-badge status-{{ page.status }}">Statut : <strong>{{ page.get_status_display }}</strong></span>
     </header>
 
-    {# --- SYNOPSIS & STREAMFIELD --- #}
-    {% if page.synopsis %}
-        <section class="campagne-synopsis">
-            <h2>Synopsis</h2>
-            <div class="richtext-content">
-                {{ page.synopsis|richtext }}
-            </div>
-        </section>
-    {% endif %}
-
-    {% if page.body %}
-        <section class="campagne-body">
-            {% include_block page.body %}
-        </section>
-    {% endif %}
-
-    <hr class="section-divider">
-
-    {# --- SECTION HÉROS --- #}
+    {# --- NOS HÉROS --- #}
     {% if heros %}
-        <section class="campagne-section section-heros">
-            <h2>Héros & Personnages</h2>
+        <section class="section section-heros">
+            <h2 class="section-title">Nos Héros</h2>
             <div class="heros-grid">
                 {% for hero in heros %}
-                    {% with h=hero.specific %}
-                        <article class="hero-card">
-                            <a href="{% pageurl h %}" class="card-link">
-                                <div class="hero-avatar">
-                                    {% if h.main_image %}
-                                        {% image h.main_image fill-200x200 alt=h.title class="avatar-img" %}
-                                    {% else %}
-                                        <div class="avatar-placeholder"></div>
-                                    {% endif %}
-                                </div>
-                                {% if h.title %}
-                                    <h3>{{ h.title }}</h3>
+                    <article class="hero-card">
+                        <a href="{% pageurl hero %}" class="card-link">
+                            {% if hero.main_image %}
+                                {% image hero.main_image fill-400x640 alt="" class="hero-card-img" %}
+                            {% else %}
+                                <span class="img-placeholder hero-card-img" aria-hidden="true"></span>
+                            {% endif %}
+                            <span class="hero-card-body">
+                                <span class="hero-card-title">{{ hero.title }}</span>
+                                {% if hero.joueur_nom %}
+                                    <span class="hero-card-player">Joué par {{ hero.joueur_nom }}</span>
                                 {% endif %}
-                                {% if h.joueur_nom %}
-                                    <span class="joueur-tag">Joué par {{ h.joueur_nom }}</span>
-                                {% endif %}
-                            </a>
-                        </article>
-                    {% endwith %}
+                            </span>
+                        </a>
+                    </article>
                 {% endfor %}
             </div>
         </section>
     {% endif %}
 
-
-{# --- SECTION CARTE PRINCIPALE UNIQUE --- #}
-    {% if carte_principale %}
-        <section class="campagne-section section-carte-principale">
-            {% if carte_principale.title %}
-                <h2>Géographie & Carte</h2>
-            {% endif %}
-            
-            <article class="carte-card main-map-card">
-                <a href="{% pageurl carte_principale %}" class="card-link">
-                    <div class="carte-preview">
-                        {% if carte_principale.main_image %}
-                            {% image carte_principale.main_image fill-900x450 alt=carte_principale.title class="carte-img-main" %}
-                        {% else %}
-                            <div class="carte-placeholder-main"></div>
-                        {% endif %}
-                    </div>
-                    <div class="carte-info">
-                        {% if carte_principale.title %}
-                            <h3>{{ carte_principale.title }}</h3>
-                        {% endif %}
-                        {% if carte_principale.intro %}
-                            <div class="carte-intro">{{ carte_principale.intro|richtext|truncatewords_html:20 }}</div>
-                        {% endif %}
-                        <span class="btn-discover">Explorer la carte &rarr;</span>
-                    </div>
-                </a>
-            </article>
+    {# --- ACCROCHE / SYNOPSIS --- #}
+    {% if page.synopsis %}
+        <section class="panel campagne-synopsis">
+            <h2 class="panel-title">Synopsis</h2>
+            <div class="richtext">{{ page.synopsis|richtext }}</div>
         </section>
     {% endif %}
 
-    {# --- SECTION CHRONOLOGIE UNIQUE --- #}
-    {% if chronologie %}
-        {% with ch=chronologie.specific %}
-            <section class="campagne-section section-chronologie-unique">
-                <h2>Chronologie & Annales</h2>
-                <article class="chrono-banner-card">
-                    <a href="{% pageurl ch %}" class="chrono-link">
-                        <div class="chrono-content">
-                            {% if ch.title %}
-                                <h3>{{ ch.title }}</h3>
-                            {% endif %}
-                            {% if ch.intro %}
-                                <div class="chrono-intro">{{ ch.intro|richtext|truncatewords_html:30 }}</div>
-                            {% endif %}
-                        </div>
-                        <span class="btn-discover">Consulter la chronologie &rarr;</span>
+    {% if page.body %}
+        <section class="section campagne-body richtext">
+            {% include_block page.body %}
+        </section>
+    {% endif %}
+
+    {# --- ENCYCLOPÉDIE : à venir (articles liés à la campagne via les tags) --- #}
+
+    {# --- DUO : ÉVÉNEMENTS RÉCENTS + CARTE INTERACTIVE --- #}
+    {% if chronologie or carte_principale %}
+        <div class="duo-grid">
+            {% if chronologie %}
+                <section class="panel panel--rounded section-evenements">
+                    <h2 class="panel-title">Événements récents</h2>
+                    <ul class="event-snippets">
+                        {% for evt in evenements_recents %}
+                            <li>
+                                <a href="{% pageurl evt %}" class="event-snippet">
+                                    {% if evt.date_affichage %}<span class="event-snippet-date">{{ evt.date_affichage }}</span>{% endif %}
+                                    <span class="event-snippet-title">{{ evt.title }}</span>
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li class="no-data">Aucun événement pour le moment.</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% pageurl chronologie %}" class="btn-link">Consulter la chronologie &rarr;</a>
+                </section>
+            {% endif %}
+
+            {% if carte_principale %}
+                <section class="panel panel--rounded section-carte">
+                    <h2 class="panel-title">Carte interactive</h2>
+                    <a href="{% pageurl carte_principale %}" class="carte-preview">
+                        {% if carte_principale.main_image %}
+                            {% image carte_principale.main_image fill-700x700 alt="" class="carte-preview-img" %}
+                        {% else %}
+                            <span class="img-placeholder carte-preview-img" aria-hidden="true"></span>
+                        {% endif %}
+                        <span class="carte-preview-label">{{ carte_principale.title }} &rarr;</span>
                     </a>
-                </article>
-            </section>
-        {% endwith %}
+                </section>
+            {% endif %}
+        </div>
     {% endif %}
 
 </main>

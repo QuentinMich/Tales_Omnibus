@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block body_class %}template-campagnes-index{% endblock %}
+
 {% block content %}
 <main class="container page-campagnes-index">
     
     <header class="index-header">
         {% if page.title %}
-            <h1>{{ page.title }}</h1>
+            <h1 class="page-title">{{ page.title }}</h1>
         {% endif %}
         
         {% if page.intro %}

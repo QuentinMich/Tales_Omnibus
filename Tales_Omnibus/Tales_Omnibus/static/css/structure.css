@@ -1,0 +1,1071 @@
+/* ==========================================================================
+   TALES OMNIBUS — CSS STRUCTUREL
+   --------------------------------------------------------------------------
+   Ce fichier gère la MISE EN PAGE (grilles, espacements, formes).
+   Toutes les couleurs / polices / arrondis passent par des VARIABLES CSS.
+
+   Les valeurs par défaut ci-dessous reprennent le wireframe :
+     - ocre / jaune  = zones dont le contenu est modifiable par le client
+     - niveaux de gris = structure fixe du site
+
+   Un THÈME (high fantasy, dark fantasy, cyberpunk...) est un autre fichier
+   chargé APRÈS celui-ci, qui redéfinit seulement ces variables dans :root.
+   ========================================================================== */
+
+:root {
+    /* --- Couleurs : structure (gris) --- */
+    --color-bg: #FFFFFF;              /* fond de page */
+    --color-text: #1A1A1A;            /* texte courant */
+    --color-text-muted: #595959;      /* texte secondaire */
+    --color-chrome: #B5B4B4;          /* header / footer */
+    --color-chrome-text: #1A1A1A;
+    --color-surface: #D8D8D8;         /* panneaux, cartes grises */
+    --color-surface-strong: #595959;  /* panneaux foncés */
+    --color-surface-strong-text: #FFFFFF;
+    --color-border: #595959;          /* filets / séparateurs */
+
+    /* --- Couleurs : contenu client (ocre) --- */
+    --color-accent: #8C782C;          /* fonds de contenu, boutons */
+    --color-accent-text: #FFFFFF;     /* texte posé sur l'accent */
+    --color-highlight: #FFD952;       /* titres / détails sur fond accent ou foncé */
+    --color-title: #8C782C;           /* titres de pages */
+
+    /* --- Typographie --- */
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-title: var(--font-body);
+    --font-size-base: 1rem;
+    --line-height: 1.6;
+
+    /* --- Formes & espacements --- */
+    --radius-sm: 0.5rem;
+    --radius-md: 1.25rem;
+    --radius-lg: 2rem;
+    --radius-pill: 999px;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 2rem;
+    --space-xl: 4rem;
+    --container-width: 72rem;
+    --shadow: none;                   /* un thème peut ajouter des ombres */
+    --transition: 150ms ease;
+}
+
+
+/* ==========================================================================
+   1. BASE
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height);
+}
+
+body > main {
+    flex: 1; /* footer collé en bas même sur une page courte */
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+a {
+    color: inherit;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-title);
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0 0 var(--space-md);
+}
+
+p {
+    margin: 0 0 var(--space-md);
+}
+
+figure {
+    margin: 0;
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-highlight);
+    outline-offset: 2px;
+}
+
+.container {
+    width: min(100% - 2 * var(--space-md), var(--container-width));
+    margin-inline: auto;
+    padding-block: var(--space-lg) var(--space-xl);
+}
+
+.section {
+    margin-block: var(--space-xl);
+}
+
+
+/* ==========================================================================
+   2. HEADER / NAVIGATION / FOOTER
+   ========================================================================== */
+
+.site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-chrome);
+    color: var(--color-chrome-text);
+}
+
+.site-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    text-decoration: none;
+}
+
+.site-logo {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.site-logo--placeholder {
+    display: block;
+    background: var(--color-accent);
+}
+
+.site-name {
+    color: var(--color-title);
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+}
+
+.site-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-lg);
+    margin: 0;
+    padding: var(--space-sm) var(--space-lg);
+    list-style: none;
+    background: var(--color-surface);
+}
+
+.site-nav a {
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.site-nav a:hover {
+    color: var(--color-title);
+}
+
+.site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-chrome);
+    color: var(--color-chrome-text);
+    font-size: 0.9rem;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.footer-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: right;
+}
+
+.footer-links a {
+    text-decoration: none;
+}
+
+.flash-messages {
+    width: min(100% - 2 * var(--space-md), var(--container-width));
+    margin: var(--space-md) auto 0;
+    padding: 0;
+    list-style: none;
+}
+
+.flash {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    border-left: 6px solid var(--color-accent);
+}
+
+
+/* ==========================================================================
+   3. COMPOSANTS RÉUTILISABLES
+   ========================================================================== */
+
+/* --- Titres de page --- */
+.page-title {
+    margin: 0;
+    color: var(--color-title);
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.page-title--left {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    text-align: left;
+    text-transform: none;
+    color: var(--color-text);
+}
+
+.page-subtitle {
+    margin: 0;
+    color: var(--color-title);
+    font-size: clamp(1.5rem, 4vw, 3.25rem);
+    text-align: center;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+/* Titre de section centré, posé sur un filet (wireframe "Nos Héros") */
+.section-title {
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    text-align: center;
+}
+
+.section-title--left {
+    text-align: left;
+}
+
+/* --- Panneaux gris (accroche, présentation joueur...) --- */
+.panel {
+    margin-block: var(--space-lg);
+    padding: var(--space-lg) clamp(var(--space-md), 5vw, var(--space-xl));
+    background: var(--color-surface);
+    box-shadow: var(--shadow);
+}
+
+.panel--rounded {
+    border-radius: var(--radius-lg);
+}
+
+.panel--accent {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+.panel-title {
+    color: var(--color-title);
+    font-size: 1.75rem;
+}
+
+.panel--accent .panel-title {
+    color: var(--color-highlight);
+}
+
+/* --- Texte riche (sortie de |richtext et des StreamFields) --- */
+.richtext > :last-child {
+    margin-bottom: 0;
+}
+
+.richtext blockquote {
+    margin: var(--space-md) 0;
+    padding-left: var(--space-md);
+    border-left: 4px solid var(--color-accent);
+    font-style: italic;
+}
+
+/* --- Badges & tags --- */
+.badge,
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    font-size: 0.9rem;
+}
+
+.status-badge strong {
+    color: var(--color-title);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.badge--categorie {
+    border-left: 0.75rem solid var(--marker-color, var(--color-accent));
+    background: var(--color-bg);
+}
+
+.badge-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: var(--space-lg) 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tag {
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--color-text);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-highlight);
+}
+
+/* --- Boutons & liens d'action --- */
+.btn {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-lg);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: filter var(--transition);
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+}
+
+.panel--accent .btn {
+    background: var(--color-highlight);
+    color: var(--color-text);
+}
+
+.btn-link,
+.btn-back {
+    display: inline-block;
+    margin-top: var(--space-md);
+    color: var(--color-title);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.btn-link:hover,
+.btn-back:hover {
+    text-decoration: underline;
+}
+
+.no-data {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* --- Image manquante : le "rectangle barré" du wireframe --- */
+.img-placeholder {
+    display: block;
+    background:
+        linear-gradient(to top right, transparent calc(50% - 1px), rgb(0 0 0 / 0.5), transparent calc(50% + 1px)),
+        linear-gradient(to bottom right, transparent calc(50% - 1px), rgb(0 0 0 / 0.5), transparent calc(50% + 1px)),
+        var(--color-accent);
+}
+
+/* --- Petites cartes génériques (autres cartes, etc.) --- */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--space-md);
+}
+
+.mini-card {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    text-decoration: none;
+}
+
+.mini-card-img {
+    width: 100%;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+}
+
+.mini-card-title {
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+}
+
+/* --- Images des blocs StreamField (core/blocks) --- */
+.block-single-image {
+    margin-block: var(--space-lg);
+}
+
+.block-single-image figcaption {
+    margin-top: var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.video-container iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+}
+
+
+/* ==========================================================================
+   4. INDEX DES CAMPAGNES
+   ========================================================================== */
+
+.index-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+}
+
+.index-header .intro-text {
+    max-width: 45rem;
+    margin: var(--space-md) auto 0;
+}
+
+.campagnes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: var(--space-lg);
+}
+
+.campagne-card {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow);
+}
+
+.campagne-card .card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+}
+
+.card-image-wrapper {
+    position: relative;
+    aspect-ratio: 12 / 7;
+}
+
+.card-image-wrapper .card-img,
+.card-image-wrapper .placeholder-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-image-wrapper .status-badge {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+}
+
+.campagne-card .card-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+}
+
+.campagne-card h2 {
+    margin: 0;
+    color: var(--color-title);
+}
+
+.campagne-card .description {
+    flex: 1;
+    margin: 0;
+}
+
+.badge-subtitle {
+    color: var(--color-text-muted);
+}
+
+.btn-discover {
+    color: var(--color-title);
+    font-weight: 500;
+}
+
+/* Cartes "Campagne à venir..." : grisées */
+.status-placeholder {
+    opacity: 0.6;
+}
+
+.placeholder-img {
+    background: var(--color-surface-strong);
+}
+
+
+/* ==========================================================================
+   5. PAGE CAMPAGNE
+   ========================================================================== */
+
+.campagne-header {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-md);
+    padding-block: 0 var(--space-lg);
+}
+
+.campagne-titles {
+    display: grid;
+    justify-items: center;
+}
+
+/* Filet entre le titre et le sous-titre (wireframe) */
+.campagne-titles .page-title {
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Le badge reste dans le flux (au-dessus, à droite) : il ne chevauche jamais le titre */
+.campagne-header .status-badge {
+    order: -1;
+    justify-self: end;
+}
+
+/* Variante avec bannière : l'image passe en fond, le texte par-dessus */
+.campagne-header.has-banner {
+    isolation: isolate; /* garde l'image (z-index -1) DANS le header */
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl) var(--space-md);
+    color: var(--color-accent-text);
+}
+
+.campagne-banner {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    filter: brightness(0.55);
+}
+
+.campagne-header.has-banner .campagne-titles {
+    z-index: 0;
+}
+
+.campagne-header.has-banner .page-title,
+.campagne-header.has-banner .page-subtitle {
+    color: var(--color-highlight);
+    border-color: currentColor;
+}
+
+.campagne-header.has-banner .status-badge {
+    z-index: 0;
+}
+
+/* --- Nos Héros : grandes cartes verticales --- */
+.heros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: var(--space-lg);
+}
+
+.hero-card .card-link {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 5 / 8;
+    background: var(--color-accent);
+    text-decoration: none;
+}
+
+.hero-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 300ms ease;
+}
+
+.hero-card .card-link:hover .hero-card-img {
+    transform: scale(1.04);
+}
+
+.hero-card-body {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: grid;
+    padding: var(--space-lg) var(--space-md) var(--space-md);
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.65));
+    color: var(--color-accent-text);
+}
+
+.hero-card-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+}
+
+.hero-card-player {
+    color: var(--color-highlight);
+    font-size: 0.9rem;
+}
+
+/* --- Duo Événements récents / Carte --- */
+.duo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: var(--space-md);
+    margin-block: var(--space-xl);
+}
+
+.duo-grid .panel {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: var(--space-lg);
+}
+
+.duo-grid .panel-title {
+    color: var(--color-text);
+}
+
+.event-snippets {
+    display: grid;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.event-snippet {
+    display: grid;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-highlight);
+    text-align: center;
+    text-decoration: none;
+    transition: filter var(--transition);
+}
+
+.event-snippet:hover {
+    filter: brightness(1.1);
+}
+
+.event-snippet-date {
+    color: var(--color-accent-text);
+    font-size: 0.85rem;
+}
+
+.event-snippet-title {
+    font-size: 1.25rem;
+}
+
+.section-evenements .btn-link {
+    margin-top: auto;
+    padding-top: var(--space-md);
+}
+
+.carte-preview {
+    position: relative;
+    display: block;
+    flex: 1;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+}
+
+.carte-preview-img {
+    width: 100%;
+    height: 100%;
+    min-height: 18rem;
+    object-fit: cover;
+}
+
+.carte-preview-label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: var(--space-md);
+    background: rgb(0 0 0 / 0.55);
+    color: var(--color-accent-text);
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+
+/* ==========================================================================
+   6. FICHES (Héros, Lieu, Événement, Lore)
+   ========================================================================== */
+
+.fiche-top {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 0.9fr);
+    gap: var(--space-xl);
+    align-items: start;
+    margin-bottom: var(--space-lg);
+}
+
+.fiche-card {
+    display: grid;
+    gap: var(--space-md);
+    justify-items: start;
+    align-content: start; /* le contenu reste en haut de la carte */
+    min-height: 100%;
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.fiche-title {
+    margin: 0;
+    color: var(--color-title);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.fiche-media img {
+    width: 100%;
+    aspect-ratio: 6 / 8.5;
+    object-fit: cover;
+}
+
+/* La fiche n'a pas d'image : la carte prend toute la largeur */
+.fiche-top:not(:has(.fiche-media)) {
+    grid-template-columns: 1fr;
+}
+
+.joueur-nom {
+    font-size: 1.25rem;
+}
+
+/* --- Réseaux sociaux : pastilles rondes --- */
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.social-link {
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-size: 0.75rem;
+    text-align: center;
+    text-decoration: none;
+    transition: filter var(--transition);
+}
+
+.social-link:hover {
+    filter: brightness(1.15);
+}
+
+/* --- Formulaires de contact (héros + page contact) --- */
+.contact-form {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: var(--space-md) var(--space-lg);
+}
+
+/* Le message occupe la colonne de droite, sur toute la hauteur (wireframe) */
+.contact-form .form-group--message {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-form .form-group--message textarea {
+    flex: 1;
+}
+
+.contact-form .btn {
+    grid-column: 1 / -1;
+    justify-self: end;
+}
+
+.form-group {
+    display: grid;
+    gap: var(--space-xs);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-text);
+    border-radius: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.form-group textarea {
+    min-height: 10rem;
+    resize: vertical;
+}
+
+.errorlist {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-highlight);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.has-error input,
+.has-error select,
+.has-error textarea {
+    outline: 2px solid var(--color-highlight);
+}
+
+
+/* ==========================================================================
+   7. CHRONOLOGIE : lignes image + texte, alternées
+   ========================================================================== */
+
+.timeline {
+    display: grid;
+    gap: var(--space-lg);
+    margin: 0;
+    padding: var(--space-md) 0 0;
+    border-top: 1px solid var(--color-border);
+    list-style: none;
+}
+
+.timeline-item {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: var(--space-lg);
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+/* Une ligne sur deux : image à droite */
+.timeline-item:nth-child(even) {
+    grid-template-columns: 1fr 12rem;
+}
+
+.timeline-item:nth-child(even) .timeline-media {
+    order: 2;
+}
+
+.timeline-img {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+}
+
+.timeline-card {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface-strong);
+    color: var(--color-surface-strong-text);
+}
+
+.timeline-date {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.timeline-title {
+    margin: 0 0 var(--space-sm);
+    font-size: 1.5rem;
+}
+
+.timeline-title a {
+    color: var(--color-highlight);
+    text-decoration: none;
+}
+
+.timeline-title a:hover {
+    text-decoration: underline;
+}
+
+.timeline-summary > :last-child {
+    margin-bottom: 0;
+}
+
+
+/* ==========================================================================
+   8. CARTE + MARQUEURS DES LIEUX
+   ========================================================================== */
+
+.carte-map {
+    position: relative; /* repère pour les marqueurs en position absolue */
+    margin-block: var(--space-lg);
+}
+
+.carte-map-img {
+    width: 100%;
+}
+
+span.carte-map-img {
+    aspect-ratio: 3 / 4;
+}
+
+/* Étoile positionnée en % (coord_x / coord_y), centrée sur le point */
+.map-marker {
+    position: absolute;
+    width: 2.25rem;
+    height: 2.25rem;
+    transform: translate(-50%, -50%);
+    background: var(--marker-color, var(--color-highlight));
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    text-decoration: none;
+    transition: transform var(--transition);
+}
+
+.map-marker:hover,
+.map-marker:focus-visible {
+    transform: translate(-50%, -50%) scale(1.3);
+}
+
+/* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */
+.map-marker-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.lieux-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lieu-chip {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    border-left: 0.6rem solid var(--marker-color, var(--color-accent));
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    text-decoration: none;
+}
+
+.lieu-chip:hover {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+
+/* ==========================================================================
+   9. RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 48rem) {
+    .site-header {
+        justify-content: center;
+    }
+
+    .site-nav ul {
+        justify-content: center;
+        gap: var(--space-xs) var(--space-md);
+        padding-inline: var(--space-md);
+    }
+
+    .campagne-header .status-badge {
+        justify-self: center;
+    }
+
+    .fiche-top {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+
+    .fiche-media {
+        order: -1; /* l'image passe au-dessus du texte sur mobile */
+    }
+
+    .contact-form {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-form .form-group--message {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .timeline-item,
+    .timeline-item:nth-child(even) {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-item:nth-child(even) .timeline-media {
+        order: 0;
+    }
+
+    .site-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-links {
+        text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}

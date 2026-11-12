@@ -1,59 +1,55 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block body_class %}template-chronologie{% endblock %}
+
 {% block content %}
 <main class="container page-chronologie-detail">
 
-    <header class="chrono-header">
-        {% if page.title %}
-            <h1>{{ page.title }}</h1>
-        {% endif %}
-        
+    <header class="page-header">
+        <h1 class="page-title page-title--left">{{ page.title }}</h1>
         {% if page.systeme_datation %}
-            <span class="badge-datation">Système de datation : {{ page.systeme_datation }}</span>
+            <span class="badge">Système de datation : {{ page.systeme_datation }}</span>
         {% endif %}
     </header>
 
+    {# --- FRISE : une ligne par événement, image à gauche / à droite en alternance --- #}
+    {% if evenements %}
+        <ol class="timeline">
+            {% for evt in evenements %}
+                <li class="timeline-item">
+                    <a href="{% pageurl evt %}" class="timeline-media" tabindex="-1" aria-hidden="true">
+                        {% if evt.main_image %}
+                            {% image evt.main_image fill-300x240 alt="" class="timeline-img" %}
+                        {% else %}
+                            <span class="img-placeholder timeline-img"></span>
+                        {% endif %}
+                    </a>
+                    <div class="timeline-card">
+                        {% if evt.date_affichage %}
+                            <span class="timeline-date">{{ evt.date_affichage }}</span>
+                        {% endif %}
+                        <h2 class="timeline-title"><a href="{% pageurl evt %}">{{ evt.title }}</a></h2>
+                        {% if evt.intro %}
+                            <div class="timeline-summary">{{ evt.intro|richtext|truncatewords_html:25 }}</div>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p class="no-data">Aucun événement n'est encore enregistré dans cette chronologie.</p>
+    {% endif %}
+
     {% if page.intro %}
-        <section class="chrono-intro richtext-content">
-            {{ page.intro|richtext }}
+        <section class="panel chrono-intro">
+            <h2 class="panel-title">Accroche</h2>
+            <div class="richtext">{{ page.intro|richtext }}</div>
         </section>
     {% endif %}
 
-    <hr class="section-divider">
-
-    {# FRISE CHRONOLOGIQUE DES ÉVÉNEMENTS #}
-    {% if evenements %}
-        <section class="timeline-container">
-            <h2>Événements marquants</h2>
-            
-            <div class="timeline-list">
-                {% for evt in evenements %}
-                    <article class="timeline-item">
-                        <div class="timeline-marker"></div>
-                        <div class="timeline-card">
-                            {% if evt.date_affichage %}
-                                <span class="event-date">{{ evt.date_affichage }}</span>
-                            {% endif %}
-                            
-                            {% if evt.title %}
-                                <h3><a href="{% pageurl evt %}">{{ evt.title }}</a></h3>
-                            {% endif %}
-
-                            {% if evt.intro %}
-                                <div class="event-summary">
-                                    {{ evt.intro|richtext|truncatewords_html:25 }}
-                                </div>
-                            {% endif %}
-
-                            <a href="{% pageurl evt %}" class="btn-more">Lire l'événement &rarr;</a>
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-        </section>
-    {% else %}
-        <p class="no-data">Aucun événement n'est encore enregistré dans cette chronologie.</p>
+    {% if page.body %}
+        <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
 </main>
