@@ -1089,6 +1089,32 @@ span.carte-map-img {
     white-space: nowrap;
 }
 
+/* Mini-carte d'une fiche (le "pin" d'un héros / événement).
+   Une carte en portrait serait plus haute que l'écran : on limite la
+   HAUTEUR de l'image, et le cadre (.carte-map) prend la largeur de l'image
+   (fit-content) pour que les % de l'étoile tombent toujours juste. */
+.carte-mini .carte-map {
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.carte-mini .carte-map-img {
+    width: auto;
+    max-height: 60vh;
+}
+
+.carte-mini span.carte-map-img {
+    width: min(20rem, 100%); /* le rectangle barré n'a pas de taille propre */
+}
+
+.carte-mini-legende {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
 .lieux-list {
     display: flex;
     flex-wrap: wrap;

@@ -50,6 +50,19 @@
                 </select>
             </div>
 
+            {# Sous-filtre des lieux : n'apparaît que si le type « Lieux » est choisi #}
+            {% if type_choisi == 'lieux' and categories %}
+                <div class="form-group">
+                    <label for="filtre-categorie">Par catégorie de lieu</label>
+                    <select name="categorie" id="filtre-categorie">
+                        <option value="">Toutes les catégories</option>
+                        {% for categorie in categories %}
+                            <option value="{{ categorie.pk }}"{% if categorie.pk == categorie_choisie %} selected{% endif %}>{{ categorie.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+
             {# Les tags sont des boutons radio déguisés en pastilles : #}
             {# un seul tag à la fois, et ça marche même sans JavaScript. #}
             {% if tags %}
@@ -76,7 +89,7 @@
 
             <div class="filtres-actions">
                 <button type="submit" class="btn">Filtrer</button>
-                {% if campagne_choisie or type_choisi or tag_choisi %}
+                {% if campagne_choisie or type_choisi or tag_choisi or categorie_choisie %}
                     <a href="{% pageurl page %}" class="btn-link">Effacer les filtres</a>
                 {% endif %}
             </div>

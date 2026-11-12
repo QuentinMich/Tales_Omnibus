@@ -9,7 +9,7 @@ from wagtail.fields import RichTextField
 from wagtail.models import Page
 
 from campagnes.models import CampagnePage, EvenementPage, HeroPage, LieuPage
-from core.models import BaseFichePage, FicheEncyclopedieMixin
+from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin
 
 
 # 1. INDEX DE L'ENCYCLOPÉDIE : rassemble TOUTES les fiches taguables du site
@@ -64,15 +64,25 @@ class EncyclopedieIndexPage(Page):
         campagne = campagnes.filter(pk=id_campagne).first() if id_campagne.isdigit() else None
         type_choisi = request.GET.get('type') if request.GET.get('type') in types else ''
         tag_choisi = request.GET.get('tag', '')
+        # La catégorie n'a de sens que pour les lieux : ignorée pour les autres types
+        id_categorie = request.GET.get('categorie', '') if type_choisi == 'lieux' else ''
 
         # --- 2. Pour chaque type de fiche, une requête avec les filtres
         fiches = []
         tags_disponibles = {}
+        categories = CategorieLieu.objects.none()
         for cle, requete in requetes_de_fiches(accueil, campagne, type_choisi):
             # Les tags proposés = ceux des fiches AVANT le filtre de tag,
             # sinon il ne resterait que le tag cliqué et on ne pourrait plus en changer.
             for slug, nom in requete.filter(tags__isnull=False).values_list('tags__slug', 'tags__name'):
                 tags_disponibles[slug] = nom
+
+            if cle == 'lieux':
+                # Catégories proposées : seulement celles des lieux affichables
+                # (pas de catégorie vide dans le menu).
+                categories = CategorieLieu.objects.filter(lieux__in=requete).distinct().order_by('nom')
+                if id_categorie.isdigit():
+                    requete = requete.filter(categorie_id=id_categorie)
 
             if tag_choisi:
                 requete = requete.filter(tags__slug=tag_choisi)
@@ -93,6 +103,8 @@ class EncyclopedieIndexPage(Page):
             'tags': sorted(tags_disponibles.items(), key=lambda tag: tag[1].lower()),
             'campagne_choisie': campagne,
             'type_choisi': type_choisi,
+            'categories': categories,
+            'categorie_choisie': int(id_categorie) if id_categorie.isdigit() else None,
             'tag_choisi': tag_choisi,
         })
         return context
@@ -169,11 +181,11 @@ def etiqueter(requete, cle):
     return fiches
 
 
-def fiches_liees(page, nombre=4):
+def fiches_liees(page, nombre=4, exclure=()):
     """
     Les fiches qui partagent au moins un tag avec `page`, de la plus proche
     (le plus de tags en commun) à la moins proche. Les épinglées passent
-    devant à égalité.
+    devant à égalité. `exclure` : pk de fiches déjà affichées ailleurs sur la page.
     """
     tags = list(page.tags.all())
     if not tags:
@@ -184,6 +196,7 @@ def fiches_liees(page, nombre=4):
         # filter() AVANT annotate() : Count ne compte que les tags en commun
         requete = (requete.filter(tags__in=tags)
                    .exclude(pk=page.pk)
+                   .exclude(pk__in=exclure)
                    .annotate(tags_communs=Count('tags')))
         fiches += etiqueter(requete, cle)
     fiches.sort(key=lambda fiche: (-fiche.tags_communs, not fiche.epinglee, fiche.title.lower()))

@@ -264,6 +264,17 @@ class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
         help_text="Ex: '14ème jour du Mois des Moissons, An 402'"
     )
 
+    # Le "pin" de l'événement : on pointe vers un Lieu existant au lieu de
+    # retaper des coordonnées. Si le lieu bouge sur la carte, l'événement suit.
+    lieu = models.ForeignKey(
+        'campagnes.LieuPage',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,  # supprimer le lieu ne supprime pas l'événement
+        related_name='evenements',  # lieu.evenements = ce qui s'est passé ici
+        verbose_name="Lieu de l'événement",
+        help_text="Un champ de bataille, une clairière… crée-le d'abord comme Lieu sur une carte."
+    )
+
     subpage_types = []
     parent_page_types = ['campagnes.ChronologiePage']
     tags = ClusterTaggableManager(through=EvenementPageTag, blank=True)
@@ -273,6 +284,7 @@ class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
             FieldPanel('date_ordre'),
             FieldPanel('date_affichage'),
         ], heading="Horodatage"),
+        FieldPanel('lieu'),
         FieldPanel("tags"),
         FieldPanel("epinglee"),
     ]
@@ -319,6 +331,14 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         verbose_name="Activer le formulaire de contact sur la fiche"
     )
     
+    lieu_origine = models.ForeignKey(
+        'campagnes.LieuPage',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='heros_originaires',  # lieu.heros_originaires = qui vient d'ici
+        verbose_name="Lieu d'origine",
+    )
+
     tags = ClusterTaggableManager(through=HeroPageTag, blank=True)
     
     content_panels = BaseFichePage.content_panels + [
@@ -330,6 +350,7 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         InlinePanel('hero_social_links', label="Réseaux sociaux du joueur"),
         FieldPanel("tags"),
         ]),
+        FieldPanel("lieu_origine"),
         FieldPanel("epinglee"),
     ]
 

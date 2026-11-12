@@ -1,8 +1,8 @@
 {% load wagtailcore_tags wagtailimages_tags %}
-{# Fiches qui partagent un tag avec la page (voir fiches_liees() dans encyclopedie/models.py) #}
+{# Encart de mini-cartes de fiches : "Fiches liées", "Liés à ce lieu"… (voir encyclopedie_tags.py) #}
 {% if fiches %}
     <section class="panel panel--rounded panel--strong fiches-liees">
-        <h2 class="panel-title">Fiches liées</h2>
+        <h2 class="panel-title">{{ titre }}</h2>
         <ul class="cards-grid">
             {% for fiche in fiches %}
                 <li>

@@ -1,0 +1,29 @@
+{% load wagtailcore_tags wagtailimages_tags l10n %}
+{# Le "pin" d'une fiche : la carte du lieu, avec une seule étoile dessus.  #}
+{# Même composant que la page Carte (.carte-map + .map-marker), en petit. #}
+{# Usage : {% include "campagnes/includes/mini_carte.html" with lieu=... %} #}
+{% with carte=lieu.get_parent.specific %}
+    <figure class="carte-mini">
+        {# .carte-map ne contient QUE l'image et l'étoile : les % de l'étoile #}
+        {# sont calculés sur ce cadre, la légende doit donc rester dehors.    #}
+        <div class="carte-map">
+            {% if carte.main_image %}
+                {# width-1400 comme la page Carte : même image, déjà générée, jamais recadrée #}
+                {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+            {% else %}
+                <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
+            {% endif %}
+
+            {% if lieu.coord_x is not None and lieu.coord_y is not None %}
+                {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
+                <span class="map-marker" aria-hidden="true"
+                      style="--x: {{ lieu.coord_x|unlocalize }}; --y: {{ lieu.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}"></span>
+            {% endif %}
+        </div>
+
+        <figcaption class="carte-mini-legende">
+            {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
+            {% if carte.live %}sur la carte <a href="{% pageurl carte %}">{{ carte.title }}</a>{% endif %}
+        </figcaption>
+    </figure>
+{% endwith %}

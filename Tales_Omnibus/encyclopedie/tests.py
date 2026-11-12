@@ -97,6 +97,30 @@ class EncyclopedieTests(ArborescenceMixin, TestCase):
         self.assertEqual(len(self.titres(page="abc")), 4)
 
 
+    # --- Catégorie de lieu --------------------------------------------------
+    def ranger_port_en_village(self):
+        from core.models import CategorieLieu
+        village = CategorieLieu.objects.create(nom="Village")
+        CategorieLieu.objects.create(nom="Donjon")  # aucun lieu : ne doit pas être proposée
+        port = LieuPage.objects.get(title="Port")
+        port.categorie = village
+        port.save_revision().publish()
+        return village
+
+    def test_filtre_par_categorie_de_lieu(self):
+        village = self.ranger_port_en_village()
+        response = self.client.get(self.encyclopedie.url, {'type': "lieux", 'categorie': village.pk})
+        self.assertEqual([f.title for f in response.context['fiches']], ["Port"])
+        # Seules les catégories utilisées sont proposées
+        self.assertEqual([c.nom for c in response.context['categories']], ["Village"])
+
+    def test_categorie_ignoree_hors_des_lieux(self):
+        village = self.ranger_port_en_village()
+        # Sans type "lieux", le paramètre categorie n'a aucun effet
+        self.assertEqual(len(self.titres(categorie=village.pk)), 4)
+        self.assertNotContains(self.client.get(self.encyclopedie.url), "Par catégorie de lieu")
+
+
 class FichesLieesTests(ArborescenceMixin, TestCase):
     def test_fiches_liees_par_tag_commun(self):
         self.assertEqual([f.title for f in fiches_liees(self.aldric)], ["Port"])

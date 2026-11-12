@@ -63,3 +63,46 @@ class ChronologieTests(CampagneTreeMixin, TestCase):
         self.campagne.add_child(instance=ChronologiePage(title="Frise"))
         response = self.client.get(self.campagne.url)
         self.assertContains(response, "Consulter la chronologie")
+
+
+class LieuDesFichesTests(CampagneTreeMixin, TestCase):
+    """Le "pin" : un héros / un événement pointe vers un Lieu existant."""
+
+    def setUp(self):
+        super().setUp()
+        from campagnes.models import CartePage, LieuPage
+        carte = self.campagne.add_child(instance=CartePage(title="Royaume"))
+        self.clairiere = carte.add_child(instance=LieuPage(title="Clairière déserte", coord_x=12.5, coord_y=40))
+        chrono = self.campagne.add_child(instance=ChronologiePage(title="Frise"))
+        self.bataille = chrono.add_child(instance=EvenementPage(title="La bataille", lieu=self.clairiere))
+        self.hero = self.campagne.add_child(instance=HeroPage(
+            title="Aldric", joueur_nom="Bob", lieu_origine=self.clairiere))
+
+    def test_la_fiche_evenement_affiche_la_mini_carte(self):
+        response = self.client.get(self.bataille.url)
+        self.assertContains(response, "Lieu de l'événement")
+        self.assertContains(response, "carte-mini")
+        self.assertContains(response, "--x: 12.5")  # |unlocalize : un point, pas une virgule
+        self.assertContains(response, self.clairiere.url)
+
+    def test_la_fiche_heros_affiche_son_lieu_d_origine(self):
+        self.assertContains(self.client.get(self.hero.url), "Lieu d'origine")
+
+    def test_la_fiche_lieu_liste_ce_qui_s_y_rattache(self):
+        response = self.client.get(self.clairiere.url)
+        self.assertContains(response, "Liés à ce lieu")
+        self.assertContains(response, "La bataille")
+        self.assertContains(response, "Aldric")
+
+    def test_lieu_depublie_pas_de_mini_carte(self):
+        self.clairiere.unpublish()
+        self.assertNotContains(self.client.get(self.bataille.url), "carte-mini")
+
+    def test_pas_de_doublon_avec_les_fiches_liees(self):
+        # La bataille partage un tag avec la clairière ET y est rattachée :
+        # elle ne doit apparaître qu'une fois, dans « Liés à ce lieu ».
+        for page in (self.clairiere, self.bataille):
+            page.tags.add("guerre")
+            page.save_revision().publish()
+        html = self.client.get(self.clairiere.url).content.decode()
+        self.assertEqual(html.count(f'href="{self.bataille.url}"'), 1)

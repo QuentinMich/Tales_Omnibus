@@ -36,6 +36,14 @@
         <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
+    {# --- LE "PIN" : mini-carte du lieu choisi dans l'admin (dépublié = caché) --- #}
+    {% if page.lieu_origine.live %}
+        <section class="panel panel--rounded fiche-lieu">
+            <h2 class="panel-title">Lieu d'origine</h2>
+            {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu_origine %}
+        </section>
+    {% endif %}
+
     {% include "core/includes/tags_list.html" with tags=page.tags.all %}
 
     {# --- RÉSEAUX DU JOUEUR --- #}

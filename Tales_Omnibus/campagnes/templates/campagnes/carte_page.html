@@ -49,9 +49,7 @@
             <ul class="lieux-list">
                 {% for lieu in lieux %}
                     <li>
-                        <a href="{% pageurl lieu %}" class="lieu-chip"{% if lieu.categorie %} style="--marker-color: {{ lieu.categorie.couleur_marqueur }};"{% endif %}>
-                            {{ lieu.title }}{% if lieu.categorie %} <small>({{ lieu.categorie.nom }})</small>{% endif %}
-                        </a>
+                        {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
                     </li>
                 {% endfor %}
             </ul>
