@@ -67,6 +67,13 @@ cd Tales_Omnibus
     pour les campagnes, héros, lieux et événements) ;
   - `ChildPagesPanel` dans `core/panels.py`, inséré via `panels_avec_enfants()` :
     il liste les pages enfants dans le formulaire d'édition.
+- **Encyclopédie** (`EncyclopedieIndexPage.get_context`) : rassemble les fiches
+  Héros, Lieux, Événements et Lore publiées, filtrables en GET
+  (`?campagne=<id>&type=heros|lieux|evenements|lore&tag=<slug>`). Les fiches
+  Lore sont communes à l'univers : un filtre de campagne les écarte. Les tags
+  des fiches (`core/includes/tags_list.html`) mènent à l'encyclopédie filtrée
+  (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
+  réutilise le composant `.timeline` de la chronologie.
 - La carte place les lieux en `%` à partir de `coord_x` / `coord_y`.
 
 ## Pièges connus
@@ -100,12 +107,12 @@ cd Tales_Omnibus
   dans `base.html`.
 - **Sélecteur de coordonnées** : un widget d'admin pour cliquer sur l'image de
   la carte parente et remplir `coord_x` / `coord_y`.
-- **Encyclopédie** : reportée volontairement. Elle référence tout le site via
-  des tags taggit (par campagne, par type de page, plus des tags libres du client).
+- **Fiche Lore** : section « Dans une autre campagne » du wireframe
+  (`lore-slug.pdf`), pas encore faite.
 - **Mentions légales** : `StandardPage`, template vide (`standard_page.html`).
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
-- CSS de l'encyclopédie et de la recherche.
+- CSS de la recherche.
 
 ---
 

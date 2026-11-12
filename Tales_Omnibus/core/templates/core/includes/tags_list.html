@@ -1,8 +1,18 @@
-{# Usage : {% include "core/includes/tags_list.html" with tags=page.tags.all %} #}
+{% load navigation_tags %}
+{# Usage : {% include "core/includes/tags_list.html" with tags=page.tags.all %}  #}
+{# Chaque tag mène à l'encyclopédie filtrée sur ce tag : c'est elle qui      #}
+{# rassemble toutes les fiches du site (héros, lieux, événements, lore).     #}
 {% if tags %}
+    {% encyclopedie_url as url_encyclopedie %}
     <ul class="tags-list" aria-label="Mots-clés">
         {% for tag in tags %}
-            <li class="tag">{{ tag.name }}</li>
+            <li class="tag">
+                {% if url_encyclopedie %}
+                    <a href="{{ url_encyclopedie }}?tag={{ tag.slug|urlencode }}">{{ tag.name }}</a>
+                {% else %}
+                    {{ tag.name }}
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 {% endif %}

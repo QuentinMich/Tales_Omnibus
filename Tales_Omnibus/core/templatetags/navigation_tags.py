@@ -80,3 +80,18 @@ def back_link(context):
     else:
         texte = RETOURS_FIXES.get(type(parent), f"à {parent.title}")
     return {'parent': parent, 'texte': texte}
+
+
+@register.simple_tag(takes_context=True)
+def encyclopedie_url(context):
+    """
+    Adresse de l'encyclopédie (retrouvée par son type, comme dans le menu),
+    ou "" si elle n'existe pas encore. Sert aux tags des fiches, qui mènent
+    à l'encyclopédie filtrée : {% encyclopedie_url as url %}.
+    """
+    request = context.get('request')
+    if request is None:
+        return ""
+    accueil = Site.find_for_request(request).root_page
+    encyclopedie = EncyclopedieIndexPage.objects.live().descendant_of(accueil).first()
+    return encyclopedie.url if encyclopedie else ""

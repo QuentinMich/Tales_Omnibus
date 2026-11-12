@@ -1003,7 +1003,8 @@ figure {
     color: var(--color-surface-strong-text);
 }
 
-.timeline-date {
+.timeline-date,
+.timeline-type {
     font-size: 0.85rem;
     opacity: 0.8;
 }
@@ -1168,7 +1169,105 @@ html:has(.template-home) {
 
 
 /* ==========================================================================
-   11. RESPONSIVE
+   11. ENCYCLOPÉDIE
+   --------------------------------------------------------------------------
+   Réutilise : .panel (accroche), .fiche-top / .fiche-card / .fiche-media
+   (filtres + illustration) et .timeline (liste des fiches alternée).
+   ========================================================================== */
+
+.bandeau {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1400 / 320; /* même proportion que la rendition fill-1400x320 */
+    object-fit: cover;
+    margin-block: var(--space-lg);
+}
+
+/* Les champs prennent toute la largeur de la carte (fiche-card aligne à gauche) */
+.filtres {
+    justify-items: stretch;
+}
+
+.filtres-titre {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Le fieldset regroupe les tags pour les lecteurs d'écran ; on retire son cadre */
+.filtres-tags {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.filtres-tags legend {
+    padding: 0;
+    margin-bottom: var(--space-sm);
+}
+
+.filtres .tags-list {
+    margin: 0;
+}
+
+.filtres-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.filtres-actions .btn-link {
+    margin-top: 0;
+}
+
+.filtres-resultat {
+    color: var(--color-text-muted);
+}
+
+/* --- Tags cliquables : pastilles grises, la choisie passe en ocre --- */
+.tag--choix {
+    position: relative; /* repère du bouton radio caché ci-dessous */
+    display: inline-block;
+    background: var(--color-surface-strong);
+    cursor: pointer;
+    transition: filter var(--transition);
+}
+
+.tag--choix:hover {
+    filter: brightness(var(--hover-brightness));
+}
+
+/* Le bouton radio reste dans la page (clavier, lecteurs d'écran)
+   mais devient invisible : c'est la pastille entière qu'on voit. */
+.tag--choix input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tag--choix:has(input:checked) {
+    background: var(--color-accent);
+}
+
+.tag--choix:has(input:focus-visible) {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+}
+
+/* Tags des fiches : des liens vers l'encyclopédie filtrée */
+.tag a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.tag a:hover {
+    text-decoration: underline;
+}
+
+
+/* ==========================================================================
+   12. RESPONSIVE
    ========================================================================== */
 
 @media (max-width: 48rem) {

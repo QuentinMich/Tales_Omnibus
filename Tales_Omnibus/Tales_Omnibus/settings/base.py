@@ -167,6 +167,10 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 WAGTAIL_SITE_NAME = "Tales_Omnibus"
 
+# Tags : "Dragon" et "dragon" sont le même tag (évite les doublons dans
+# les filtres de l'encyclopédie quand le client tape une majuscule).
+TAGGIT_CASE_INSENSITIVE = True
+
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
 WAGTAILSEARCH_BACKENDS = {
