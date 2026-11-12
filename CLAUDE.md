@@ -61,8 +61,15 @@ cd Tales_Omnibus
   avec la langue `fr`, Django écrirait `12,5` et le CSS serait invalide.
 - L'image de la carte utilise `width-1400` et **jamais** `fill-…` : un recadrage
   fausserait les coordonnées en `%`.
-- Le menu du site affiche les enfants de la racine qui ont la case
-  « Afficher dans les menus » cochée.
+- Le menu du site a des **libellés fixes** (Accueil, Univers, Campagnes,
+  Encyclopédie, Contact) : tag `{% main_menu %}` dans
+  `core/templatetags/navigation_tags.py`. Les pages sont retrouvées par leur
+  type (index campagnes / encyclopédie) ou par les champs `page_univers` /
+  `page_contact` de l'accueil, jamais par leur titre ni leur slug. La case
+  « Afficher dans les menus » n'est plus utilisée.
+- Lecteur de live de l'accueil (`StreamPlayerBlock`) : Twitch exige le
+  paramètre `parent` (domaine du site, calculé depuis la requête) ; YouTube
+  exige l'ID de chaîne `UC…`, pas le @pseudo.
 
 ## Feuille de route (pas des bugs !)
 

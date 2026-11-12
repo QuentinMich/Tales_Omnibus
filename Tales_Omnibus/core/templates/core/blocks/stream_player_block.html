@@ -1,0 +1,21 @@
+{# Lecteur de live. Variables : value.plateforme, value.chaine, value.titre, domaine #}
+<div class="block-stream-player">
+    {% if value.titre %}
+        <h2 class="section-title">{{ value.titre }}</h2>
+    {% endif %}
+
+    <div class="video-container">
+        {% if value.plateforme == "twitch" %}
+            {# parent = domaine du site : obligatoire pour Twitch #}
+            <iframe src="https://player.twitch.tv/?channel={{ value.chaine|urlencode }}&parent={{ domaine }}&muted=true"
+                    title="Live Twitch de {{ value.chaine }}"
+                    allowfullscreen loading="lazy"></iframe>
+        {% else %}
+            {# live_stream?channel= : affiche le direct en cours de la chaîne #}
+            <iframe src="https://www.youtube.com/embed/live_stream?channel={{ value.chaine|urlencode }}"
+                    title="Live YouTube"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowfullscreen loading="lazy"></iframe>
+        {% endif %}
+    </div>
+</div>

@@ -1,4 +1,4 @@
-{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags navigation_tags %}
 {% get_settings %}
 {% wagtail_site as current_site %}
 <!DOCTYPE html>
@@ -35,6 +35,10 @@
     <body class="{% block body_class %}{% endblock %}">
         {% wagtailuserbar %}
 
+        {# Contenu AVANT le header (ex. : la grande image de l'accueil). #}
+        {# Vide sur les autres pages.                                    #}
+        {% block before_header %}{% endblock %}
+
         <header class="site-header">
             <a class="site-brand" href="{% pageurl current_site.root_page %}">
                 {% if settings.core.NavigationSettings.logo %}
@@ -45,16 +49,8 @@
                 <span class="site-name">{{ settings.core.NavigationSettings.site_name }}</span>
             </a>
 
-            {# Menu généré depuis l'arbre Wagtail : sous-pages de l'accueil #}
-            {# avec "Afficher dans les menus" coché (onglet Promotion)    #}
-            <nav class="site-nav" aria-label="Navigation principale">
-                <ul>
-                    <li><a href="{% pageurl current_site.root_page %}">Accueil</a></li>
-                    {% for menu_page in current_site.root_page.get_children.live.in_menu %}
-                        <li><a href="{% pageurl menu_page %}">{{ menu_page.title }}</a></li>
-                    {% endfor %}
-                </ul>
-            </nav>
+            {# Menu à libellés fixes : voir core/templatetags/navigation_tags.py #}
+            {% main_menu %}
         </header>
 
         {% if messages %}

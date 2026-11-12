@@ -1,90 +1,76 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags wagtailembeds_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-home{% endblock %}
+
+{# --- 1. IMAGE D'OUVERTURE, placée AVANT le header (voir base.html) --- #}
+{% block before_header %}
+    <div class="home-hero">
+        {% if page.hero_image %}
+            {% image page.hero_image width-1920 alt="" class="home-hero-img" %}
+        {% else %}
+            <span class="img-placeholder home-hero-img" aria-hidden="true"></span>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block content %}
-<main class="home-container">
+<main class="container page-home">
 
-    {# 1. DIV EMBED VIDEO / STREAM #}
-    <section class="section-embed">
-        {% if page.video_embed %}
-            {% for block in page.video_embed %}
-                {% include_block block %}
-            {% endfor %}
-        {% endif %}
-    </section>
+    {# --- 2. LIVE TWITCH / YOUTUBE --- #}
+    {% if page.stream_player %}
+        <section class="section home-live">
+            {% include_block page.stream_player %}
+        </section>
+    {% endif %}
 
-    {# 2. RAPPEL DES CAMPAGNES ENFANTS (Bannière/Image + Titre) #}
-    <section class="section-campagnes">
-        <h2>Nos Campagnes</h2>
+    {# --- 3. CAMPAGNES : les 3 premières, même carte que l'index --- #}
+    <section class="panel panel--rounded home-campagnes">
         <div class="campagnes-grid">
             {% for campagne in campagnes %}
-                <article class="campagne-card">
-                    <a href="{% pageurl campagne %}">
-                        {# Affichage de l'image de la campagne avec son point focal #}
-                        {% if campagne.banner_image %}
-                            {% image campagne.banner_image fill-400x225 alt=campagne.title class="campagne-banner" %}
-                        {% endif %}
-                        
-                        <h3>{{ campagne.title }}</h3>
-                        {% if campagne.subtitle %}
-                            <p class="subtitle">{{ campagne.subtitle }}</p>
-                        {% endif %}
-                    </a>
-                </article>
+                {% include "campagnes/includes/campagne_card.html" with c=campagne %}
             {% empty %}
-                <p>Aucune campagne disponible pour le moment.</p>
+                <p class="no-data">Aucune campagne publiée pour le moment.</p>
             {% endfor %}
         </div>
     </section>
 
-    {# 3. SECTION UNIVERS (Lien vers la ForeignKey page_univers) #}
-    {% if page.page_univers %}
-        <section class="section-univers">
-            <h2>Univers : {{ page.page_univers.title }}</h2>
-            <div class="univers-intro">
-                {% if page.page_univers.specific.intro %}
-                    <p>{{ page.page_univers.specific.intro }}</p>
-                {% endif %}
-                <a href="{% pageurl page.page_univers %}" class="btn">Découvrir l'univers</a>
-            </div>
-        </section>
-    {% endif %}
+    {# --- 4. UNIVERS : accroche (ou intro de la page Univers) + lien --- #}
+    {% with univers=page.page_univers.specific %}
+        {% if univers %}
+            <section class="panel panel--rounded panel--strong home-univers">
+                <h2 class="panel-title">{{ univers.title }}</h2>
+                <p>{{ page.univers_accroche|default:univers.intro|linebreaksbr }}</p>
+                <a href="{% pageurl univers %}" class="btn">Découvrir l'univers</a>
+            </section>
+        {% endif %}
+    {% endwith %}
 
-    <div class="home-duo-grid">
-        {# 4. SECTION ENCYCLOPÉDIE (StreamField avec PageChooserBlock) #}
-        <section class="section-encyclopedie">
-            <h2>Encyclopédie</h2>
-            <ul class="encyclopedie-list">
+    {# --- 5. DUO : Encyclopédie (3 fiches choisies) + Contact --- #}
+    <div class="duo-grid">
+        <section class="panel panel--rounded panel--strong home-encyclopedie">
+            <h2 class="panel-title">Encyclopédie</h2>
+            <ul class="link-tiles">
                 {% for block in page.encyclopedie_a_la_une %}
-                    {% with lore=block.value %}
-                        <li>
-                            <a href="{% pageurl lore %}">
-                                <h3>{{ lore.title }}</h3>
-                                {% if lore.specific.intro %}
-                                    <p>{{ lore.specific.intro|truncatewords:15 }}</p>
-                                {% endif %}
-                            </a>
-                        </li>
-                    {% endwith %}
+                    <li><a href="{% pageurl block.value %}" class="link-tile">{{ block.value.title }}</a></li>
                 {% empty %}
-                    <li>Aucune fiche mise en avant.</li>
+                    <li class="no-data">Aucune fiche mise en avant.</li>
                 {% endfor %}
             </ul>
         </section>
 
-        {# 5. SECTION CONTACT (ForeignKey page_contact) #}
-        {% if page.page_contact %}
-            <section class="section-contact">
-                <h2>Contact & Prestations</h2>
-                <div class="contact-preview">
-                    {% if page.page_contact.specific.intro %}
-                        <div>{{ page.page_contact.specific.intro|richtext }}</div>
-                    {% endif %}
-                    <a href="{% pageurl page.page_contact %}" class="btn">Nous contacter</a>
-                </div>
-            </section>
-        {% endif %}
+        {% with contact=page.page_contact.specific %}
+            {% if contact %}
+                <section class="panel panel--rounded panel--strong home-contact">
+                    <h2 class="panel-title">{{ contact.title }}</h2>
+                    <div class="panel panel--accent panel--rounded richtext">
+                        {{ contact.intro|richtext }}
+                        <a href="{% pageurl contact %}" class="btn">Me contacter</a>
+                    </div>
+                </section>
+            {% endif %}
+        {% endwith %}
     </div>
 
 </main>
-{% endblock content %}
+{% endblock %}

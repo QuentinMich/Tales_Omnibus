@@ -1,0 +1,13 @@
+{% load wagtailcore_tags %}
+{# Rendu du tag {% main_menu %} (core/templatetags/navigation_tags.py) #}
+<nav class="site-nav" aria-label="Navigation principale">
+    <ul>
+        {% for item in items %}
+            <li>
+                <a href="{% pageurl item.page %}"{% if item.actif %} class="is-active"{% endif %}{% if item.courant %} aria-current="page"{% endif %}>
+                    {{ item.libelle }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
