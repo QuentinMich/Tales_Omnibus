@@ -115,6 +115,12 @@ figure {
     margin: 0;
 }
 
+/* L'attribut HTML "hidden" doit toujours cacher : sans ça, une règle comme
+   .btn { display: inline-block } le bat et l'élément reste visible. */
+[hidden] {
+    display: none !important;
+}
+
 :focus-visible {
     outline: 3px solid var(--color-highlight);
     outline-offset: 2px;
@@ -1241,12 +1247,13 @@ html:has(.template-home) {
 .fiche-typee[data-type="evenements"] { --type-color: var(--color-type-evenements); }
 .fiche-typee[data-type="lore"] { --type-color: var(--color-type-lore); }
 
-/* Liseré de couleur sur le côté de la carte */
-.timeline-item.fiche-typee {
+/* Liseré de couleur sur le bloc foncé (angles droits : sur la carte
+   arrondie, une bordure gauche dessinerait un croissant) */
+.fiche-typee .timeline-card {
     border-left: 0.5rem solid var(--type-color, transparent);
 }
 
-.mini-card.fiche-typee {
+.fiche-typee .mini-card-title {
     border-top: 0.35rem solid var(--type-color, transparent);
 }
 
@@ -1381,6 +1388,12 @@ html:has(.template-home) {
 
     .timeline-item:nth-child(even) .timeline-media {
         order: 0;
+    }
+
+    /* Pas d'image : sur téléphone, le grand rectangle barré ferait défiler
+       pour rien, on ne garde que le texte (chronologie et encyclopédie). */
+    .timeline-media:has(.img-placeholder) {
+        display: none;
     }
 
     .site-footer {

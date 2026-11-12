@@ -8,4 +8,12 @@
 document.querySelectorAll('[data-filtres-auto]').forEach((formulaire) => {
     formulaire.addEventListener('change', () => formulaire.requestSubmit());
     formulaire.querySelector('button[type="submit"]')?.setAttribute('hidden', '');
+
+    // Juste avant l'envoi, on retire les filtres vides : l'URL devient
+    // "?tag=dragon" au lieu de "?campagne=&type=&tag=dragon".
+    formulaire.addEventListener('formdata', (evenement) => {
+        for (const [nom, valeur] of [...evenement.formData]) {
+            if (valeur === '') evenement.formData.delete(nom);
+        }
+    });
 });
