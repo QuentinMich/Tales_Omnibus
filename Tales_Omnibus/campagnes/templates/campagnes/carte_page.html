@@ -20,9 +20,11 @@
 
         {% for lieu in lieux %}
             {% if lieu.coord_x is not None and lieu.coord_y is not None %}
+                {# Le HTML ne transmet que les DONNÉES (variables CSS --x / --y) : #}
+                {# c'est structure.css qui les transforme en position.            #}
                 {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
                 <a href="{% pageurl lieu %}" class="map-marker"
-                   style="left: {{ lieu.coord_x|unlocalize }}%; top: {{ lieu.coord_y|unlocalize }}%;{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
+                   style="--x: {{ lieu.coord_x|unlocalize }}; --y: {{ lieu.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
                     <span class="map-marker-label">{{ lieu.title }}</span>
                 </a>
             {% endif %}

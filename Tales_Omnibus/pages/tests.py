@@ -28,4 +28,6 @@ class ContactPageTests(TestCase):
             'nom': "Alice", 'email': "alice@example.com", 'message': "Coucou",
         })
         self.assertTemplateUsed(response, 'pages/contact_page_landing.html')
+        self.assertContains(response, "Message envoyé !")
+        self.assertContains(response, 'panel--accent')  # même mise en page que la page contact
         self.assertEqual(len(mail.outbox), 1)
