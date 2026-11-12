@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.mail import EmailMessage
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
@@ -152,25 +153,82 @@ class CartePage(BaseFichePage):
         help_text="Optionnel : pour donner l'échelle du territoire."
     )
 
-    subpage_types = ['campagnes.LieuPage']
+    # Les lieux ne sont plus rangés SOUS la carte : ce sont des fiches de
+    # l'encyclopédie, posées sur une ou plusieurs cartes par des Apparitions.
+    subpage_types = []
     parent_page_types = ['campagnes.CampagnePage']
 
-    content_panels = panels_avec_enfants(BaseFichePage.content_panels, "Lieux de cette carte", [
+    content_panels = BaseFichePage.content_panels + [
         FieldPanel('is_main_map'),
         FieldPanel('echelle_km'),
-    ])
+        InlinePanel('apparitions', heading="Lieux sur cette carte", label="Lieu"),
+    ]
 
     def get_context(self, request):
         context = super().get_context(request)
-        # Récupère automatiquement tous les lieux de CETTE carte
-        # (LieuPage.objects -> pages "spécifiques" : on a accès à coord_x, coord_y, categorie)
-        context['lieux'] = LieuPage.objects.child_of(self).live().select_related('categorie')
+        # Les lieux posés sur CETTE carte (seulement les fiches publiées),
+        # avec leur catégorie en une seule requête (couleur des étoiles).
+        context['apparitions'] = (
+            self.apparitions.filter(lieu__live=True)
+            .select_related('lieu', 'lieu__categorie')
+        )
 
         parent_campagne = self.get_parent().specific
         autres_cartes = parent_campagne.get_children().live().type(CartePage).not_page(self)
         
         context['autres_cartes'] = autres_cartes
         return context
+
+class Apparition(Orderable):
+    """
+    Un lieu POSÉ sur une carte : "Caer Fiodh, sur la carte Royaume, en x=12 y=20".
+
+    Le même lieu peut apparaître sur plusieurs cartes (carte régionale et
+    carte du monde, ou deux campagnes à des siècles d'écart) avec des
+    coordonnées et un état différents. La fiche du lieu, elle, reste unique.
+    ParentalKey : les apparitions s'éditent DANS la page Carte (InlinePanel)
+    et sont publiées avec elle.
+    """
+    carte = ParentalKey('CartePage', on_delete=models.CASCADE, related_name='apparitions')
+    lieu = models.ForeignKey(
+        'campagnes.LieuPage',
+        on_delete=models.CASCADE,  # fiche supprimée = plus d'étoile sur les cartes
+        related_name='apparitions',  # lieu.apparitions = toutes les cartes où il figure
+        verbose_name="Lieu",
+    )
+    # Vides = lieu ajouté à la carte mais pas encore placé (pas d'étoile)
+    coord_x = models.FloatField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Coordonnée X (%)",
+        help_text="Position horizontale sur cette carte (de 0 à 100)"
+    )
+    coord_y = models.FloatField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Coordonnée Y (%)",
+        help_text="Position verticale sur cette carte (de 0 à 100)"
+    )
+    a_cette_epoque = models.TextField(
+        blank=True,
+        verbose_name="À cette époque",
+        help_text="Ce qui est propre à cette carte : « caché par le brouillard », « en ruines »…"
+    )
+
+    panels = [
+        FieldPanel('lieu'),
+        FieldPanel('coord_x'),
+        FieldPanel('coord_y'),
+        FieldPanel('a_cette_epoque'),
+    ]
+
+    class Meta(Orderable.Meta):
+        verbose_name = "Apparition d'un lieu"
+
+    @property
+    def est_placee(self):
+        return self.coord_x is not None and self.coord_y is not None
+
 
 class LieuPageTag(TaggedItemBase):
     content_object = ParentalKey(
@@ -191,30 +249,42 @@ class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
         related_name='lieux',
         verbose_name="Catégorie de lieu"
     )
-    # Coordonnées pour les markers sur la CartePage    
-    coord_x = models.FloatField(
-        null=True, blank=True,
-        verbose_name="Coordonnée X (%)",
-        help_text="Position horizontale sur la carte parent (de 0 à 100)"
-    )
-    coord_y = models.FloatField(
-        null=True, blank=True,
-        verbose_name="Coordonnée Y (%)",
-        help_text="Position verticale sur la carte parent (de 0 à 100)"
-    )
+    # Un lieu est une fiche UNIVERSELLE (comme le Lore) : il vit dans
+    # l'encyclopédie. Ses positions sont dans les Apparitions des cartes.
     subpage_types = []  # Page feuille (pas d'enfants)
-    parent_page_types = ['campagnes.CartePage']
+    parent_page_types = ['encyclopedie.EncyclopedieIndexPage']
     tags = ClusterTaggableManager(through=LieuPageTag, blank=True)
 
     content_panels = BaseFichePage.content_panels + [
-        MultiFieldPanel([
-            FieldPanel('categorie'),
-            FieldPanel('coord_x'),
-            FieldPanel('coord_y'),
-        ], heading="Géolocalisation & Typologie"),
+        FieldPanel('categorie'),
         FieldPanel("tags"),
         FieldPanel("epinglee"),
     ]
+
+    def apparitions_publiees(self):
+        """Les cartes publiées où figure ce lieu, dans l'ordre de l'arborescence."""
+        return (self.apparitions.filter(carte__live=True)
+                .select_related('carte', 'lieu__categorie')
+                .order_by('carte__path'))
+
+    def apparition_vue_depuis(self, page):
+        """
+        La carte à montrer sur la fiche d'un héros ou d'un événement : de
+        préférence une carte de LEUR campagne (le lieu tel qu'on le voyait à
+        cette époque), sinon la première carte où le lieu figure.
+        """
+        apparitions = self.apparitions_publiees()
+        campagne = CampagnePage.objects.ancestor_of(page).first()
+        if campagne:
+            dans_la_campagne = apparitions.filter(carte__in=CartePage.objects.descendant_of(campagne))
+            if dans_la_campagne:
+                return dans_la_campagne.first()
+        return apparitions.first()
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        context['apparitions'] = self.apparitions_publiees()
+        return context
 
 # 4. CHRONOLOGIE (Conteneur d'événements)
 class ChronologiePage(BaseFichePage):
@@ -288,6 +358,13 @@ class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
         FieldPanel("tags"),
         FieldPanel("epinglee"),
     ]
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        # Le "pin" : le lieu vu depuis une carte de la campagne de l'événement
+        if self.lieu and self.lieu.live:
+            context['apparition_lieu'] = self.lieu.apparition_vue_depuis(self)
+        return context
 
 class HeroSocialLink(Orderable):
     page = ParentalKey(
@@ -365,6 +442,9 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         # (sauf si serve() en a déjà mis un, avec les erreurs de saisie)
         if self.contact_actif and 'contact_form' not in context:
             context['contact_form'] = HeroContactForm()
+        # Le "pin" : le lieu d'origine vu depuis une carte de la campagne du héros
+        if self.lieu_origine and self.lieu_origine.live:
+            context['apparition_lieu'] = self.lieu_origine.apparition_vue_depuis(self)
         return context
 
     def serve(self, request, *args, **kwargs):

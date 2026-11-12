@@ -1,7 +1,7 @@
 from django.test import TestCase
 from home.models import HomePage
 
-from campagnes.models import CampagnePage, CampagnesIndexPage, CartePage, HeroPage, LieuPage
+from campagnes.models import Apparition, CampagnePage, CampagnesIndexPage, CartePage, HeroPage, LieuPage
 from encyclopedie.models import EncyclopedieIndexPage, LorePage, fiches_liees
 
 
@@ -10,7 +10,8 @@ class ArborescenceMixin:
     Arborescence de test, partagée par les deux classes ci-dessous :
       Accueil > Encyclopédie > Lore « Les dieux »            (tag : Divin)
       Accueil > Campagnes > Saison 1 > Héros « Aldric »      (tag : Dragon)
-                                     > Carte > Lieu « Port » (tag : dragon, en minuscule)
+                                     > Carte (où apparaît le Lieu « Port », rangé
+                                              dans l'encyclopédie, tag : dragon en minuscule)
                           > Saison 2 > Héros « Brune »       (sans tag)
     """
 
@@ -28,10 +29,12 @@ class ArborescenceMixin:
         self.aldric = self.saison1.add_child(instance=HeroPage(title="Aldric", joueur_nom="Bob"))
         self.aldric.tags.add("Dragon")
         self.aldric.save()
-        carte = self.saison1.add_child(instance=CartePage(title="Carte"))
-        port = carte.add_child(instance=LieuPage(title="Port"))
+        # Les lieux vivent dans l'encyclopédie et sont POSÉS sur des cartes
+        port = self.encyclopedie.add_child(instance=LieuPage(title="Port"))
         port.tags.add("dragon")  # même tag grâce à TAGGIT_CASE_INSENSITIVE
         port.save()
+        carte = self.saison1.add_child(instance=CartePage(title="Carte"))
+        Apparition.objects.create(carte=carte, lieu=port, coord_x=50, coord_y=50)
         saison2.add_child(instance=HeroPage(title="Brune", joueur_nom="Zoé"))
 
 

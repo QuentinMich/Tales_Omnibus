@@ -34,6 +34,19 @@
         <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
+    {# --- SUR LES CARTES : une mini-carte par carte où le lieu apparaît, --- #}
+    {#     avec ce qui change à chaque époque (champ « À cette époque »)    #}
+    {% if apparitions %}
+        <section class="panel panel--rounded fiche-lieu">
+            <h2 class="panel-title">Sur les cartes</h2>
+            <div class="cartes-du-lieu">
+                {% for apparition in apparitions %}
+                    {% include "campagnes/includes/mini_carte.html" with lieu=page apparition=apparition %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
     {# --- LIÉS À CE LIEU : événements (champ "lieu") et héros (champ "lieu_origine") --- #}
     {% fiches_du_lieu page %}
 

@@ -1,29 +1,36 @@
 {% load wagtailcore_tags wagtailimages_tags l10n %}
-{# Le "pin" d'une fiche : la carte du lieu, avec une seule étoile dessus.  #}
-{# Même composant que la page Carte (.carte-map + .map-marker), en petit. #}
-{# Usage : {% include "campagnes/includes/mini_carte.html" with lieu=... %} #}
-{% with carte=lieu.get_parent.specific %}
-    <figure class="carte-mini">
-        {# .carte-map ne contient QUE l'image et l'étoile : les % de l'étoile #}
-        {# sont calculés sur ce cadre, la légende doit donc rester dehors.    #}
-        <div class="carte-map">
-            {% if carte.main_image %}
-                {# width-1400 comme la page Carte : même image, déjà générée, jamais recadrée #}
-                {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
-            {% else %}
-                <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
-            {% endif %}
+{# Le "pin" d'un lieu : UNE carte où il apparaît, avec son étoile.            #}
+{# Même composant que la page Carte (.carte-map + .map-marker), en petit.    #}
+{# Usage : {% include "campagnes/includes/mini_carte.html" with lieu=... apparition=... %} #}
+{#   apparition : une Apparition (carte + coordonnées), ou vide si le lieu   #}
+{#   n'est encore posé sur aucune carte : on n'affiche alors que sa pastille. #}
+<figure class="carte-mini">
+    {% if apparition %}
+        {% with carte=apparition.carte %}
+            {# .carte-map ne contient QUE l'image et l'étoile : les % de l'étoile #}
+            {# sont calculés sur ce cadre, la légende doit donc rester dehors.    #}
+            <div class="carte-map">
+                {% if carte.main_image %}
+                    {# width-1400 comme la page Carte : même image, déjà générée, jamais recadrée #}
+                    {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+                {% else %}
+                    <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
+                {% endif %}
 
-            {% if lieu.coord_x is not None and lieu.coord_y is not None %}
-                {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
-                <span class="map-marker" aria-hidden="true"
-                      style="--x: {{ lieu.coord_x|unlocalize }}; --y: {{ lieu.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}"></span>
-            {% endif %}
-        </div>
+                {% if apparition.est_placee %}
+                    {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
+                    <span class="map-marker" aria-hidden="true"
+                          style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}"></span>
+                {% endif %}
+            </div>
+        {% endwith %}
+    {% endif %}
 
-        <figcaption class="carte-mini-legende">
-            {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
-            {% if carte.live %}sur la carte <a href="{% pageurl carte %}">{{ carte.title }}</a>{% endif %}
-        </figcaption>
-    </figure>
-{% endwith %}
+    <figcaption class="carte-mini-legende">
+        {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
+        {% if apparition %}sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a>{% endif %}
+    </figcaption>
+    {% if apparition.a_cette_epoque %}
+        <p class="carte-mini-epoque">{{ apparition.a_cette_epoque|linebreaksbr }}</p>
+    {% endif %}
+</figure>

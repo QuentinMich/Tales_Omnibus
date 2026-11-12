@@ -18,15 +18,18 @@
             <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
         {% endif %}
 
-        {% for lieu in lieux %}
-            {% if lieu.coord_x is not None and lieu.coord_y is not None %}
-                {# Le HTML ne transmet que les DONNÉES (variables CSS --x / --y) : #}
-                {# c'est structure.css qui les transforme en position.            #}
-                {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
-                <a href="{% pageurl lieu %}" class="map-marker"
-                   style="--x: {{ lieu.coord_x|unlocalize }}; --y: {{ lieu.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
-                    <span class="map-marker-label">{{ lieu.title }}</span>
-                </a>
+        {# Une étoile par lieu POSÉ sur cette carte (modèle Apparition) #}
+        {% for apparition in apparitions %}
+            {% if apparition.est_placee %}
+                {% with lieu=apparition.lieu %}
+                    {# Le HTML ne transmet que les DONNÉES (variables CSS --x / --y) : #}
+                    {# c'est structure.css qui les transforme en position.            #}
+                    {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
+                    <a href="{% pageurl lieu %}" class="map-marker"
+                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
+                        <span class="map-marker-label">{{ lieu.title }}</span>
+                    </a>
+                {% endwith %}
             {% endif %}
         {% endfor %}
     </div>
@@ -43,13 +46,13 @@
     {% endif %}
 
     {# --- LISTE DES LIEUX (accessible au clavier / lecteur d'écran) --- #}
-    {% if lieux %}
+    {% if apparitions %}
         <section class="section section-lieux">
             <h2 class="section-title section-title--left">Lieux de cette carte</h2>
             <ul class="lieux-list">
-                {% for lieu in lieux %}
+                {% for apparition in apparitions %}
                     <li>
-                        {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
+                        {% include "campagnes/includes/lieu_chip.html" with lieu=apparition.lieu %}
                     </li>
                 {% endfor %}
             </ul>

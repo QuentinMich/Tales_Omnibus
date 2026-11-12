@@ -36,11 +36,11 @@
         <section class="section richtext">{% include_block page.body %}</section>
     {% endif %}
 
-    {# --- LE "PIN" : mini-carte du lieu choisi dans l'admin (dépublié = caché) --- #}
+    {# --- LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible --- #}
     {% if page.lieu_origine.live %}
         <section class="panel panel--rounded fiche-lieu">
             <h2 class="panel-title">Lieu d'origine</h2>
-            {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu_origine %}
+            {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu_origine apparition=apparition_lieu %}
         </section>
     {% endif %}
 

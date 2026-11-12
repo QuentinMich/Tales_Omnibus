@@ -8,7 +8,7 @@ from wagtail.admin.panels import FieldPanel
 from wagtail.fields import RichTextField
 from wagtail.models import Page
 
-from campagnes.models import CampagnePage, EvenementPage, HeroPage, LieuPage
+from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
 from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin
 
 
@@ -39,7 +39,7 @@ class EncyclopedieIndexPage(Page):
         help_text="Image verticale affichée à côté des filtres."
     )
 
-    subpage_types = ['encyclopedie.LorePage']
+    subpage_types = ['encyclopedie.LorePage', 'campagnes.LieuPage']
     parent_page_types = ['home.HomePage']
     max_count = 1  # Une seule encyclopédie pour tout l'univers
 
@@ -164,6 +164,13 @@ def requetes_de_fiches(accueil, campagne=None, type_choisi=''):
         # Les fiches Lore sont communes à tout l'univers (elles ne sont
         # rangées dans aucune campagne) : un filtre de campagne les écarte.
         if campagne and modele is LorePage:
+            continue
+        if campagne and modele is LieuPage:
+            # Les lieux vivent dans l'encyclopédie, pas dans les campagnes :
+            # un lieu appartient à une campagne s'il APPARAÎT sur une de ses
+            # cartes. distinct() : un lieu présent sur 2 cartes ne compte qu'une fois.
+            cartes = CartePage.objects.descendant_of(campagne)
+            yield cle, modele.objects.live().filter(apparitions__carte__in=cartes).distinct()
             continue
         yield cle, modele.objects.live().descendant_of(campagne or accueil)
 

@@ -1115,6 +1115,21 @@ span.carte-map-img {
     gap: var(--space-sm);
 }
 
+/* Ce qui change à cette époque, sous la mini-carte */
+.carte-mini-epoque {
+    margin: var(--space-sm) 0 0;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Fiche lieu : une mini-carte par carte où il apparaît, côte à côte */
+.cartes-du-lieu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-lg);
+    align-items: start;
+}
+
 .lieux-list {
     display: flex;
     flex-wrap: wrap;
