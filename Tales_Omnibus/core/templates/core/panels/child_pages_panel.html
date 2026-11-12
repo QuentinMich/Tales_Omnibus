@@ -1,0 +1,48 @@
+{% load wagtailadmin_tags %}
+<div class="child-pages-panel">
+    {% if is_new %}
+        <p class="help-block">Enregistre d'abord cette page : tu pourras ensuite lui ajouter des pages enfants ici.</p>
+    {% else %}
+        {% if children %}
+            <table class="listing">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th><span class="w-sr-only">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for child in children %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'wagtailadmin_pages:edit' child.id %}"><strong>{{ child.title }}</strong></a>
+                            </td>
+                            <td>{{ child.specific_class.get_verbose_name }}</td>
+                            <td>{% if child.live %}<span class="w-status w-status--primary">{{ child.status_string }}</span>{% else %}<span class="w-status">{{ child.status_string }}</span>{% endif %}</td>
+                            <td>
+                                <a class="button button-small button-secondary" href="{% url 'wagtailadmin_pages:edit' child.id %}">Modifier</a>
+                                {% if child.get_children_count %}
+                                    <a class="button button-small button-secondary" href="{% url 'wagtailadmin_explore' child.id %}">Sous-pages ({{ child.get_children_count }})</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="help-block">Aucune page enfant pour l'instant.</p>
+        {% endif %}
+
+        {% if creatable_types %}
+            <p style="margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap;">
+                {% for model in creatable_types %}
+                    <a class="button button-small bicolor button--icon" href="{{ model.url }}">
+                        {% icon name="plus" wrapped=1 %}Ajouter : {{ model.label }}
+                    </a>
+                {% endfor %}
+            </p>
+        {% endif %}
+    {% endif %}
+</div>

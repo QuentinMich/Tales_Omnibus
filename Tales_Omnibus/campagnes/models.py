@@ -9,11 +9,16 @@ from wagtail.models import Page, Orderable
 from core.models import BaseFichePage, CategorieLieu
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
+from core.panels import panels_avec_enfants
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from taggit.models import TaggedItemBase
 
 class CampagnesIndexPage(Page):
+    class Meta:
+        verbose_name = "Index des campagnes"
+        verbose_name_plural = "Index des campagnes"
+
     intro = RichTextField(
         blank=True, 
         features=['bold', 'italic', 'link'], 
@@ -24,9 +29,9 @@ class CampagnesIndexPage(Page):
     subpage_types = ['campagnes.CampagnePage']
     parent_page_types = ['home.HomePage']
 
-    content_panels = Page.content_panels + [
+    content_panels = panels_avec_enfants(Page.content_panels, "Campagnes", [
         FieldPanel('intro'),
-    ]
+    ])
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -43,6 +48,10 @@ class CampagnesIndexPage(Page):
 
 # 1. CAMPAGNE (Conteneur principal de la saison)
 class CampagnePage(Page):
+    class Meta:
+        verbose_name = "Campagne"
+        verbose_name_plural = "Campagnes"
+
 # Choix des statuts
     STATUS_CHOICES = [
         ('en_cours', 'En cours'),
@@ -92,7 +101,7 @@ class CampagnePage(Page):
     ]
     parent_page_types = ['campagnes.CampagnesIndexPage']
 
-    content_panels = Page.content_panels + [
+    content_panels = panels_avec_enfants(Page.content_panels, "Cartes, chronologie et héros", [
         MultiFieldPanel([
             FieldPanel('subtitle'),
             FieldPanel('banner_image'),
@@ -101,7 +110,7 @@ class CampagnePage(Page):
         ], heading="Présentation & VIGNETTE"),
         FieldPanel('synopsis'),
         FieldPanel('body'),
-    ]
+    ])
     def get_context(self, request):
         context = super().get_context(request)
         cartes_qs = [c.specific for c in self.get_children().live().type(CartePage)]
@@ -128,6 +137,10 @@ class CampagnePage(Page):
 
 # 2. CARTE (Conteneur de lieux)
 class CartePage(BaseFichePage):
+    class Meta:
+        verbose_name = "Carte"
+        verbose_name_plural = "Cartes"
+
     is_main_map = models.BooleanField(
         default=False,
         verbose_name="Carte principale de la campagne",
@@ -142,10 +155,10 @@ class CartePage(BaseFichePage):
     subpage_types = ['campagnes.LieuPage']
     parent_page_types = ['campagnes.CampagnePage']
 
-    content_panels = BaseFichePage.content_panels + [
+    content_panels = panels_avec_enfants(BaseFichePage.content_panels, "Lieux de cette carte", [
         FieldPanel('is_main_map'),
         FieldPanel('echelle_km'),
-    ]
+    ])
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -167,6 +180,10 @@ class LieuPageTag(TaggedItemBase):
     )
 
 class LieuPage(BaseFichePage):
+    class Meta:
+        verbose_name = "Lieu"
+        verbose_name_plural = "Lieux"
+
     categorie = models.ForeignKey(
         CategorieLieu,  # <-- Utilisation directe
         null=True, blank=True,
@@ -200,6 +217,10 @@ class LieuPage(BaseFichePage):
 
 # 4. CHRONOLOGIE (Conteneur d'événements)
 class ChronologiePage(BaseFichePage):
+    class Meta:
+        verbose_name = "Chronologie"
+        verbose_name_plural = "Chronologies"
+
     systeme_datation = models.CharField(
         max_length=100, 
         blank=True, 
@@ -210,9 +231,9 @@ class ChronologiePage(BaseFichePage):
     subpage_types = ['campagnes.EvenementPage']
     parent_page_types = ['campagnes.CampagnePage']
 
-    content_panels = BaseFichePage.content_panels + [
+    content_panels = panels_avec_enfants(BaseFichePage.content_panels, "Événements", [
         FieldPanel('systeme_datation'),
-    ]
+    ])
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -226,6 +247,10 @@ class EvenementPageTag(TaggedItemBase):
     content_object = ParentalKey('EvenementPage', on_delete=models.CASCADE, related_name='tagged_items')
 
 class EvenementPage(BaseFichePage):
+    class Meta:
+        verbose_name = "Événement"
+        verbose_name_plural = "Événements"
+
     date_ordre = models.IntegerField(
         default=0,
         verbose_name="Valeur numérique de date (pour le tri)",
@@ -283,6 +308,10 @@ class HeroPageTag(TaggedItemBase):
     )
 
 class HeroPage(BaseFichePage):
+    class Meta:
+        verbose_name = "Héros"
+        verbose_name_plural = "Héros"
+
     subpage_types = []  # Page feuille
     parent_page_types = ['campagnes.CampagnePage']
     joueur_nom = models.CharField(max_length=100, verbose_name="Nom / Pseudo du joueur")
