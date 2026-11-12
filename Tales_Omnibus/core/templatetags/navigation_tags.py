@@ -3,6 +3,7 @@ from wagtail.models import Site
 
 from campagnes.models import CampagnesIndexPage
 from encyclopedie.models import EncyclopedieIndexPage
+from pages.models import UniversPage
 
 register = template.Library()
 
@@ -24,7 +25,7 @@ def main_menu(context):
     # (cas des tests du starter), on n'affiche juste pas ces liens.
     entrees = [
         ("Accueil", accueil),
-        ("Univers", getattr(accueil, 'page_univers', None)),  # choisie sur la page d'accueil
+        ("Univers", UniversPage.objects.live().descendant_of(accueil).first()),
         ("Campagnes", CampagnesIndexPage.objects.live().descendant_of(accueil).first()),
         ("Encyclopédie", EncyclopedieIndexPage.objects.live().descendant_of(accueil).first()),
         ("Contact", getattr(accueil, 'page_contact', None)),  # choisie sur la page d'accueil
@@ -51,3 +52,31 @@ def main_menu(context):
         })
 
     return {'items': items}
+
+
+# Pour les rubriques, le lien retour garde un libellé fixe, comme le menu.
+# Les autres pages (une campagne, une carte...) gardent leur titre.
+RETOURS_FIXES = {
+    CampagnesIndexPage: "aux campagnes",
+    EncyclopedieIndexPage: "à l'encyclopédie",
+}
+
+
+@register.inclusion_tag('core/includes/back_link.html', takes_context=True)
+def back_link(context):
+    """
+    Lien « ← Retour à ... » vers la page PARENTE dans l'arborescence.
+    On n'utilise pas l'historique du navigateur : si on arrive d'un lien
+    externe (Discord, Google...), « page précédente » sortirait du site.
+    """
+    page = context.get('page')
+    accueil = Site.find_for_request(context['request']).root_page
+    if page is None or page.pk == accueil.pk:
+        return {}  # pas de lien retour sur l'accueil (ni sur la recherche)
+
+    parent = page.get_parent().specific
+    if parent.pk == accueil.pk:
+        texte = "à l'accueil"
+    else:
+        texte = RETOURS_FIXES.get(type(parent), f"à {parent.title}")
+    return {'parent': parent, 'texte': texte}

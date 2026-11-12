@@ -45,7 +45,21 @@ cd Tales_Omnibus
 - **CSS** : `Tales_Omnibus/Tales_Omnibus/static/css/structure.css` gère la mise
   en page et utilise **uniquement des variables CSS** (`:root`). La palette par
   défaut vient du wireframe : ocre `#8C782C` et jaune `#FFD952` pour ce que le
-  client modifie, gris pour la structure. Seules les pages campagnes sont stylées.
+  client modifie, gris pour la structure. Composants réutilisables : `panel`
+  (`--rounded`, `--accent`, `--strong`), `btn` (`--large`), `link-tiles`,
+  `prestations`, `fiche-top` / `fiche-card`.
+- **Accueil** : écran titre (image plein écran avant le header, block
+  `before_header`) retiré une fois dépassé par `home/static/js/ecran_titre.js` ;
+  header `sticky`. Lecteur de live, 3 campagnes, Univers, fiches à la une,
+  Contact + prestations.
+- **Univers** (`pages.UniversPage`, une seule par site) : partie MJ (photo,
+  présentation) + partie monde (accroche `intro`, reprise sur l'accueil, et
+  StreamField). Retrouvée par son type, comme les index.
+- **Prestations** : snippet `pages.Prestation` (menu Fragments), affiché en
+  détail sur la page Contact et en version courte dans la box Contact de
+  l'accueil (`pages/includes/prestations.html`).
+- **Lien retour** vers la page parente sur toutes les pages sauf l'accueil :
+  tag `{% back_link %}`, libellés fixes pour les rubriques (« aux campagnes »).
 - **Formulaire de contact des héros** (`HeroPage.serve`) : Post/Redirect/Get,
   mail au joueur avec `reply_to` sur le visiteur.
 - **Admin** :
@@ -64,9 +78,15 @@ cd Tales_Omnibus
 - Le menu du site a des **libellés fixes** (Accueil, Univers, Campagnes,
   Encyclopédie, Contact) : tag `{% main_menu %}` dans
   `core/templatetags/navigation_tags.py`. Les pages sont retrouvées par leur
-  type (index campagnes / encyclopédie) ou par les champs `page_univers` /
+  type (Univers, index campagnes / encyclopédie) ou par le champ
   `page_contact` de l'accueil, jamais par leur titre ni leur slug. La case
   « Afficher dans les menus » n'est plus utilisée.
+- **Supprimer un champ qui pointe vers une page/image** (ForeignKey,
+  PageChooserBlock…) : Wagtail garde ses références dans `ReferenceIndex`, et
+  la suppression de la page cible plante ensuite dans l'admin
+  (`FieldDoesNotExist`). Nettoyer l'index dans la migration (voir
+  `home/migrations/0007_univers.py`) ou lancer
+  `manage.py rebuild_references_index`.
 - Lecteur de live de l'accueil (`StreamPlayerBlock`) : Twitch exige le
   paramètre `parent` (domaine du site, calculé depuis la requête) ; YouTube
   exige l'ID de chaîne `UC…`, pas le @pseudo.
@@ -82,11 +102,10 @@ cd Tales_Omnibus
   la carte parente et remplir `coord_x` / `coord_y`.
 - **Encyclopédie** : reportée volontairement. Elle référence tout le site via
   des tags taggit (par campagne, par type de page, plus des tags libres du client).
-- **Accueil** : faite en premier, encore brouillonne (`get_context` commenté).
-- **Pages Univers et mentions légales** : templates vides ou absents.
+- **Mentions légales** : `StandardPage`, template vide (`standard_page.html`).
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
-- CSS des pages accueil, encyclopédie et contact.
+- CSS de l'encyclopédie et de la recherche.
 
 ---
 

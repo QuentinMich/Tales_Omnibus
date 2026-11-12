@@ -1,0 +1,15 @@
+{% load wagtailcore_tags %}
+{# Liste des prestations (snippets), partagée par la page Contact et l'accueil. #}
+{# Utilisation : {% include "pages/includes/prestations.html" with prestations=prestations %} #}
+{# Ajouter "detail=True" pour afficher aussi les descriptions (page Contact).     #}
+<ul class="prestations{% if detail %} prestations--detail{% endif %}">
+    {% for presta in prestations %}
+        <li class="prestation">
+            <span class="prestation-titre">{{ presta.titre }}</span>
+            {% if presta.prix %}<span class="prestation-prix">{{ presta.prix }}</span>{% endif %}
+            {% if detail and presta.description %}
+                <div class="prestation-description richtext">{{ presta.description|richtext }}</div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>

@@ -31,6 +31,13 @@ class MenuPrincipalTests(TestCase):
         libelles = [item['libelle'] for item in self.client.get(self.home.url).context['items']]
         self.assertEqual(libelles, ["Accueil", "Campagnes"])
 
+    def test_retour_libelle_fixe_vers_une_rubrique(self):
+        # Le parent s'appelle "Tales" dans l'admin, mais le lien dit "aux campagnes"
+        self.assertContains(self.client.get(self.campagne.url), "Retour aux campagnes")
+
+    def test_pas_de_retour_sur_l_accueil(self):
+        self.assertNotContains(self.client.get(self.home.url), "btn-back")
+
 
 class StreamPlayerBlockTests(TestCase):
     def setUp(self):

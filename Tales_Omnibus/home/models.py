@@ -1,11 +1,12 @@
 from django.db import models
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.admin.panels import FieldPanel
 from wagtail.blocks import PageChooserBlock
 from wagtail.fields import StreamField
 from wagtail.models import Page
 
 from campagnes.models import CampagnePage
 from core.blocks import StreamPlayerBlock
+from pages.models import Prestation, UniversPage
 
 
 class HomePage(Page):
@@ -29,14 +30,8 @@ class HomePage(Page):
         verbose_name="Lecteur de live"
     )
 
-    # 3. UNIVERS : lien vers la page Univers + accroche personnalisable
-    page_univers = models.ForeignKey(
-        'pages.StandardPage',
-        null=True, blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name="Page Univers"
-    )
+    # 3. UNIVERS : la page Univers est retrouvée par son type (une seule par
+    #    site), on ne garde ici que l'accroche personnalisable de l'accueil.
     univers_accroche = models.TextField(
         blank=True,
         verbose_name="Accroche de l'univers",
@@ -62,10 +57,7 @@ class HomePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('hero_image'),
         FieldPanel('stream_player'),
-        MultiFieldPanel([
-            FieldPanel('page_univers'),
-            FieldPanel('univers_accroche'),
-        ], heading="Univers"),
+        FieldPanel('univers_accroche'),
         FieldPanel('encyclopedie_a_la_une'),
         FieldPanel('page_contact'),
     ]
@@ -76,4 +68,8 @@ class HomePage(Page):
         # (Accueil > Index des campagnes > Campagne) : on prend donc les
         # DESCENDANTS publiés, et seulement les 3 premières (wireframe).
         context['campagnes'] = CampagnePage.objects.live().descendant_of(self)[:3]
+        # Une seule page Univers par site (max_count = 1) : on la retrouve par son type
+        context['univers'] = UniversPage.objects.live().descendant_of(self).first()
+        # Les prestations (snippets) s'affichent dans la box Contact
+        context['prestations'] = Prestation.objects.all()
         return context

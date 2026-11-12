@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-univers{% endblock %}
+
+{% block content %}
+<main class="container page-univers">
+
+    {# --- 1. LE MJ : même mise en page que les fiches (carte + grande image) --- #}
+    <div class="fiche-top">
+        <section class="fiche-card">
+            <h1 class="fiche-title">{{ page.title }}</h1>
+            {% if page.mj_presentation %}
+                <div class="richtext">{{ page.mj_presentation|richtext }}</div>
+            {% endif %}
+        </section>
+
+        {% if page.mj_image %}
+            <figure class="fiche-media">
+                {% image page.mj_image fill-600x850 alt="" %}
+            </figure>
+        {% endif %}
+    </div>
+
+    {# --- 2. L'UNIVERS : accroche + présentation libre du monde --- #}
+    {% if page.intro or page.body %}
+        <section class="panel univers-monde">
+            <h2 class="panel-title">{{ settings.core.NavigationSettings.site_name }}</h2>
+            {% if page.intro %}
+                <p class="univers-accroche">{{ page.intro|linebreaksbr }}</p>
+            {% endif %}
+            {% if page.body %}
+                <div class="richtext">{% include_block page.body %}</div>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# --- 3. GROS BOUTON vers l'encyclopédie (wireframe : « Explore mon univers ») --- #}
+    {% if encyclopedie %}
+        <a href="{% pageurl encyclopedie %}" class="btn btn--large">Explore mon univers</a>
+    {% endif %}
+
+</main>
+{% endblock %}

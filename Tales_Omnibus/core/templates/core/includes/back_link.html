@@ -1,0 +1,7 @@
+{% load wagtailcore_tags %}
+{# Rendu du tag {% back_link %} (core/templatetags/navigation_tags.py) #}
+{% if parent %}
+    <nav class="back-nav" aria-label="Retour">
+        <a href="{% pageurl parent %}" class="btn-back">&larr; Retour {{ texte }}</a>
+    </nav>
+{% endif %}

@@ -18,6 +18,14 @@
         </div>
     </section>
 
+    {# --- 1 bis. PRESTATIONS (snippets) : seulement si le client en a créé --- #}
+    {% if prestations %}
+        <section class="panel panel--rounded contact-prestations">
+            <h2 class="panel-title">Mes prestations</h2>
+            {% include "pages/includes/prestations.html" with prestations=prestations detail=True %}
+        </section>
+    {% endif %}
+
     {# --- 2. ME RETROUVER : réseaux du site (Paramètres > Navigation) --- #}
     {% with links=settings.core.NavigationSettings.social_links.all %}
         {% if links %}

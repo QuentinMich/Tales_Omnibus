@@ -36,9 +36,5 @@
 
     {# --- "DANS UNE AUTRE CAMPAGNE" (wireframe) : à venir avec l'encyclopédie --- #}
 
-    {% with parent_carte=page.get_parent.specific %}
-        <a href="{% pageurl parent_carte %}" class="btn-back">&larr; Retour à la carte : {{ parent_carte.title }}</a>
-    {% endwith %}
-
 </main>
 {% endblock %}

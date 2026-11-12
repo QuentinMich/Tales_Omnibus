@@ -29,9 +29,5 @@
 
     {% include "core/includes/tags_list.html" with tags=page.tags.all %}
 
-    {% with parent_chrono=page.get_parent.specific %}
-        <a href="{% pageurl parent_chrono %}" class="btn-back">&larr; Retour à la chronologie : {{ parent_chrono.title }}</a>
-    {% endwith %}
-
 </main>
 {% endblock %}

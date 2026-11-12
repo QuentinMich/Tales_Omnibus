@@ -31,3 +31,30 @@ class ContactPageTests(TestCase):
         self.assertContains(response, "Message envoyé !")
         self.assertContains(response, 'panel--accent')  # même mise en page que la page contact
         self.assertEqual(len(mail.outbox), 1)
+
+
+class PrestationsTests(TestCase):
+    def setUp(self):
+        from pages.models import Prestation
+        self.home = HomePage.objects.first()
+        self.contact = self.home.add_child(instance=ContactPage(title="Contact", slug="contact-presta"))
+        self.home.page_contact = self.contact
+        self.home.save_revision().publish()
+        self.Prestation = Prestation
+
+    def test_pas_de_prestation_pas_de_section(self):
+        self.assertNotContains(self.client.get(self.contact.url), "Mes prestations")
+
+    def test_page_contact_detail_et_ordre(self):
+        self.Prestation.objects.create(titre="One-shot", prix="Sur devis", ordre=2)
+        self.Prestation.objects.create(titre="Campagne", description="<p>Dix séances</p>", ordre=1)
+        html = self.client.get(self.contact.url).content.decode()
+        self.assertIn("Dix séances", html)  # description visible sur la page Contact
+        self.assertLess(html.index("Campagne"), html.index("One-shot"))  # ordre respecté
+
+    def test_accueil_version_courte(self):
+        self.Prestation.objects.create(titre="Initiation", description="<p>Détail long</p>", prix="Gratuit")
+        response = self.client.get(self.home.url)
+        self.assertContains(response, "Initiation")
+        self.assertContains(response, "Gratuit")
+        self.assertNotContains(response, "Détail long")  # le détail reste sur la page Contact

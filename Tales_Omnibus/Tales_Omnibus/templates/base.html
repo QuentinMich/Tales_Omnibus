@@ -61,6 +61,10 @@
             </ul>
         {% endif %}
 
+        {# Lien retour vers la page parente : voir core/templatetags/navigation_tags.py #}
+        {# Une page peut le retirer avec {% block back_link %}{% endblock %}         #}
+        {% block back_link %}{% back_link %}{% endblock %}
+
         {% block content %}{% endblock %}
 
         <footer class="site-footer">

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block body_class %}template-home{% endblock %}
 
-{# --- 1. IMAGE D'OUVERTURE, placée AVANT le header (voir base.html) --- #}
+{# --- 1. ÉCRAN TITRE : image plein écran, placée AVANT le header (voir base.html) --- #}
+{#     Elle disparaît une fois dépassée : voir home/static/js/ecran_titre.js        #}
 {% block before_header %}
     <div class="home-hero">
         {% if page.hero_image %}
@@ -11,11 +12,16 @@
         {% else %}
             <span class="img-placeholder home-hero-img" aria-hidden="true"></span>
         {% endif %}
+        <a href="#contenu" class="home-hero-scroll" aria-label="Entrer sur le site">&darr;</a>
     </div>
 {% endblock %}
 
+{% block extra_js %}
+    <script src="{% static 'js/ecran_titre.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-<main class="container page-home">
+<main class="container page-home" id="contenu">
 
     {# --- 2. LIVE TWITCH / YOUTUBE --- #}
     {% if page.stream_player %}
@@ -36,15 +42,13 @@
     </section>
 
     {# --- 4. UNIVERS : accroche (ou intro de la page Univers) + lien --- #}
-    {% with univers=page.page_univers.specific %}
-        {% if univers %}
-            <section class="panel panel--rounded panel--strong home-univers">
-                <h2 class="panel-title">{{ univers.title }}</h2>
-                <p>{{ page.univers_accroche|default:univers.intro|linebreaksbr }}</p>
-                <a href="{% pageurl univers %}" class="btn">Découvrir l'univers</a>
-            </section>
-        {% endif %}
-    {% endwith %}
+    {% if univers %}
+        <section class="panel panel--rounded panel--strong home-univers">
+            <h2 class="panel-title">{{ univers.title }}</h2>
+            <p>{{ page.univers_accroche|default:univers.intro|linebreaksbr }}</p>
+            <a href="{% pageurl univers %}" class="btn">Découvrir l'univers</a>
+        </section>
+    {% endif %}
 
     {# --- 5. DUO : Encyclopédie (3 fiches choisies) + Contact --- #}
     <div class="duo-grid">
@@ -65,6 +69,10 @@
                     <h2 class="panel-title">{{ contact.title }}</h2>
                     <div class="panel panel--accent panel--rounded richtext">
                         {{ contact.intro|richtext }}
+                        {% if prestations %}
+                            {# Version courte : titres + prix, le détail est sur la page Contact #}
+                            {% include "pages/includes/prestations.html" with prestations=prestations %}
+                        {% endif %}
                         <a href="{% pageurl contact %}" class="btn">Me contacter</a>
                     </div>
                 </section>
