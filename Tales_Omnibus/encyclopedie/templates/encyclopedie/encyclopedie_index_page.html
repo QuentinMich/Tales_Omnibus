@@ -63,9 +63,10 @@
                 </div>
             {% endif %}
 
-            {# Les tags sont des boutons radio déguisés en pastilles : #}
-            {# un seul tag à la fois, et ça marche même sans JavaScript. #}
-            {% if tags %}
+            {# Les tags sont des boutons radio déguisés en pastilles : un seul tag  #}
+            {# à la fois, et ça marche même sans JavaScript. Ils sont regroupés     #}
+            {# par famille (snippet « Familles de tags »), dans l'ordre choisi.    #}
+            {% if groupes_de_tags %}
                 <fieldset class="filtres-tags">
                     <legend>Par catégorie (tags)</legend>
                     <ul class="tags-list">
@@ -75,15 +76,24 @@
                                 Tous
                             </label>
                         </li>
-                        {% for slug, nom in tags %}
-                            <li>
-                                <label class="tag tag--choix">
-                                    <input type="radio" name="tag" value="{{ slug }}"{% if slug == tag_choisi %} checked{% endif %}>
-                                    {{ nom }}
-                                </label>
-                            </li>
-                        {% endfor %}
                     </ul>
+                    {% for groupe in groupes_de_tags %}
+                        <div class="famille-tags">
+                            <p class="famille-tags-nom">
+                                {% if groupe.famille %}{% include "core/includes/tag_marque.html" with famille=groupe.famille %}{{ groupe.famille.nom }}{% else %}Autres{% endif %}
+                            </p>
+                            <ul class="tags-list">
+                                {% for tag in groupe.tags %}
+                                    <li>
+                                        <label class="tag tag--choix">
+                                            <input type="radio" name="tag" value="{{ tag.slug }}"{% if tag.slug == tag_choisi %} checked{% endif %}>
+                                            {% include "core/includes/tag_marque.html" with famille=tag.famille %}{{ tag.name }}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
                 </fieldset>
             {% endif %}
 

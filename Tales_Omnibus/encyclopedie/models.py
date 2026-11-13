@@ -1,12 +1,17 @@
+from django import forms
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Count
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
-from taggit.models import TaggedItemBase
+from taggit.models import Tag, TaggedItemBase
+from wagtail.admin.forms import WagtailAdminModelForm
 from wagtail.admin.panels import FieldPanel
 from wagtail.fields import RichTextField
 from wagtail.models import Page
+from wagtail.snippets.models import register_snippet
 
 from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
 from core.slugs import SlugAutomatiqueMixin
@@ -72,13 +77,12 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
 
         # --- 2. Pour chaque type de fiche, une requête avec les filtres
         fiches = []
-        tags_disponibles = {}
+        slugs_disponibles = set()
         categories = CategorieLieu.objects.none()
         for cle, requete in requetes_de_fiches(accueil, campagne, type_choisi):
             # Les tags proposés = ceux des fiches AVANT le filtre de tag,
             # sinon il ne resterait que le tag cliqué et on ne pourrait plus en changer.
-            for slug, nom in requete.filter(tags__isnull=False).values_list('tags__slug', 'tags__name'):
-                tags_disponibles[slug] = nom
+            slugs_disponibles.update(requete.filter(tags__isnull=False).values_list('tags__slug', flat=True))
 
             if cle == 'lieux':
                 # Catégories proposées : seulement celles des lieux affichables
@@ -103,7 +107,8 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
             'fiches': page_de_fiches,
             'campagnes': campagnes,
             'types': {cle: libelle for cle, (_, libelle) in types.items()},
-            'tags': sorted(tags_disponibles.items(), key=lambda tag: tag[1].lower()),
+            # Les pastilles, rangées par famille (snippet FamilleDeTags)
+            'groupes_de_tags': ranger_par_famille(Tag.objects.filter(slug__in=slugs_disponibles)),
             'campagne_choisie': campagne,
             'type_choisi': type_choisi,
             'categories': categories,
@@ -211,3 +216,89 @@ def fiches_liees(page, nombre=4, exclure=()):
         fiches += etiqueter(requete, cle)
     fiches.sort(key=lambda fiche: (-fiche.tags_communs, not fiche.epinglee, fiche.title.lower()))
     return fiches[:nombre]
+
+
+# 5. FAMILLES DE TAGS : un snippet (menu Fragments) qui RANGE les tags existants.
+#    C'est le tag qui a une famille, pas la page (≠ catégorie de lieu) : on
+#    range « dragon » dans « Créatures » une fois, et toutes les fiches
+#    taguées « dragon » en profitent. Les tags taggit ne sont pas modifiés.
+
+class FamilleDeTagsForm(WagtailAdminModelForm):
+    """Formulaire d'admin : un tag ne peut être rangé que dans UNE famille."""
+
+    def clean_tags(self):
+        tags = self.cleaned_data['tags']
+        autres_familles = FamilleDeTags.objects.exclude(pk=self.instance.pk)
+        deja_ranges = tags.filter(familles__in=autres_familles).distinct()
+        if deja_ranges:
+            noms = ", ".join(tag.name for tag in deja_ranges)
+            raise ValidationError(f"Déjà rangé dans une autre famille : {noms}.")
+        return tags
+
+
+@register_snippet
+class FamilleDeTags(models.Model):
+    nom = models.CharField(max_length=100, verbose_name="Nom de la famille")
+    icone = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Icône",
+        help_text="Petite image carrée, affichée devant chaque tag de la famille."
+    )
+    couleur = models.CharField(
+        max_length=7, default="#8C782C",
+        validators=[RegexValidator(r'^#[0-9A-Fa-f]{6}$', "Code couleur au format #RRGGBB.")],
+        verbose_name="Couleur",
+        help_text="Code HEX, ex : #3B6EA2. Utilisée si la famille n'a pas d'icône."
+    )
+    ordre = models.PositiveIntegerField(
+        default=0, verbose_name="Ordre d'affichage",
+        help_text="Les familles s'affichent de la plus petite valeur à la plus grande."
+    )
+    tags = models.ManyToManyField(
+        Tag, blank=True, related_name='familles',
+        verbose_name="Tags de cette famille",
+    )
+
+    base_form_class = FamilleDeTagsForm
+    panels = [
+        FieldPanel('nom'),
+        FieldPanel('icone'),
+        FieldPanel('couleur'),
+        FieldPanel('ordre'),
+        # Cases à cocher : le MJ voit tous ses tags d'un coup d'œil
+        FieldPanel('tags', widget=forms.CheckboxSelectMultiple),
+    ]
+
+    class Meta:
+        ordering = ['ordre', 'nom']
+        verbose_name = "Famille de tags"
+        verbose_name_plural = "Familles de tags"
+
+    def __str__(self):
+        return self.nom
+
+
+def ranger_par_famille(tags):
+    """
+    Range des tags (objets Tag) par famille, dans l'ordre des familles, puis
+    les tags sans famille dans un dernier groupe « Autres ».
+    Renvoie [{'famille': FamilleDeTags ou None, 'tags': [Tag, …]}, …] et
+    colle sur chaque tag sa famille (tag.famille) pour l'icône et la couleur.
+    2 requêtes en tout, quel que soit le nombre de tags.
+    """
+    familles = list(FamilleDeTags.objects.select_related('icone').prefetch_related('tags'))
+    famille_du_tag = {tag.pk: famille for famille in familles for tag in famille.tags.all()}
+
+    groupes = {famille.pk: [] for famille in familles}
+    autres = []
+    for tag in sorted(tags, key=lambda tag: tag.name.lower()):
+        tag.famille = famille_du_tag.get(tag.pk)
+        (groupes[tag.famille.pk] if tag.famille else autres).append(tag)
+
+    resultat = [{'famille': f, 'tags': groupes[f.pk]} for f in familles if groupes[f.pk]]
+    if autres:
+        resultat.append({'famille': None, 'tags': autres})
+    return resultat

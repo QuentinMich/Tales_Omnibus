@@ -66,7 +66,7 @@ class EncyclopedieTests(ArborescenceMixin, TestCase):
 
     def test_les_tags_restent_proposes_apres_un_choix(self):
         response = self.client.get(self.encyclopedie.url, {'tag': "dragon"})
-        slugs = [slug for slug, nom in response.context['tags']]
+        slugs = [tag.slug for groupe in response.context['groupes_de_tags'] for tag in groupe['tags']]
         self.assertEqual(slugs, ["divin", "dragon"])
 
     def test_le_tag_d_une_fiche_mene_a_l_encyclopedie_filtree(self):
@@ -145,3 +145,45 @@ class FichesLieesTests(ArborescenceMixin, TestCase):
     def test_pas_de_tag_pas_d_encart(self):
         brune = HeroPage.objects.get(title="Brune")
         self.assertNotContains(self.client.get(brune.url), "Fiches liées")
+
+
+
+class FamillesDeTagsTests(ArborescenceMixin, TestCase):
+    """Le snippet range les tags existants : « dragon » dans « Créatures »."""
+
+    def setUp(self):
+        super().setUp()
+        from taggit.models import Tag
+        from encyclopedie.models import FamilleDeTags
+        self.Tag, self.Famille = Tag, FamilleDeTags
+        self.creatures = FamilleDeTags.objects.create(nom="Créatures", couleur="#A23B3B", ordre=1)
+        self.creatures.tags.add(Tag.objects.get(slug="dragon"))
+
+    def test_les_filtres_sont_groupes_par_famille(self):
+        groupes = self.client.get(self.encyclopedie.url).context['groupes_de_tags']
+        resume = [(g['famille'].nom if g['famille'] else None, [t.slug for t in g['tags']]) for g in groupes]
+        # La famille d'abord, les tags sans famille dans « Autres » à la fin
+        self.assertEqual(resume, [("Créatures", ["dragon"]), (None, ["divin"])])
+
+    def test_ordre_des_familles(self):
+        divins = self.Famille.objects.create(nom="Divin", ordre=0)  # ordre 0 : avant Créatures
+        divins.tags.add(self.Tag.objects.get(slug="divin"))
+        groupes = self.client.get(self.encyclopedie.url).context['groupes_de_tags']
+        self.assertEqual([g['famille'].nom for g in groupes], ["Divin", "Créatures"])
+
+    def test_la_fiche_affiche_la_couleur_de_la_famille(self):
+        response = self.client.get(self.aldric.url)
+        self.assertContains(response, 'title="Créatures"')
+        self.assertContains(response, "--tag-color: #A23B3B")
+
+    def test_un_tag_dans_une_seule_famille(self):
+        from encyclopedie.models import FamilleDeTagsForm
+        autre = self.Famille(nom="Monstres")
+        FormClass = type('F', (FamilleDeTagsForm,), {'Meta': type('Meta', (), {
+            'model': self.Famille, 'fields': ['nom', 'couleur', 'ordre', 'tags']})})
+        form = FormClass(instance=autre, data={
+            'nom': "Monstres", 'couleur': "#000000", 'ordre': 2,
+            'tags': [self.Tag.objects.get(slug="dragon").pk],
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("Déjà rangé dans une autre famille : Dragon", str(form.errors))

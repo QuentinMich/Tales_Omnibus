@@ -454,6 +454,9 @@ figure {
 }
 
 .tag {
+    display: inline-flex; /* icône de famille + nom, alignés */
+    align-items: center;
+    gap: var(--space-xs);
     padding: var(--space-xs) var(--space-md);
     border: 1px solid var(--color-text);
     border-radius: var(--radius-pill);
@@ -1347,7 +1350,6 @@ html:has(.template-home) {
 /* --- Tags cliquables : pastilles grises, la choisie passe en ocre --- */
 .tag--choix {
     position: relative; /* repère du bouton radio caché ci-dessous */
-    display: inline-block;
     background: var(--color-surface-strong);
     cursor: pointer;
     transition: filter var(--transition);
@@ -1372,6 +1374,39 @@ html:has(.template-home) {
 .tag--choix:has(input:focus-visible) {
     outline: 2px solid var(--color-text);
     outline-offset: 2px;
+}
+
+/* --- Familles de tags (snippet) : icône ou pastille de couleur --- */
+.tag-icone {
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tag-pastille {
+    flex-shrink: 0;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    background: var(--tag-color, var(--color-highlight));
+    /* Liseré de la couleur du texte : une couleur foncée reste visible
+       même sur une pastille foncée */
+    box-shadow: 0 0 0 1.5px currentColor;
+}
+
+/* Dans les filtres : un petit titre par famille au-dessus de ses pastilles */
+.famille-tags {
+    margin-top: var(--space-md);
+}
+
+.famille-tags-nom {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin: 0 0 var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
 }
 
 /* Tags des fiches : des liens vers l'encyclopédie filtrée */

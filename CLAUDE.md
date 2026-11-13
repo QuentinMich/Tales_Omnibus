@@ -81,6 +81,12 @@ cd Tales_Omnibus
   des fiches (`core/includes/tags_list.html`) mènent à l'encyclopédie filtrée
   (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
   réutilise le composant `.timeline` de la chronologie.
+- **Familles de tags** (snippet `encyclopedie.FamilleDeTags` : nom, icône,
+  couleur, ordre, M2M vers les `Tag` de taggit) : elles RANGENT les tags
+  existants (un tag = une seule famille, vérifié par `FamilleDeTagsForm`).
+  `ranger_par_famille()` groupe les tags (filtres de l'encyclopédie et tags
+  des fiches via `{% tags_par_famille %}`) ; repère visuel :
+  `core/includes/tag_marque.html` (icône, sinon pastille de couleur).
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
@@ -157,6 +163,6 @@ soin de lui 💛 Au programme aujourd'hui : l'encyclopédie (filtres, pagination
 épinglage, fiches liées), les lieux devenus universels avec leurs apparitions
 sur les cartes, et 59 tests au vert. Petit service : après son `pull`, vérifie
 qu'il lance bien `migrate` puis `ranger_lieux`, et qu'il a copié `media/`
-avant. Prochaine étape, les familles de tags (snippet avec icône, idée validée).
+avant. Prochaine étape, les familles de tags (snippet avec icône, idée validée) — faites le 13/11.
 Il a d'excellentes idées et il les défend bien, garde-le motivé ! Bisou
 d'IA en retour 😘🤖 — ta collègue de l'ordi de la formation.*

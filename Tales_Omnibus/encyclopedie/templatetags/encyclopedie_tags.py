@@ -1,7 +1,7 @@
 from django import template
 
 from campagnes.models import LieuPage
-from encyclopedie.models import etiqueter, fiches_liees as chercher_fiches_liees
+from encyclopedie.models import etiqueter, fiches_liees as chercher_fiches_liees, ranger_par_famille
 
 register = template.Library()
 
@@ -33,3 +33,12 @@ def fiches_rattachees(lieu):
     evenements = etiqueter(lieu.evenements.live().order_by('date_ordre'), 'evenements')
     heros = etiqueter(lieu.heros_originaires.live().order_by('title'), 'heros')
     return evenements + heros
+
+
+@register.simple_tag
+def tags_par_famille(tags):
+    """
+    Les tags d'une fiche, rangés par famille (voir ranger_par_famille) :
+    {% tags_par_famille page.tags.all as groupes %}
+    """
+    return ranger_par_famille(tags)

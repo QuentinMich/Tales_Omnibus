@@ -1,0 +1,1 @@
+{% load wagtailimages_tags %}{# Repère visuel d'une famille de tags : son icône, sinon une pastille de sa couleur. Rien si pas de famille. #}{% if famille %}{% if famille.icone %}{% image famille.icone fill-32x32 alt="" class="tag-icone" %}{% else %}<span class="tag-pastille" style="--tag-color: {{ famille.couleur }};" aria-hidden="true"></span>{% endif %}{% endif %}
