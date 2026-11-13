@@ -46,8 +46,22 @@ class SocialMediaLink(Orderable):
         FieldPanel('url'),
     ]
 
+# Thèmes disponibles : la clé est le nom du fichier static/css/themes/<clé>.css.
+# Pour ajouter un thème : créer le fichier, puis l'ajouter ici (une migration
+# suivra, car Django enregistre la liste des choix).
+THEMES = [
+    ("", "Aucun : structure du wireframe (gris et ocre)"),
+    ("grimoire", "Grimoire : médiéval fantastique"),
+]
+
+
 @register_setting
 class NavigationSettings(ClusterableModel, BaseGenericSetting):
+    theme = models.CharField(
+        max_length=50, blank=True, default="", choices=THEMES,
+        verbose_name="Thème du site",
+        help_text="Change les couleurs, les polices et les formes. La mise en page ne bouge pas.",
+    )
     site_name = models.CharField(
         max_length=255, 
         default="Tales Omnibus", 
@@ -65,6 +79,7 @@ class NavigationSettings(ClusterableModel, BaseGenericSetting):
     panels = [
         FieldPanel('site_name'),
         FieldPanel('logo'),
+        FieldPanel('theme'),
         InlinePanel('social_links', label="Réseaux Sociaux"),
     ]
 

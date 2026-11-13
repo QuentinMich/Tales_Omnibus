@@ -33,8 +33,16 @@
         {# 1. Structure : mise en page + valeurs par défaut (couleurs du wireframe) #}
         <link rel="stylesheet" href="{% static 'css/structure.css' %}">
 
-        {# 2. Thème : redéfinit uniquement les variables CSS (choix dans l'admin, à venir) #}
-        {% block theme_css %}{% endblock %}
+        {# 2. Thème : couleurs, polices et formes, chargé APRÈS la structure pour    #}
+        {# la surcharger. Choisi dans l'admin (Paramètres du site > Thème) ; la     #}
+        {# valeur vient d'une liste de choix, jamais d'une saisie libre.             #}
+        {% block theme_css %}
+            {% with theme=settings.core.NavigationSettings.theme %}
+                {% if theme %}
+                <link rel="stylesheet" href="{% static 'css/themes/'|add:theme|add:'.css' %}">
+                {% endif %}
+            {% endwith %}
+        {% endblock %}
 
         {% block extra_css %}{% endblock %}
         {% block extra_head %}{% endblock %}
