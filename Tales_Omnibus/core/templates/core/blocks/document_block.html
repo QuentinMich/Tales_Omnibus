@@ -1,0 +1,21 @@
+{# Une aide de jeu à télécharger (DocumentBlock).                                #}
+{# get_file_size : le poids (calculé et mémorisé par Wagtail s'il manque).         #}
+{# filesizeformat : 1 258 291 octets -> « 1,2 Mo » (en français, grâce à LANGUAGE_CODE). #}
+{# download : le navigateur propose d'enregistrer le fichier au lieu de quitter le site. #}
+{% with document=value.document %}
+    {% if document %}
+        <div class="document-a-telecharger">
+            <span class="document-type" aria-hidden="true">{{ document.file_extension|default:"doc" }}</span>
+            <div class="document-infos">
+                <p class="document-titre">{{ value.titre|default:document.title }}</p>
+                {% if value.description %}
+                    <p class="document-description">{{ value.description|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+            <a href="{{ document.url }}" class="btn" download>
+                Télécharger
+                <small>({{ document.file_extension|upper }}{% with poids=document.get_file_size %}{% if poids %}, {{ poids|filesizeformat }}{% endif %}{% endwith %})</small>
+            </a>
+        </div>
+    {% endif %}
+{% endwith %}

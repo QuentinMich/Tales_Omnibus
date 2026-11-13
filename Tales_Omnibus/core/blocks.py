@@ -4,6 +4,7 @@ import re
 from django.core.exceptions import ValidationError
 from wagtail import blocks
 from wagtail.blocks.struct_block import StructBlockValidationError
+from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.embeds.blocks import EmbedBlock
 
@@ -107,6 +108,29 @@ class SectionBlock(blocks.StructBlock):
         label = "Section (titre + texte)"
 
 
+class DocumentBlock(blocks.StructBlock):
+    """
+    Une AIDE DE JEU à télécharger (handout) : lettre, plan, règles maison…
+    Le fichier vient de la bibliothèque « Documents » de Wagtail (PDF, DOCX,
+    ODT, ZIP… voir WAGTAILDOCS_EXTENSIONS dans les settings).
+    Sur le site : une carte avec le type et le poids du fichier, et un bouton.
+    """
+    document = DocumentChooserBlock(label="Document")
+    titre = blocks.CharBlock(
+        required=False, label="Titre",
+        help_text="Vide : on reprend le titre du document.",
+    )
+    description = blocks.TextBlock(
+        required=False, label="Description",
+        help_text="Facultatif : « La lettre trouvée sur le cadavre du messager »…",
+    )
+
+    class Meta:
+        template = "core/blocks/document_block.html"
+        icon = "doc-full-inverse"
+        label = "Document à télécharger (aide de jeu)"
+
+
 class SeparateurBlock(blocks.StaticBlock):
     """Un trait de séparation entre deux parties (balise <hr>). Rien à remplir."""
 
@@ -129,6 +153,7 @@ class BaseStreamBlock(blocks.StreamBlock):
         features=['h2', 'h3', 'bold', 'italic', 'link', 'ol', 'ul', 'blockquote']
     )
     image = SingleImageBlock()
+    document = DocumentBlock()
     separateur = SeparateurBlock()
     embed = EmbedVideoBlock()
 

@@ -231,3 +231,36 @@ class AltAutomatiqueTests(TestCase):
         from core.images import texte_alternatif
         # Les tirets restent : ce sont souvent des noms propres
         self.assertEqual(texte_alternatif(self.image("Port-Lanterne")), "Port-Lanterne")
+
+
+class DossiersEtDocumentsTests(TestCase):
+    """Le squelette de dossiers (migration core 0005) et le bloc « Document »."""
+
+    def test_le_squelette_de_dossiers_existe(self):
+        from wagtail.models import Collection
+        personnage = Collection.objects.get(name="Personnage", depth=2)
+        self.assertEqual(sorted(c.name for c in personnage.get_children()), ["Créature", "Déité", "Héros", "PNJ"])
+        self.assertTrue(Collection.objects.filter(name="Aide de jeu", depth=2).exists())
+
+    def test_relancer_la_migration_ne_cree_pas_de_doublon(self):
+        import importlib
+        from wagtail.models import Collection
+        migration = importlib.import_module("core.migrations.0005_dossiers_de_medias")
+        avant = Collection.objects.count()
+        migration.creer_les_dossiers(None, None)
+        self.assertEqual(Collection.objects.count(), avant)
+
+    def test_le_bloc_document(self):
+        from django.core.files.base import ContentFile
+        from wagtail.documents import get_document_model
+        from core.blocks import DocumentBlock
+        document = get_document_model()(title="Lettre")
+        document.file.save("lettre.pdf", ContentFile(b"x" * 2048), save=False)
+        document.save()
+        bloc = DocumentBlock()
+        html = bloc.render(bloc.to_python({'document': document.pk, 'titre': "", 'description': "Trouvée sur la route."}))
+        self.assertIn("Lettre", html)                 # titre vide : celui du document
+        self.assertIn("Trouvée sur la route.", html)
+        self.assertIn(f'href="{document.url}"', html)
+        self.assertIn("(PDF, 2,0", html)              # type + poids, à la française
+        document.file.delete(save=False)

@@ -1399,6 +1399,48 @@ span.carte-map-img {
     gap: var(--space-sm);
 }
 
+/* --- DOCUMENT À TÉLÉCHARGER (aide de jeu, bloc « document ») --- */
+.document-a-telecharger {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-block: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* L'étiquette du type de fichier (PDF, DOCX…) */
+.document-type {
+    flex: none;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.document-infos {
+    flex: 1 1 12rem;
+    min-width: 0; /* un long titre passe à la ligne au lieu de déborder */
+}
+
+.document-infos > * {
+    margin: 0;
+}
+
+.document-titre {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.document-description {
+    color: var(--color-text-muted);
+}
+
 /* --- IMAGES AGRANDISSABLES + VISIONNEUSE (js/agrandir.js) --- */
 .image-agrandissable {
     display: block;

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+import sys
+import tempfile
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
@@ -146,6 +148,13 @@ STATIC_URL = "/static/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+# Pendant les tests (manage.py test), les fichiers envoyés (images et
+# documents de test) vont dans un dossier TEMPORAIRE, pas dans le vrai
+# media/ : sinon chaque lancement y laissait des copies de test.png.
+# La base de test est jetée à la fin, mais les fichiers, eux, restaient.
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    MEDIA_ROOT = Path(tempfile.gettempdir()) / "tales_omnibus_media_de_test"
 
 # Default storage settings
 # See https://docs.djangoproject.com/en/6.1/ref/settings/#std-setting-STORAGES

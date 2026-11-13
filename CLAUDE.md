@@ -176,6 +176,21 @@ cd Tales_Omnibus
     `static/js/agrandir.js` (chargé par base.html) l'ouvre dans un `<dialog>`.
   - Point focal : les `fill-…` de Wagtail le respectent déjà ; les petites
     vignettes ont `-c50` pour zoomer dessus (sans point focal : centre).
+  - Dossiers (COLLECTIONS Wagtail, partagées par images et documents) :
+    migration `core 0005` crée un squelette d'exemple (Personnage › Héros /
+    PNJ / Déité / Créature, Lieu › Carte / Ville / Paysage, Objet, Aide de
+    jeu, Site). Noms au singulier : ils sont lus dans l'ALT. Idempotente ; le
+    retour arrière ne supprime rien. Elle importe le VRAI modèle Collection
+    (treebeard : `add_child` n'existe pas sur le modèle historique).
+- **Aides de jeu** : bloc `document` de `BaseStreamBlock` (`DocumentBlock` :
+  document, titre facultatif, description) -> carte avec type, poids
+  (`get_file_size`, car `file_size` est vide hors de l'admin) et bouton
+  « Télécharger ». Extensions autorisées : `WAGTAILDOCS_EXTENSIONS`.
+  La démo crée « Lettre du messager » (dans « Aide de jeu »), supprimée
+  avec `--supprimer`.
+- **Tests et fichiers** : pendant `manage.py test`, `MEDIA_ROOT` pointe vers
+  un dossier temporaire (settings/base.py) : les tests n'écrivent plus dans
+  le vrai `media/`.
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
   template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un
@@ -248,7 +263,9 @@ cd Tales_Omnibus
 - **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),
   à partir de `contenu_dans`.
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
-  `construct_main_menu`. Quentin doit fournir la liste.
+  `construct_main_menu`. Quentin doit fournir la liste. Idée de Quentin :
+  mettre **Collections** (les dossiers) en avant, plutôt que la liste
+  Images, pour que le MJ range ses médias dès l'envoi.
 - CSS de la recherche.
 
 ---

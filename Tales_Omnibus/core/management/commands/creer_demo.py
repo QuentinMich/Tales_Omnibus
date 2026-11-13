@@ -13,10 +13,13 @@ Tout le contenu est DÉCLARÉ ci-dessous : c'est ce qui permet à --supprimer de
 retirer exactement ce que la démo a créé, sans toucher aux vraies pages.
 Les catégories, elles, sont conservées : ce sont des rangements réutilisables.
 """
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from taggit.models import Tag
+from wagtail.documents import get_document_model
 from wagtail.images.models import Image
+from wagtail.models import Collection
 
 from campagnes.models import (
     Apparition, CampagnePage, CampagnesIndexPage, CartePage, ChronologiePage, EvenementPage, HeroPage, LieuPage,
@@ -25,6 +28,17 @@ from core.models import Categorie
 from encyclopedie.models import EncyclopedieIndexPage, FamilleDeTags, LorePage, PresenceEnCampagne
 
 CAMPAGNE = "Les Brumes d'Ardenn"
+
+# --- Une aide de jeu (document à télécharger), rangée dans « Aide de jeu » ---
+AIDE_DE_JEU = "Lettre du messager"
+TEXTE_AIDE_DE_JEU = (
+    "Au Capitaine de Fort-Sombre,\n\n"
+    "Les lanternes de Port-Lanterne se sont tournées vers le nord cette nuit.\n"
+    "Toutes. En même temps. Je ne sais pas ce qu'elles regardent, mais je sais\n"
+    "qu'elles ont cligné.\n\n"
+    "Ne faites confiance à aucun corbeau qui parle trop bien.\n\n"
+    "— Un ami de la Guilde\n"
+)
 
 # --- Arbre des catégories : (nom, parent, couleur, défaut pour) --------------
 CATEGORIES = [
@@ -217,7 +231,18 @@ class Command(BaseCommand):
             ), tags, cat)
 
         # La campagne et ses enfants
+        # L'aide de jeu : un vrai fichier dans la bibliothèque « Documents »
+        dossier = Collection.objects.filter(name="Aide de jeu").first() or Collection.get_first_root_node()
+        lettre = get_document_model()(title=AIDE_DE_JEU, collection=dossier)
+        lettre.file.save("lettre-du-messager.txt", ContentFile(TEXTE_AIDE_DE_JEU.encode("utf-8")), save=False)
+        lettre.save()
+
         campagne = index.add_child(instance=CampagnePage(
+            body=[
+                ('section', {'titre': "Aides de jeu", 'texte': "<p>Ce que les joueurs ont trouvé en chemin.</p>"}),
+                ('document', {'document': lettre, 'titre': "",
+                              'description': "Trouvée dans la sacoche d'un messager, au bord de la route du nord."}),
+            ],
             title=CAMPAGNE, subtitle="Campagne de démonstration", status='en_cours',
             card_description="Le brouillard est tombé sur Ardenn. Les routes bougent, les lanternes regardent.",
             synopsis="<p>Le brouillard est tombé sur Ardenn, et avec lui les vieilles légendes.</p>",
@@ -303,6 +328,8 @@ class Command(BaseCommand):
             page.delete()
         compte += len(fiches)
         FamilleDeTags.objects.filter(nom__in=FAMILLES).delete()
+        # Wagtail efface aussi le fichier du disque quand on supprime le document
+        get_document_model().objects.filter(title=AIDE_DE_JEU).delete()
 
         # Les tags créés par la démo qui ne servent plus à AUCUNE fiche
         # (« pouet » et les tags du MJ, encore utilisés, sont gardés).
