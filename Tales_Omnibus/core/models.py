@@ -8,6 +8,7 @@ from wagtail.contrib.settings.models import BaseGenericSetting, register_setting
 from wagtail.snippets.models import register_snippet
 
 from wagtail.models import Orderable, Page
+from wagtail.search import index
 from wagtail.fields import StreamField, RichTextField
 from wagtail.admin.forms import WagtailAdminModelForm
 from wagtail.admin.panels import FieldPanel, InlinePanel
@@ -247,6 +248,14 @@ class BaseFichePage(SlugAutomatiqueMixin, Page):
         FieldPanel('body'),
     ]
 
+    # RECHERCHE : sans ça, Wagtail n'indexe que le titre. Avec, une fiche est
+    # retrouvée par un mot de son accroche ou de ses articles.
+    # (Après un ajout ici : manage.py update_index pour les pages existantes.)
+    search_fields = Page.search_fields + [
+        index.SearchField('intro'),
+        index.SearchField('body'),
+    ]
+
     class Meta:
         abstract = True
 
@@ -274,6 +283,14 @@ class FicheEncyclopedieMixin(models.Model):
 
     #: Clé du type de fiche ('heros', 'lieux'…), définie dans chaque modèle
     type_fiche = None
+
+    # Les fiches de l'encyclopédie sont aussi retrouvées par leurs TAGS
+    # (« dragon » trouve le Dragon de Suie, mais aussi la Nuit des Cendres).
+    # Le mixin passe AVANT BaseFichePage dans l'héritage : c'est donc cette
+    # liste qui compte, d'où le « BaseFichePage.search_fields + ».
+    search_fields = BaseFichePage.search_fields + [
+        index.RelatedFields('tags', [index.SearchField('name')]),
+    ]
 
     class Meta:
         abstract = True

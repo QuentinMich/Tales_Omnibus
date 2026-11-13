@@ -8,6 +8,7 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
+from wagtail.search import index
 from core.models import (
     BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS, arbre_des_categories, categories_en_memoire,
 )
@@ -110,6 +111,15 @@ class CampagnePage(SlugAutomatiqueMixin, Page):
         'campagnes.HeroPage',
     ]
     parent_page_types = ['campagnes.CampagnesIndexPage']
+
+    # Recherche : la campagne est retrouvée par son sous-titre, son accroche,
+    # son synopsis et son contenu (pas seulement par son titre)
+    search_fields = Page.search_fields + [
+        index.SearchField('subtitle'),
+        index.SearchField('card_description'),
+        index.SearchField('synopsis'),
+        index.SearchField('body'),
+    ]
 
     content_panels = panels_avec_enfants(Page.content_panels, "Cartes, chronologie et héros", [
         MultiFieldPanel([

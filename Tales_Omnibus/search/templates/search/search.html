@@ -1,38 +1,72 @@
 {% extends "base.html" %}
-{% load static wagtailcore_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
 {% block body_class %}template-searchresults{% endblock %}
 
-{% block title %}Recherche | {{ seo.titre }}{% endblock %}
+{% block title %}{% if search_query %}Recherche « {{ search_query }} »{% else %}Recherche{% endif %} | {{ settings.core.NavigationSettings.site_name }}{% endblock %}
+
+{# Une page de résultats n'a rien à faire dans Google (contenu en double, #}
+{# infini) : on lui demande de ne pas l'indexer, mais de suivre les liens. #}
+{% block extra_head %}<meta name="robots" content="noindex, follow" />{% endblock %}
 
 {% block content %}
-<h1>Search</h1>
+<main class="container page-recherche">
+    <h1 class="page-title page-title--left">Recherche</h1>
 
-<form action="{% url 'search' %}" method="get">
-    <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
-    <input type="submit" value="Search" class="button">
-</form>
+    {# role="search" : les lecteurs d'écran annoncent un formulaire de recherche #}
+    <form action="{% url 'search' %}" method="get" role="search" class="recherche-formulaire">
+        <label for="recherche-page" class="sr-only">Rechercher dans l'univers</label>
+        <input type="search" id="recherche-page" name="query" value="{{ search_query }}"
+               placeholder="Un nom, un lieu, un tag…" autocomplete="off">
+        <button type="submit" class="btn">Rechercher</button>
+    </form>
 
-{% if search_results %}
-<ul>
-    {% for result in search_results %}
-    <li>
-        <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
-        {% if result.search_description %}
-        {{ result.search_description }}
+    {% if search_query %}
+        <p class="filtres-resultat" role="status">
+            {% if nombre_de_resultats %}
+                {{ nombre_de_resultats }} résultat{{ nombre_de_resultats|pluralize }} pour « {{ search_query }} »
+                {% if search_results.paginator.num_pages > 1 %}· page {{ search_results.number }} sur {{ search_results.paginator.num_pages }}{% endif %}
+            {% else %}
+                Aucun résultat pour « {{ search_query }} ». Essaie un autre mot, ou parcours l'encyclopédie.
+            {% endif %}
+        </p>
+    {% endif %}
+
+    {% if search_results %}
+        {# Même composant que l'encyclopédie (.timeline) : une carte par résultat #}
+        <ul class="timeline">
+            {% for resultat in search_results %}
+                <li class="timeline-item fiche-typee"{% if resultat.couleur %} style="--type-color: {{ resultat.couleur }};"{% endif %}>
+                    <a href="{% pageurl resultat %}" class="timeline-media" tabindex="-1" aria-hidden="true">
+                        {% if resultat.image_resultat %}
+                            {% image resultat.image_resultat fill-300x240-c50 alt="" class="timeline-img" %}
+                        {% else %}
+                            <span class="img-placeholder timeline-img"></span>
+                        {% endif %}
+                    </a>
+                    <div class="timeline-card">
+                        <span class="fiche-type">{{ resultat.libelle_type }}</span>
+                        <h2 class="timeline-title"><a href="{% pageurl resultat %}">{{ resultat.title }}</a></h2>
+                        {% if resultat.accroche %}
+                            <p class="timeline-summary">{{ resultat.accroche }}</p>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+
+        {# {% querystring %} garde la recherche dans l'adresse et ne change que « page » #}
+        {% if search_results.has_other_pages %}
+            <nav class="pagination" aria-label="Pages de résultats">
+                {% if search_results.has_previous %}
+                    <a href="{% querystring page=search_results.previous_page_number %}" class="btn">&larr; Précédents</a>
+                {% endif %}
+                <span class="pagination-info">{{ search_results.number }} / {{ search_results.paginator.num_pages }}</span>
+                {% if search_results.has_next %}
+                    <a href="{% querystring page=search_results.next_page_number %}" class="btn">Suivants &rarr;</a>
+                {% endif %}
+            </nav>
         {% endif %}
-    </li>
-    {% endfor %}
-</ul>
-
-{% if search_results.has_previous %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
-{% endif %}
-
-{% if search_results.has_next %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
-{% endif %}
-{% elif search_query %}
-No results found
-{% endif %}
+    {% endif %}
+</main>
 {% endblock %}

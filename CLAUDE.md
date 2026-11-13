@@ -200,6 +200,18 @@ cd Tales_Omnibus
   rien. Affiché par `core/includes/tableaux_de_stats.html`, entre la
   description et la présentation du joueur. Pas dans les articles : un seul
   endroit pour les stats.
+- **Recherche** (`search/views.py`, `/search/?query=`) : champ dans le
+  header de toutes les pages (`.site-search`, libellé `.sr-only`) + page de
+  résultats en français, en cartes `.timeline` (type = catégorie sinon type
+  de page, image et accroche reprises de `core/seo.py`), paginée par 10,
+  `noindex, follow`. Champs indexés (`search_fields`) : titre, intro, body
+  (BaseFichePage), + tags (FicheEncyclopedieMixin, placé avant BaseFichePage
+  dans l'héritage, donc SA liste compte), + sous-titre, accroche, synopsis,
+  body (CampagnePage). Le backend « database » sous SQLite ne trie pas par
+  pertinence (le `boost` est ignoré) : la vue met d'abord les pages dont le
+  TITRE contient le mot (`sorted` stable). Signal `page_published`
+  (`core/signals.py`) : réindexe la page APRÈS publication, sinon les tags
+  (écrits après la page par modelcluster) manquaient dans l'index.
 - **Tests et fichiers** : pendant `manage.py test`, `MEDIA_ROOT` pointe vers
   un dossier temporaire (settings/base.py) : les tests n'écrivent plus dans
   le vrai `media/`.
@@ -249,6 +261,9 @@ cd Tales_Omnibus
   La commande recharge chaque page avant de l'enregistrer : sinon un enfant
   chargé avant le renommage de son parent serait réenregistré avec l'ancien
   `url_path` (boucle de redirections).
+- **Après un pull qui modifie des `search_fields`** : lancer une fois
+  `manage.py update_index` (les pages existantes ne sont réindexées qu'à leur
+  prochaine publication).
 - **Après un pull qui contient `campagnes 0014`** : `migrate` puis
   `manage.py ranger_lieux` (déplace les lieux encore rangés sous une carte
   vers l'encyclopédie ; sans effet si c'est déjà fait).
@@ -278,7 +293,6 @@ cd Tales_Omnibus
   `construct_main_menu`. Quentin doit fournir la liste. Idée de Quentin :
   mettre **Collections** (les dossiers) en avant, plutôt que la liste
   Images, pour que le MJ range ses médias dès l'envoi.
-- CSS de la recherche.
 
 ---
 
