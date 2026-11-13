@@ -43,7 +43,15 @@ cd Tales_Omnibus
 ../env/Scripts/python.exe manage.py runserver   # Windows ; sinon ../env/bin/python
 ../env/Scripts/python.exe manage.py check
 ../env/Scripts/python.exe manage.py makemigrations --check --dry-run
+../env/Scripts/python.exe manage.py entretien      # APRÈS CHAQUE PULL (voir plus bas)
 ```
+
+**Après un pull, une seule commande : `manage.py entretien`** (ajouter
+`--simulation` pour voir sans rien changer, `--publier` pour publier toutes
+les pages en attente). Elle remplace les anciennes étapes à la main
+(`migrate`, `ranger_lieux`, `synchroniser_slugs`, `update_index`,
+`rebuild_references_index`) et sauvegarde la base avant. Penser quand même à
+redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 `db.sqlite3` et `media/` ne sont **pas versionnés** : chaque ordi a sa propre base.
 
@@ -212,6 +220,20 @@ cd Tales_Omnibus
   TITRE contient le mot (`sorted` stable). Signal `page_published`
   (`core/signals.py`) : réindexe la page APRÈS publication, sinon les tags
   (écrits après la page par modelcluster) manquaient dans l'index.
+- **Entretien du site** (`core/entretien.py`, une fonction par étape qui
+  renvoie un compte rendu `Etape`) : commande `manage.py entretien` et page
+  d'admin Paramètres > Entretien du site (superuser seulement, boutons en
+  POST : « Vérifier sans rien changer », « Lancer l'entretien », « Tout
+  publier, puis lancer l'entretien »). Étapes : sauvegarde de la base
+  (`sqlite3.backup`, `sauvegardes/`, 10 gardées, ignoré par git),
+  migrations (commande seulement), publication des pages en attente (option),
+  lieux rangés, slugs, géographie des cartes (`ranger_les_lieux(enregistrer=)`
+  renvoie le nombre de changements), redirections (inutiles supprimées,
+  chaînes raccourcies, vers page dépubliée signalées ; chemins comparés
+  APRÈS `Redirect.normalise_path`), index des références et de recherche,
+  rapport « À vérifier » (images sans dossier ou au titre de fichier brut,
+  lieux sans carte, pages en attente). Publier « une page + ses enfants » :
+  action groupée native de l'explorateur de pages Wagtail.
 - **Tests et fichiers** : pendant `manage.py test`, `MEDIA_ROOT` pointe vers
   un dossier temporaire (settings/base.py) : les tests n'écrivent plus dans
   le vrai `media/`.

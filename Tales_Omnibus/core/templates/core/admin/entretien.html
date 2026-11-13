@@ -1,0 +1,74 @@
+{% extends "wagtailadmin/base.html" %}
+{# Page « Entretien du site » (core/admin_views.py). #}
+
+{% block titletag %}Entretien du site{% endblock %}
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title="Entretien du site" icon="cog" %}
+
+    <div class="nice-padding entretien">
+        <p>
+            À lancer après une grosse session d'ajouts (beaucoup de fiches créées, renommées,
+            déplacées). Une copie de la base est faite avant de commencer. L'entretien :
+        </p>
+        <ul class="entretien-liste">
+            <li>range les lieux dans l'encyclopédie et remet les adresses (slugs) à jour ;</li>
+            <li>recalcule « Situé dans » sur toutes les cartes ;</li>
+            <li>fait le ménage dans les redirections devenues inutiles ;</li>
+            <li>reconstruit les index (recherche du site, références entre pages) ;</li>
+            <li>termine par une liste de choses <strong>à vérifier</strong>.</li>
+        </ul>
+
+        {# POST + jeton CSRF : un bouton qui modifie le site n'est jamais un simple lien #}
+        <form method="post" class="entretien-actions">
+            {% csrf_token %}
+            <button type="submit" name="action" value="simulation" class="button button-secondary">
+                Vérifier sans rien changer
+            </button>
+            <button type="submit" name="action" value="entretien" class="button">
+                Lancer l'entretien
+            </button>
+        </form>
+
+        {% if a_publier %}
+            <h2>Pages en attente de publication ({{ a_publier|length }})</h2>
+            <p>
+                {% for page in a_publier %}<a href="{% url 'wagtailadmin_pages:edit' page.pk %}">{{ page.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+            <form method="post" class="entretien-actions">
+                {% csrf_token %}
+                {# Confirmation du navigateur : publier met en ligne, on ne le fait pas par mégarde #}
+                <button type="submit" name="action" value="publier" class="button button--icon"
+                        onclick="return confirm('Publier ces {{ a_publier|length }} page(s) puis lancer l\'entretien ?');">
+                    Tout publier, puis lancer l'entretien
+                </button>
+            </form>
+            <p class="help">
+                Pour publier une seule page avec ses sous-pages : explorateur de pages, coche la page,
+                « Publier », puis la case « inclure les sous-pages ».
+            </p>
+        {% endif %}
+
+        {% if etapes %}
+            <h2>{{ resultat }}</h2>
+            {% for etape in etapes %}
+                <section class="entretien-etape{% if etape.a_verifier %} entretien-etape--a-verifier{% endif %}">
+                    <h3>{{ etape.titre }}</h3>
+                    <ul>
+                        {% for ligne in etape.lignes %}<li>{{ ligne }}</li>{% endfor %}
+                    </ul>
+                </section>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <style>
+        /* Quelques règles propres à cette page de l'admin (pas de fichier à part) */
+        .entretien-liste { margin-bottom: 1.5rem; }
+        .entretien-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
+        .entretien-etape { margin: 1rem 0; padding: 0.75rem 1rem; border-left: 4px solid #8C782C; background: rgba(140, 120, 44, 0.08); }
+        .entretien-etape--a-verifier { border-left-color: #E0A100; background: rgba(224, 161, 0, 0.12); }
+        .entretien-etape h3 { margin: 0 0 0.25rem; }
+        .entretien-etape ul { margin: 0; }
+    </style>
+{% endblock %}

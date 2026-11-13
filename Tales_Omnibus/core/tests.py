@@ -264,3 +264,85 @@ class DossiersEtDocumentsTests(TestCase):
         self.assertIn(f'href="{document.url}"', html)
         self.assertIn("(PDF, 2,0", html)              # type + poids, à la française
         document.file.delete(save=False)
+
+
+class EntretienTests(TestCase):
+    """manage.py entretien et la page « Entretien du site » de l'admin."""
+
+    def setUp(self):
+        from campagnes.models import CampagnePage, CampagnesIndexPage
+        from home.models import HomePage
+        self.home = HomePage.objects.first()
+        index = self.home.add_child(instance=CampagnesIndexPage(title="Campagnes"))
+        self.campagne = index.add_child(instance=CampagnePage(title="Saison 1"))
+
+    def lancer(self, **options):
+        from core.entretien import lancer_entretien
+        options.setdefault('sauvegarder', False)  # pas de copie de base pendant les tests
+        options.setdefault('migrer', False)
+        return {etape.titre: etape.lignes for etape in lancer_entretien(**options)}
+
+    def test_supprime_une_redirection_devenue_inutile(self):
+        from wagtail.contrib.redirects.models import Redirect
+        # La page est revenue à son ancienne adresse : la redirection la masquerait
+        Redirect.objects.create(old_path=self.campagne.url, redirect_page=self.home)
+        self.lancer()
+        self.assertFalse(Redirect.objects.filter(old_path=Redirect.normalise_path(self.campagne.url)).exists())
+
+    def test_raccourcit_une_chaine_de_redirections(self):
+        from wagtail.contrib.redirects.models import Redirect
+        Redirect.objects.create(old_path="/a", redirect_link="/b")
+        Redirect.objects.create(old_path="/b", redirect_page=self.campagne)
+        self.lancer()
+        self.assertEqual(Redirect.objects.get(old_path="/a").redirect_page, self.campagne.page_ptr)
+
+    def test_la_simulation_ne_change_rien(self):
+        from wagtail.contrib.redirects.models import Redirect
+        Redirect.objects.create(old_path=self.campagne.url, redirect_page=self.home)
+        compte_rendu = self.lancer(simulation=True)
+        self.assertEqual(Redirect.objects.count(), 1)
+        self.assertTrue(any("Inutile" in ligne for ligne in compte_rendu["Redirections"]))
+
+    def test_tout_publier(self):
+        from campagnes.models import CampagnePage
+        brouillon = self.campagne.get_parent().add_child(instance=CampagnePage(title="Saison 2", live=False))
+        brouillon.save_revision()
+        self.lancer(publier=True)
+        self.assertTrue(CampagnePage.objects.get(pk=brouillon.pk).live)
+
+    def test_sans_l_option_rien_n_est_publie(self):
+        from campagnes.models import CampagnePage
+        brouillon = self.campagne.get_parent().add_child(instance=CampagnePage(title="Saison 2", live=False))
+        brouillon.save_revision()
+        compte_rendu = self.lancer()
+        self.assertFalse(CampagnePage.objects.get(pk=brouillon.pk).live)
+        self.assertTrue(any("Saison 2" in ligne for ligne in compte_rendu["À vérifier"]))
+
+    def test_la_commande_tourne(self):
+        from io import StringIO
+        from django.core.management import call_command
+        sortie = StringIO()
+        call_command("entretien", "--simulation", "--sans-sauvegarde", stdout=sortie)
+        self.assertIn("Simulation terminée", sortie.getvalue())
+
+    def test_la_page_d_admin_est_reservee_aux_administrateurs(self):
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Permission
+        from django.urls import reverse
+        Utilisateur = get_user_model()
+        url = reverse("entretien_du_site")
+        editeur = Utilisateur.objects.create_user("editeur", "e@example.com", "x")
+        editeur.user_permissions.add(Permission.objects.get(codename="access_admin"))
+        self.client.force_login(editeur)
+        # Wagtail transforme le refus (PermissionDenied) en retour au tableau
+        # de bord avec un message : une redirection, pas la page
+        refus = self.client.get(url)
+        self.assertEqual(refus.status_code, 302)
+        self.assertNotContains(refus, "Lancer l'entretien", status_code=302)
+
+        self.client.force_login(Utilisateur.objects.create_superuser("admin", "a@example.com", "x"))
+        page = self.client.get(url)
+        self.assertContains(page, "Lancer l'entretien")
+        resultat = self.client.post(url, {"action": "simulation"})
+        self.assertContains(resultat, "Vérification (rien n&#x27;a été modifié)")
+        self.assertContains(resultat, "Géographie des cartes")

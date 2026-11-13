@@ -194,14 +194,19 @@ class CartePage(BaseFichePage):
         if kwargs.get('update_fields') is None:
             self.ranger_les_lieux()
 
-    def ranger_les_lieux(self):
+    def ranger_les_lieux(self, enregistrer=True):
         """
         « Qui est dans qui » sur CETTE carte (règles dans geometrie.ranger) :
         remplit Apparition.contenu_dans. Pour une zone, l'étoile (coord_x /
         coord_y) est replacée au centre de la zone.
         Appelé à chaque publication de la carte : l'arbre est toujours à jour.
+
+        Renvoie le nombre de lieux dont la position ou le parent a changé.
+        enregistrer=False : calcule sans rien écrire (simulation de
+        manage.py entretien).
         """
         apparitions = list(self.apparitions.all())
+        avant = {a.pk: (a.coord_x, a.coord_y, a.contenu_dans_id) for a in apparitions}
         for apparition in apparitions:
             # Centre placé à la main (forme en croissant, en L…) : on le garde
             if apparition.est_zone and not (apparition.centre_manuel and apparition.est_placee):
@@ -217,15 +222,19 @@ class CartePage(BaseFichePage):
             }
             for index, apparition in enumerate(apparitions)
         ])
+        changements = 0
         for index, apparition in enumerate(apparitions):
             parent = parents[index]
             apparition.contenu_dans_id = apparitions[parent].lieu_id if parent is not None else None
-            if apparition.pk:
+            if avant.get(apparition.pk) != (apparition.coord_x, apparition.coord_y, apparition.contenu_dans_id):
+                changements += 1
+            if apparition.pk and enregistrer:
                 # update() : écrit directement en base, sans repasser par save()
                 Apparition.objects.filter(pk=apparition.pk).update(
                     coord_x=apparition.coord_x, coord_y=apparition.coord_y,
                     contenu_dans_id=apparition.contenu_dans_id,
                 )
+        return changements
 
     def get_context(self, request):
         context = super().get_context(request)
