@@ -1,4 +1,5 @@
 {% extends "core/fiche_page.html" %}
+{% load encyclopedie_tags %}
 
 {% block body_class %}template-evenement{% endblock %}
 {% block fiche_classe %}page-evenement{% endblock %}
@@ -13,9 +14,6 @@
 {% block fiche_details %}
     {# LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible #}
     {% if page.lieu.live %}
-        <section class="panel panel--rounded fiche-lieu">
-            <h2 class="panel-title">Lieu de l'événement</h2>
-            {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu apparition=apparition_lieu %}
-        </section>
+        {% box_du_lieu page.lieu apparition_lieu "Lieu de l'événement" %}
     {% endif %}
 {% endblock %}

@@ -1,7 +1,15 @@
-{% load wagtailimages_tags %}
+{% load wagtailimages_tags images_tags %}
 {# position : centre, gauche, droite ou large (classe block-image--…, voir structure.css) #}
+{# ALT : celui tapé dans le bloc, sinon l'ALT automatique (dossiers + titre + description). #}
+{# Cliquable : la grande version s'ouvre dans la visionneuse (js/agrandir.js) ;           #}
+{# sans JavaScript, le lien ouvre simplement l'image en grand.                            #}
 <figure class="block-single-image block-image--{{ value.position|default:'centre' }}">
-    {% image value.image width-1000 alt=value.alt_text|default:value.image.title %}
+    {% image value.image max-1600x1600 as grande %}
+    <a href="{{ grande.url }}" class="image-agrandissable" data-agrandir>
+        {% with alt_automatique=value.image|alt_auto %}
+            {% image value.image width-1000 alt=value.alt_text|default:alt_automatique %}
+        {% endwith %}
+    </a>
     {% if value.caption %}
         <figcaption>{{ value.caption }}</figcaption>
     {% endif %}

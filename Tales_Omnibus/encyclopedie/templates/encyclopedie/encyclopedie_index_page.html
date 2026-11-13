@@ -120,7 +120,7 @@
                 <li class="timeline-item fiche-typee{% if fiche.epinglee %} is-epinglee{% endif %}" data-type="{{ fiche.type_cle }}"{% with couleur=fiche.categorie_affichee.couleur_effective %}{% if couleur %} style="--type-color: {{ couleur }};"{% endif %}{% endwith %}>
                     <a href="{% pageurl fiche %}" class="timeline-media" tabindex="-1" aria-hidden="true">
                         {% if fiche.main_image %}
-                            {% image fiche.main_image fill-300x240 alt="" class="timeline-img" %}
+                            {% image fiche.main_image fill-300x240-c50 alt="" class="timeline-img" %}
                         {% else %}
                             <span class="img-placeholder timeline-img"></span>
                         {% endif %}

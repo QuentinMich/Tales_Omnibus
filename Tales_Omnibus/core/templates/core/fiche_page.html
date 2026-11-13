@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags images_tags %}
 {% comment %}
     SQUELETTE COMMUN des fiches (Héros, Lieu, Événement, Lore).
     Chaque fiche fait {% extends "core/fiche_page.html" %} et ne remplit que
@@ -39,8 +39,14 @@
             </div>
 
             {% if page.main_image %}
+                {# Recadrée autour du point focal (fill), cliquable pour la voir EN #}
+                {# ENTIER (max-1600 : jamais recadrée) dans la visionneuse.         #}
+                {# ALT automatique : dossiers + titre + description de l'image.     #}
                 <figure class="fiche-media">
-                    {% image page.main_image fill-600x850 alt=page.title %}
+                    {% image page.main_image max-1600x1600 as grande %}
+                    <a href="{{ grande.url }}" class="image-agrandissable" data-agrandir>
+                        {% image page.main_image fill-600x850 alt=page.main_image|alt_auto %}
+                    </a>
                 </figure>
             {% endif %}
         </div>

@@ -1,0 +1,47 @@
+{% load wagtailcore_tags %}
+{# La box du lieu d'un héros (« Lieu d'origine ») ou d'un événement (« Lieu  #}
+{# de l'événement ») : la mini-carte zoomée à gauche, ce qu'on sait du lieu  #}
+{# à droite. Sur un petit écran, les deux colonnes s'empilent.               #}
+{# Rendue par le tag {% box_du_lieu %} (encyclopedie_tags.py).               #}
+<section class="panel panel--rounded fiche-lieu box-lieu">
+    <h2 class="panel-title">{{ titre }}</h2>
+    <div class="box-lieu-grille">
+        {% if apparition %}
+            {% include "campagnes/includes/mini_carte.html" with lieu=lieu apparition=apparition sans_legende=True %}
+        {% endif %}
+
+        <div class="box-lieu-infos">
+            <p class="box-lieu-nom">{% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}</p>
+            {% if apparition %}
+                <p class="box-lieu-carte">Sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a></p>
+                {% include "campagnes/includes/situe_dans.html" %}
+            {% endif %}
+
+            {# L'accroche du lieu, sans sa mise en forme, raccourcie #}
+            {% if lieu.intro %}
+                <p class="box-lieu-accroche">{{ lieu.intro|striptags|truncatewords:45 }}</p>
+            {% endif %}
+            {% if apparition.a_cette_epoque %}
+                <p class="carte-mini-epoque">{{ apparition.a_cette_epoque|linebreaksbr }}</p>
+            {% endif %}
+
+            {# Les autres fiches rattachées à ce lieu (la page affichée est exclue) #}
+            {% if evenements %}
+                <h3 class="box-lieu-sous-titre">S'est passé ici</h3>
+                <ul class="lieux-list">
+                    {% for fiche in evenements %}
+                        <li>{% include "campagnes/includes/fiche_chip.html" %}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if heros %}
+                <h3 class="box-lieu-sous-titre">Aussi originaires d'ici</h3>
+                <ul class="lieux-list">
+                    {% for fiche in heros %}
+                        <li>{% include "campagnes/includes/fiche_chip.html" %}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</section>

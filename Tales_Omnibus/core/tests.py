@@ -197,3 +197,37 @@ class SeoAutomatiqueTests(TestCase):
 
     def test_l_accueil_porte_le_nom_du_site(self):
         self.assertContains(self.client.get(self.home.url), "<title>Tales Omnibus</title>", html=False)
+
+
+class AltAutomatiqueTests(TestCase):
+    """L'ALT construit à partir des dossiers (collections), du titre et de la description."""
+
+    def setUp(self):
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        from wagtail.models import Collection
+        racine = Collection.get_first_root_node()
+        personnage = racine.add_child(name="Personnage")
+        self.heros = personnage.add_child(name="Héros")
+        self.Image = get_image_model()
+        self.fichier = get_test_image_file
+
+    def image(self, titre, collection=None, description=""):
+        from wagtail.models import Collection
+        return self.Image.objects.create(title=titre, file=self.fichier(), description=description,
+                                         collection=collection or Collection.get_first_root_node())
+
+    def test_dossiers_et_titre(self):
+        from core.images import texte_alternatif
+        image = self.image("Brann_le_Rouquin", self.heros)
+        self.assertEqual(texte_alternatif(image), "Personnage, Héros : Brann le Rouquin")
+
+    def test_la_description_s_ajoute(self):
+        from core.images import texte_alternatif
+        image = self.image("Brann", self.heros, "Une hache sur l'épaule.")
+        self.assertEqual(texte_alternatif(image), "Personnage, Héros : Brann. Une hache sur l'épaule.")
+
+    def test_sans_dossier_le_titre_seul(self):
+        from core.images import texte_alternatif
+        # Les tirets restent : ce sont souvent des noms propres
+        self.assertEqual(texte_alternatif(self.image("Port-Lanterne")), "Port-Lanterne")

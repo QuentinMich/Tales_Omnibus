@@ -1,5 +1,5 @@
 {% extends "core/fiche_page.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags encyclopedie_tags %}
 
 {% block body_class %}template-hero{% endblock %}
 {% block fiche_classe %}page-hero{% endblock %}
@@ -18,10 +18,7 @@
 
     {# --- LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible --- #}
     {% if page.lieu_origine.live %}
-        <section class="panel panel--rounded fiche-lieu">
-            <h2 class="panel-title">Lieu d'origine</h2>
-            {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu_origine apparition=apparition_lieu %}
-        </section>
+        {% box_du_lieu page.lieu_origine apparition_lieu "Lieu d'origine" %}
     {% endif %}
 
     {# --- RÉSEAUX DU JOUEUR --- #}

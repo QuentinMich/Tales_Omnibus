@@ -12,9 +12,13 @@ def fiches_liees(page):
     Encart « Fiches liées » en bas d'une fiche (Héros, Lieu, Événement, Lore) :
     {% load encyclopedie_tags %} puis {% fiches_liees page %}.
     """
-    # Sur la fiche d'un lieu, l'encart « Liés à ce lieu » montre déjà ses
-    # événements et ses héros : on ne les répète pas ici.
-    deja_affichees = [fiche.pk for fiche in fiches_rattachees(page)] if isinstance(page, LieuPage) else []
+    # Ce qui est déjà affiché ailleurs sur la page n'est pas répété ici :
+    #  - fiche d'un lieu : l'encart « Liés à ce lieu » (ses événements, ses héros) ;
+    #  - héros / événement : la box de son lieu (« Aussi originaires d'ici »…).
+    lieu = lieu_de_la_fiche(page)
+    deja_affichees = [fiche.pk for fiche in fiches_rattachees(lieu)] if lieu else []
+    if lieu and lieu.pk != page.pk:
+        deja_affichees.append(lieu.pk)  # le lieu lui-même est déjà dans la box
     return {'fiches': chercher_fiches_liees(page, exclure=deja_affichees), 'titre': "Fiches liées"}
 
 
@@ -26,6 +30,33 @@ def fiches_du_lieu(lieu):
     "lieu" / "lieu_origine" lus à l'envers, grâce à leur related_name.
     """
     return {'fiches': fiches_rattachees(lieu), 'titre': "Liés à ce lieu"}
+
+
+def lieu_de_la_fiche(page):
+    """Le lieu « de » cette fiche : elle-même, son lieu d'origine ou son lieu."""
+    if isinstance(page, LieuPage):
+        return page
+    lieu = getattr(page, 'lieu_origine', None) or getattr(page, 'lieu', None)
+    return lieu if lieu is not None and lieu.live else None
+
+
+@register.inclusion_tag('campagnes/includes/box_lieu.html', takes_context=True)
+def box_du_lieu(context, lieu, apparition, titre):
+    """
+    La box « Lieu d'origine » d'un héros / « Lieu de l'événement » :
+    la mini-carte zoomée à gauche, ce qu'on sait du lieu à droite (dont les
+    autres fiches qui s'y rattachent). {% box_du_lieu lieu apparition "Titre" %}
+    """
+    page = context.get('page')
+    voisines = [f for f in fiches_rattachees(lieu) if page is None or f.pk != page.pk]
+    return {
+        'request': context.get('request'),
+        'titre': titre,
+        'lieu': lieu,
+        'apparition': apparition,
+        'evenements': [f for f in voisines if f.type_cle == 'evenements'],
+        'heros': [f for f in voisines if f.type_cle == 'heros'],
+    }
 
 
 def fiches_rattachees(lieu):

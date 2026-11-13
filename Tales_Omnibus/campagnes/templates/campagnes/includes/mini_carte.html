@@ -1,55 +1,56 @@
 {% load wagtailcore_tags wagtailimages_tags l10n %}
-{# Le "pin" d'un lieu : UNE carte où il apparaît, avec son étoile.            #}
-{# Même composant que la page Carte (.carte-map + .map-marker), en petit.    #}
+{# Le "pin" d'un lieu : UNE carte où il apparaît, ZOOMÉE autour de lui.        #}
+{# Même composant que la page Carte (.carte-map + .map-marker), en petit.      #}
 {# Usage : {% include "campagnes/includes/mini_carte.html" with lieu=... apparition=... %} #}
-{#   apparition : une Apparition (carte + coordonnées), ou vide si le lieu   #}
-{#   n'est encore posé sur aucune carte : on n'affiche alors que sa pastille. #}
+{#   apparition : une Apparition (carte + coordonnées), ou vide si le lieu     #}
+{#   n'est encore posé sur aucune carte : on n'affiche alors que sa pastille.  #}
+{#   sans_legende=True : la carte seule (la box du lieu affiche les infos).    #}
 <figure class="carte-mini">
     {% if apparition %}
-        {% with carte=apparition.carte %}
-            {# .carte-map ne contient QUE l'image et l'étoile : les % de l'étoile #}
-            {# sont calculés sur ce cadre, la légende doit donc rester dehors.    #}
-            <div class="carte-map">
-                {% if carte.main_image %}
-                    {# width-1400 comme la page Carte : même image, déjà générée, jamais recadrée #}
-                    {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
-                {% else %}
-                    <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
-                {% endif %}
-
-                {% if apparition.est_zone %}
-                    {# Une zone : on la surligne (même dessin que la page Carte) #}
-                    {% with couleur=apparition.categorie_affichee.couleur_effective %}
-                        {% if apparition.est_hachuree %}
-                            <span class="carte-hachures" aria-hidden="true"
-                                  style="clip-path: {{ apparition.clip_path }};{% if couleur %} --marker-color: {{ couleur }};{% endif %}"></span>
+        {% with carte=apparition.carte cadrage=apparition.style_cadrage %}
+            {% if cadrage %}
+                {# --- VERSION ZOOMÉE --- #}
+                {# Le cadre (le lien) a une forme fixe et coupe ce qui dépasse.  #}
+                {# Dedans, .carte-zoom contient l'image et les zones : elle est  #}
+                {# plus GRANDE que le cadre et décalée pour viser le lieu (calcul #}
+                {# dans structure.css, à partir des mesures de style_cadrage).    #}
+                {# Toute la mini-carte mène à la page Carte.                      #}
+                <a href="{% pageurl carte %}" class="carte-map carte-map--zoom" style="{{ cadrage }}"
+                   aria-label="Voir {{ lieu.title }} sur la carte {{ carte.title }}">
+                    <span class="carte-zoom">
+                        {# width-1400 comme la page Carte : même image, jamais recadrée #}
+                        {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+                        {% if apparition.est_zone %}
+                            {% include "campagnes/includes/mini_zone.html" %}
                         {% endif %}
-                        <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                            <polygon class="{{ apparition.classes_zone }} carte-zone--seule" points="{{ apparition.points_svg }}"{% if couleur %} style="--marker-color: {{ couleur }};"{% endif %}></polygon>
-                        </svg>
-                    {% endwith %}
-                {% elif apparition.est_placee %}
-                    {# Un dessin et pas un lien : le lien vers le lieu est juste en dessous #}
-                    {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=False %}
-                {% endif %}
-            </div>
+                    </span>
+                    {# L'étoile HORS de .carte-zoom : elle garde sa taille normale #}
+                    {% if not apparition.est_zone %}
+                        {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=False %}
+                    {% endif %}
+                </a>
+            {% else %}
+                {# --- SANS IMAGE : l'image d'attente, sans zoom --- #}
+                <div class="carte-map">
+                    <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
+                    {% if apparition.est_zone %}
+                        {% include "campagnes/includes/mini_zone.html" %}
+                    {% elif apparition.est_placee %}
+                        {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=False %}
+                    {% endif %}
+                </div>
+            {% endif %}
         {% endwith %}
     {% endif %}
 
-    <figcaption class="carte-mini-legende">
-        {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
-        {% if apparition %}sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a>{% endif %}
-    </figcaption>
-    {# La géographie : les zones de CETTE carte qui contiennent le lieu #}
-    {% with chemin=apparition.chemin %}
-        {% if chemin %}
-            <nav class="carte-mini-chemin" aria-label="Situé dans">
-                Situé dans :
-                {% for zone in chemin %}{% if not forloop.first %} <span aria-hidden="true">›</span> {% endif %}<a href="{% pageurl zone %}">{{ zone.title }}</a>{% endfor %}
-            </nav>
+    {% if not sans_legende %}
+        <figcaption class="carte-mini-legende">
+            {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
+            {% if apparition %}sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a>{% endif %}
+        </figcaption>
+        {% include "campagnes/includes/situe_dans.html" %}
+        {% if apparition.a_cette_epoque %}
+            <p class="carte-mini-epoque">{{ apparition.a_cette_epoque|linebreaksbr }}</p>
         {% endif %}
-    {% endwith %}
-    {% if apparition.a_cette_epoque %}
-        <p class="carte-mini-epoque">{{ apparition.a_cette_epoque|linebreaksbr }}</p>
     {% endif %}
 </figure>

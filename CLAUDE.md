@@ -151,6 +151,31 @@ cd Tales_Omnibus
   catégorie montre TOUTE sa branche (comme l'encyclopédie). Le menu ne
   propose que les catégories présentes sur la carte, il est caché sans JS
   (`hidden`), et le choix est recopié dans l'adresse (`?afficher=<id>`).
+- **Box du lieu** (héros « Lieu d'origine », événement « Lieu de
+  l'événement ») : tag `{% box_du_lieu lieu apparition "Titre" %}`
+  (encyclopedie_tags) -> `campagnes/includes/box_lieu.html`. Deux colonnes
+  (mini-carte | nom, carte, « Situé dans », accroche, « S'est passé ici »,
+  « Aussi originaires d'ici ») ; empilées sous 48rem. « Fiches liées »
+  exclut ce que la box montre déjà (`lieu_de_la_fiche`).
+- **Mini-carte zoomée** (`includes/mini_carte.html`) : Python donne des
+  MESURES (`Apparition.style_cadrage` : centre `--cx/--cy`, boîte
+  `--zw/--zh`, `--ratio` de l'image), le CSS calcule zoom (`--z`) et décalage
+  (`clamp()` : on ne sort jamais de l'image). `.carte-zoom` est vraiment
+  agrandie (pas de `transform: scale`) ; le marqueur reste HORS d'elle pour
+  garder sa taille. Toute la mini-carte est un lien vers la page Carte.
+  Réglages `:root` : `--mini-aspect`, `--mini-zoom-max`, `--mini-max-width`.
+- **Images** :
+  - ALT automatique (`core/images.py`, filtre `{{ image|alt_auto }}` de
+    `images_tags`) : « Dossiers : Titre. Description » ; les dossiers sont
+    les COLLECTIONS Wagtail de l'image (sans la racine), le titre vient du
+    nom du fichier (« _ » -> espace), la description est facultative.
+    Utilisé sur l'image principale des fiches et en secours du bloc image.
+    Les vignettes à côté d'un titre visible gardent `alt=""` (décoratives).
+  - Visionneuse : `<a href="{{ grande.url }}" data-agrandir>` autour de
+    l'image (grande = `max-1600x1600`, jamais recadrée) ;
+    `static/js/agrandir.js` (chargé par base.html) l'ouvre dans un `<dialog>`.
+  - Point focal : les `fill-…` de Wagtail le respectent déjà ; les petites
+    vignettes ont `-c50` pour zoomer dessus (sans point focal : centre).
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
   template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un
@@ -171,6 +196,11 @@ cd Tales_Omnibus
   avec la langue `fr`, Django écrirait `12,5` et le CSS serait invalide.
 - L'image de la carte utilise `width-1400` et **jamais** `fill-…` : un recadrage
   fausserait les coordonnées en `%`.
+- **Nouveau fichier dans `templatetags/`** : `runserver` ne le voit qu'après
+  un redémarrage (« … is not a registered tag library »). Les tests, eux,
+  passent : ils démarrent un Django neuf.
+- Chaîne de filtres `a|default:b|filtre` : le filtre s'applique au RÉSULTAT
+  du default (texte OU objet). Calculer d'abord avec `{% with %}`.
 - Le menu du site a des **libellés fixes** (Accueil, Univers, Campagnes,
   Encyclopédie, Contact) : tag `{% main_menu %}` dans
   `core/templatetags/navigation_tags.py`. Les pages sont retrouvées par leur

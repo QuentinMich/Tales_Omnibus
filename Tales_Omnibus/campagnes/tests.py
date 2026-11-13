@@ -416,3 +416,65 @@ class FiltreAfficherTests(StyleDesCartesTests):
         self.assertIn(f'data-categories="{lieu.pk} {village.pk} {hameau.pk}"', html)
         # Puits, sans catégorie : rangé dans « Lieu », la catégorie par défaut
         self.assertIn(f'<li data-categories="{lieu.pk}">', html)
+
+
+class BoxDuLieuTests(CampagneTreeMixin, TestCase):
+    """
+    La box « Lieu d'origine » : mini-carte zoomée et cliquable, infos du lieu,
+    autres fiches du lieu (sans la page elle-même), pas de doublon plus bas.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from campagnes.models import Apparition, CartePage, ChronologiePage, LieuPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.fort = encyclopedie.add_child(instance=LieuPage(title="Fort", intro="<p>Des <b>ruines</b>.</p>"))
+        image = get_image_model().objects.create(title="Carte", file=get_test_image_file())  # 640 x 480
+        self.carte = self.campagne.add_child(instance=CartePage(title="Monde", main_image=image))
+        Apparition.objects.create(carte=self.carte, lieu=self.fort, coord_x=66, coord_y=24)
+        self.carte.save_revision().publish()
+        self.ysolde = self.campagne.add_child(instance=HeroPage(title="Ysolde", joueur_nom="MJ", lieu_origine=self.fort))
+        self.brann = self.campagne.add_child(instance=HeroPage(title="Brann", joueur_nom="B", lieu_origine=self.fort))
+        chrono = self.campagne.add_child(instance=ChronologiePage(title="Chroniques"))
+        self.nuit = chrono.add_child(instance=EvenementPage(title="Nuit des Cendres", lieu=self.fort))
+
+    def test_la_box_montre_le_lieu_et_ses_voisins(self):
+        html = self.client.get(self.ysolde.url).content.decode()
+        self.assertIn('class="panel panel--rounded fiche-lieu box-lieu"', html)
+        self.assertIn("Des ruines.", html)  # l'accroche, sans le HTML
+        self.assertIn("Aussi originaires d'ici", html)
+        self.assertIn(self.brann.url, html)
+        self.assertIn("S'est passé ici", html)
+        self.assertIn(self.nuit.url, html)
+
+    def test_la_page_ne_se_cite_pas_elle_meme(self):
+        html = self.client.get(self.ysolde.url).content.decode()
+        box = html[html.index('box-lieu"'):html.index('</section>', html.index('box-lieu"'))]
+        self.assertNotIn(self.ysolde.url, box)
+
+    def test_la_mini_carte_est_zoomee_et_mene_a_la_carte(self):
+        html = self.client.get(self.ysolde.url).content.decode()
+        self.assertIn(f'href="{self.carte.url}" class="carte-map carte-map--zoom"', html)
+        # Un point : boîte carrée de 25 % de large ; en % de la hauteur, × 640/480
+        self.assertIn("--cx: 66.0; --cy: 24.0; --zw: 25; --zh: 33.33; --ratio: 0.75;", html)
+
+    def test_pas_de_doublon_dans_les_fiches_liees(self):
+        from encyclopedie.templatetags.encyclopedie_tags import fiches_liees
+        exclues = {self.fort.pk, self.brann.pk, self.nuit.pk}
+        self.assertFalse(exclues & {f.pk for f in fiches_liees(self.ysolde)['fiches']})
+
+
+class VisionneuseTests(CampagneTreeMixin, TestCase):
+    def test_l_image_de_la_fiche_s_agrandit(self):
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        image = get_image_model().objects.create(title="Portrait_de_Brann", file=get_test_image_file())
+        hero = self.campagne.add_child(instance=HeroPage(title="Brann", joueur_nom="B", main_image=image))
+        html = self.client.get(hero.url).content.decode()
+        self.assertIn('class="image-agrandissable" data-agrandir', html)
+        self.assertIn("max-1600x1600", html)          # la grande version, jamais recadrée
+        self.assertIn('alt="Portrait de Brann"', html)  # l'ALT automatique
+        self.assertIn("js/agrandir.js", html)

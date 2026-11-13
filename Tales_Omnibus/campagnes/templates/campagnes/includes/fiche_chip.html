@@ -1,0 +1,8 @@
+{% load wagtailcore_tags %}
+{# Pastille d'une fiche (héros, événement) : même style que celle d'un lieu, #}
+{# à la couleur de sa catégorie. Attend « fiche » (passée par etiqueter()).  #}
+{% with couleur=fiche.categorie_affichee.couleur_effective %}
+    <a href="{% pageurl fiche %}" class="lieu-chip"{% if couleur %} style="--marker-color: {{ couleur }};"{% endif %}>
+        {{ fiche.title }}{% if fiche.date_affichage %} <small>({{ fiche.date_affichage }})</small>{% endif %}
+    </a>
+{% endwith %}

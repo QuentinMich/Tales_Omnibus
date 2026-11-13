@@ -414,6 +414,40 @@ class Apparition(Orderable):
             classes.append("carte-zone--tirets")
         return " ".join(classes)
 
+    # Mini-carte zoomée : la « boîte » à cadrer autour d'un POINT, en % de la
+    # largeur de la carte (une zone, elle, donne sa propre boîte).
+    VUE_AUTOUR_D_UN_POINT = 25
+
+    @property
+    def style_cadrage(self):
+        """
+        Les données du zoom de la mini-carte, en variables CSS :
+        « --cx: 66; --cy: 24; --zw: 30; --zh: 30; --ratio: 1.5 ».
+          - cx / cy : le centre à viser (le point, ou le milieu de la zone) ;
+          - zw / zh : la taille de la boîte à faire tenir dans le cadre ;
+          - ratio : hauteur / largeur de l'image de la carte.
+        C'est structure.css qui en déduit le zoom et le décalage : Python
+        donne les MESURES, le CSS fait la mise en page.
+        Fabriqué en Python : str() écrit 12.5, jamais 12,5 (CSS valide).
+        """
+        image = self.carte.main_image
+        if not image or not image.width or not self.est_placee:
+            return ""
+        ratio = image.height / image.width
+        if self.est_zone:
+            xs = [x for x, _ in self.forme]
+            ys = [y for _, y in self.forme]
+            cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+            # Une zone toute plate ferait un zoom infini : 5 % minimum
+            zw, zh = max(5, max(xs) - min(xs)), max(5, max(ys) - min(ys))
+        else:
+            cx, cy = self.coord_x, self.coord_y
+            # Une boîte CARRÉE sur l'image : en % de la hauteur, la même
+            # longueur vaut moins sur une carte en portrait (÷ ratio).
+            zw = self.VUE_AUTOUR_D_UN_POINT
+            zh = zw / ratio
+        return f"--cx: {round(cx, 2)}; --cy: {round(cy, 2)}; --zw: {round(zw, 2)}; --zh: {round(zh, 2)}; --ratio: {round(ratio, 4)};"
+
     @property
     def categorie_affichee(self):
         """

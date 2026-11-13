@@ -47,6 +47,11 @@
     --hatch-opacity: 0.75;
     --border-dash: 6 4;                /* frontière en tirets : trait, vide */
     --map-icon-size: 2.5rem;           /* taille d'une icône posée sur la carte */
+    --mini-aspect: 1.3333;             /* forme des mini-cartes zoomées (4/3) */
+    --mini-zoom-max: 4;                /* zoom maximum d'une mini-carte */
+    --mini-max-width: 28rem;           /* largeur maximum d'une mini-carte */
+    --color-visionneuse-fond: rgb(0 0 0 / 0.85);  /* voile derrière une image agrandie */
+    --color-visionneuse-texte: #FFFFFF;
     --map-icon-shadow: drop-shadow(0 0 2px rgb(255 255 255 / 0.9)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
 
     /* --- Typographie --- */
@@ -1394,6 +1399,139 @@ span.carte-map-img {
     gap: var(--space-sm);
 }
 
+/* --- IMAGES AGRANDISSABLES + VISIONNEUSE (js/agrandir.js) --- */
+.image-agrandissable {
+    display: block;
+    cursor: zoom-in;
+}
+
+.image-agrandissable:focus-visible {
+    outline: 3px solid var(--color-highlight);
+    outline-offset: 3px;
+}
+
+/* <dialog> : la fenêtre native du navigateur, centrée par défaut */
+.visionneuse {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    cursor: zoom-out;
+}
+
+/* ::backdrop = le voile posé par le navigateur derrière la fenêtre */
+.visionneuse::backdrop {
+    background: var(--color-visionneuse-fond);
+}
+
+.visionneuse-image {
+    max-width: 95vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.visionneuse-fermer {
+    position: absolute;
+    top: calc(-1 * var(--space-lg));
+    right: 0;
+    border: 0;
+    background: none;
+    color: var(--color-visionneuse-texte);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* --- MINI-CARTE ZOOMÉE ---
+   Le template donne des MESURES (variables CSS, voir Apparition.style_cadrage) :
+     --cx / --cy : le centre à viser, --zw / --zh : la boîte à faire tenir,
+     --ratio : hauteur / largeur de l'image.
+   Le cadre a une forme fixe (--mini-aspect) et coupe ce qui dépasse ;
+   .carte-zoom (l'image + les zones) est plus grande que lui et décalée.
+   Pas de transform: scale() : l'image est vraiment plus grande, donc les
+   zones, les hachures et les traits restent nets et à la bonne épaisseur. */
+.carte-mini .carte-map--zoom {
+    /* Zoom : la boîte doit occuper au plus 80 % du cadre, en largeur ET en
+       hauteur (la hauteur se compte en largeurs de cadre : × ratio × aspect).
+       Plafonné à --mini-zoom-max ; jamais moins de ce qu'il faut pour que
+       l'image couvre tout le cadre. */
+    --z: max(
+        min(var(--mini-zoom-max), 80 / var(--zw), 80 / (var(--zh) * var(--ratio) * var(--mini-aspect))),
+        1,
+        1 / (var(--ratio) * var(--mini-aspect))
+    );
+    /* Hauteur de l'image, en hauteurs de cadre */
+    --hz: calc(var(--z) * var(--ratio) * var(--mini-aspect));
+    /* Décalage pour mettre le centre visé au milieu du cadre… mais clamp()
+       empêche de sortir de l'image : au bord de la carte, le lieu n'est
+       plus centré, il reste juste visible. */
+    --gauche: clamp((1 - var(--z)) * 100%, 50% - var(--cx) * var(--z) * 1%, 0%);
+    --haut: clamp((1 - var(--hz)) * 100%, 50% - var(--cy) * var(--hz) * 1%, 0%);
+    display: block;
+    width: 100%;
+    max-width: var(--mini-max-width); /* une seule carte sur la fiche : pas en plein écran */
+    margin: 0 auto;
+    aspect-ratio: var(--mini-aspect);
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+}
+
+.carte-zoom {
+    position: absolute;
+    left: var(--gauche);
+    top: var(--haut);
+    width: calc(var(--z) * 100%);
+}
+
+.carte-mini .carte-zoom .carte-map-img {
+    width: 100%;
+    max-height: none;
+}
+
+/* L'étoile est HORS de .carte-zoom (elle garde sa taille) : on la place
+   avec le même calcul (décalage + position dans l'image agrandie). */
+.carte-map--zoom > .map-marker {
+    left: calc(var(--gauche) + var(--x) * var(--z) * 1%);
+    top: calc(var(--haut) + var(--y) * var(--hz) * 1%);
+}
+
+.carte-map--zoom:focus-visible {
+    outline: 3px solid var(--color-highlight);
+    outline-offset: 3px;
+}
+
+/* --- BOX DU LIEU (héros, événement) : carte à gauche, infos à droite --- */
+.box-lieu-grille {
+    display: grid;
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    gap: var(--space-lg);
+    align-items: start;
+}
+
+/* Lieu posé sur aucune carte : les infos prennent toute la place */
+.box-lieu-grille:not(:has(.carte-mini)) {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.box-lieu-infos > * {
+    margin: 0 0 var(--space-sm);
+}
+
+/* Ces deux-là ont leurs propres marges sous la mini-carte : on les aligne
+   sur le reste de la colonne (sélecteur plus précis = il l'emporte). */
+.box-lieu-infos .carte-mini-chemin,
+.box-lieu-infos .carte-mini-epoque {
+    margin: 0 0 var(--space-sm);
+    text-align: left;
+}
+
+.box-lieu-sous-titre {
+    margin-top: var(--space-md);
+    font-size: 1rem;
+}
+
 /* « Situé dans : Ardenn › Royaume du Val Gris », sous la mini-carte */
 .carte-mini-chemin {
     margin: var(--space-sm) 0 0;
@@ -1735,6 +1873,11 @@ html:has(.template-home) {
 @media (max-width: 48rem) {
     .site-header {
         justify-content: center;
+    }
+
+    /* Box du lieu : la carte au-dessus des infos */
+    .box-lieu-grille {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .site-nav ul {
