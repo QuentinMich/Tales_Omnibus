@@ -1,0 +1,15 @@
+{% load wagtailcore_tags %}
+{# Wireframe lore-slug : bandeau « Dans une autre campagne : » + bloc ocre. #}
+{% if presences %}
+    <section class="dans-les-campagnes">
+        <h2 class="dans-les-campagnes-titre">Dans les campagnes</h2>
+        <ul class="dans-les-campagnes-liste">
+            {% for campagne, texte in presences %}
+                <li class="panel panel--accent presence">
+                    <h3 class="presence-campagne"><a href="{% pageurl campagne %}">{{ campagne.title }}</a></h3>
+                    {% if texte %}<p>{{ texte|linebreaksbr }}</p>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}

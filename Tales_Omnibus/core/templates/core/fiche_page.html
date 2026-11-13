@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% comment %}
+    SQUELETTE COMMUN des fiches (Héros, Lieu, Événement, Lore).
+    Chaque fiche fait {% extends "core/fiche_page.html" %} et ne remplit que
+    ses blocs propres : fiche_surtitre, fiche_details, fiche_annexes.
+
+    Structure pensée pour le référencement (SEO) et l'accessibilité :
+      <article>          la fiche elle-même, un tout autonome
+        <header>         h1 (le seul de la page) + catégorie
+        description      l'accroche (champ intro)
+        articles         le StreamField : sections h2, images, séparateurs
+        détails          propres à chaque type (joueur, mini-carte…)
+        <footer>         <nav> des mots-clés
+      <aside>            « pour aller plus loin » : contenu lié, pas la fiche
+{% endcomment %}
+
+{% block content %}
+<main class="container page-fiche {% block fiche_classe %}{% endblock %}">
+
+    <article class="fiche">
+        <div class="fiche-top">
+            <div class="fiche-card">
+                <header class="fiche-entete">
+                    {% block fiche_surtitre %}{% endblock %}
+                    <h1 class="fiche-title">{{ page.title }}</h1>
+                    {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
+                </header>
+
+                {# 1. Description générale #}
+                {% if page.intro %}
+                    <div class="fiche-description richtext">{{ page.intro|richtext }}</div>
+                {% endif %}
+
+                {# 2. Les articles : sections, images à gauche / droite / centre, séparateurs #}
+                {% if page.body %}
+                    <div class="fiche-articles">{% include_block page.body %}</div>
+                {% endif %}
+            </div>
+
+            {% if page.main_image %}
+                <figure class="fiche-media">
+                    {% image page.main_image fill-600x850 alt=page.title %}
+                </figure>
+            {% endif %}
+        </div>
+
+        {# 3. Ce qui est propre à chaque type de fiche #}
+        {% block fiche_details %}{% endblock %}
+
+        {# 4. Les mots-clés : des liens vers l'encyclopédie filtrée #}
+        {% if page.tags.exists %}
+            <footer class="fiche-pied">
+                <nav aria-label="Mots-clés">
+                    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
+                </nav>
+            </footer>
+        {% endif %}
+    </article>
+
+    {# 5. Pour aller plus loin : du contenu LIÉ, pas la fiche elle-même #}
+    <aside class="fiche-annexes" aria-label="Pour aller plus loin">
+        {% block fiche_annexes %}{% endblock %}
+        {% dans_les_campagnes page %}
+        {% fiches_liees page %}
+    </aside>
+
+</main>
+{% endblock %}

@@ -76,8 +76,12 @@ cd Tales_Omnibus
     il liste les pages enfants dans le formulaire d'édition.
 - **Encyclopédie** (`EncyclopedieIndexPage.get_context`) : rassemble les fiches
   Héros, Lieux, Événements et Lore publiées, filtrables en GET
-  (`?campagne=<id>&type=heros|lieux|evenements|lore&tag=<slug>`). Les fiches
-  Lore sont communes à l'univers : un filtre de campagne les écarte. Les tags
+  (`?campagne=<id>&categorie=<id>&tag=<slug>`). Une fiche appartient à une
+  campagne selon `campagnes_de(fiche)` (encyclopedie/models.py) : héros et
+  événements = campagne parente ; lieu = campagnes de ses cartes
+  (`Apparition`) ; Lore = campagnes où il est déclaré présent
+  (`PresenceEnCampagne` : campagne + texte, InlinePanel « Dans les campagnes »,
+  affiché en bas de la fiche, wireframe lore-slug). Les tags
   des fiches (`core/includes/tags_list.html`) mènent à l'encyclopédie filtrée
   (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
   réutilise le composant `.timeline` de la chronologie.
@@ -95,6 +99,16 @@ cd Tales_Omnibus
   `ranger_par_famille()` groupe les tags (filtres de l'encyclopédie et tags
   des fiches via `{% tags_par_famille %}`) ; repère visuel :
   `core/includes/tag_marque.html` (icône, sinon pastille de couleur).
+- **Squelette commun des fiches** : `core/templates/core/fiche_page.html`
+  (Héros, Lieu, Événement, Lore font `extends` et remplissent
+  `fiche_surtitre`, `fiche_details`, `fiche_annexes`). Structure sémantique :
+  `<article>` (header + h1 unique, description = intro, articles = body,
+  footer avec `<nav>` des tags) puis `<aside>` « Pour aller plus loin ».
+- **Blocs d'article** (`BaseStreamBlock`) : `section` (titre h2 + texte, rendu
+  en `<section>`), `image` avec `position` (centre / gauche / droite / large,
+  le texte qui suit l'entoure), `separateur` (`<hr>`, coupe les flottants),
+  `paragraph`, `embed`. Le parent d'une image flottante est en `flow-root`
+  (règle `:has()` générique).
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
@@ -160,13 +174,9 @@ cd Tales_Omnibus
   dans `base.html`.
 - **Sélecteur de coordonnées** : un widget d'admin pour cliquer sur l'image de
   la carte parente et remplir `coord_x` / `coord_y`.
-- **Fiche Lore** : section « Dans une autre campagne » du wireframe
-  (`lore-slug.pdf`), pas encore faite. Piste validée : la campagne d'une
-  fiche se DÉDUIT (héros/événement = campagne parente ; lieu = campagnes de
-  ses cartes via `Apparition`) ; seul le Lore a besoin d'un lien explicite,
-  un InlinePanel « Dans les campagnes » (campagne + texte propre à cette
-  campagne), sur le modèle d'`Apparition`. Un helper commun
-  `campagnes_de(fiche)` servira au filtre et à la section.
+- **SEO automatique** (idée de Quentin) : générer la balise titre et la méta
+  description à partir du type de page, de la catégorie et de l'intro quand
+  le client laisse les champs « Promotion » vides.
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
 - CSS de la recherche.

@@ -8,9 +8,9 @@ from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from taggit.models import Tag, TaggedItemBase
 from wagtail.admin.forms import WagtailAdminModelForm
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.fields import RichTextField
-from wagtail.models import Page
+from wagtail.models import Orderable, Page
 from wagtail.snippets.models import register_snippet
 
 from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
@@ -155,7 +155,41 @@ class LorePage(FicheEncyclopedieMixin, BaseFichePage):
         FieldPanel('categorie'),
         FieldPanel('tags'),
         FieldPanel('epinglee'),
+        InlinePanel('presences', heading="Dans les campagnes", label="Campagne"),
     ]
+
+
+class PresenceEnCampagne(Orderable):
+    """
+    Une fiche Lore PRÉSENTE dans une campagne, avec ce qui lui est propre là :
+    « Vaël, déesse des Brumes » dans « Les Brumes d'Ardenn » : « Vénérée en
+    secret depuis le Grand Brouillard ».
+
+    Même idée que les Apparitions des lieux : un lieu apparaît sur des CARTES,
+    une fiche Lore apparaît dans des CAMPAGNES. Héros et événements n'en ont
+    pas besoin : leur campagne, c'est la page au-dessus d'eux dans l'arbre.
+    Sans aucune présence, la fiche reste universelle.
+    """
+    fiche = ParentalKey('LorePage', on_delete=models.CASCADE, related_name='presences')
+    campagne = models.ForeignKey(
+        'campagnes.CampagnePage',
+        on_delete=models.CASCADE,  # campagne supprimée = présence supprimée
+        related_name='+',
+        verbose_name="Campagne",
+    )
+    texte = models.TextField(
+        blank=True,
+        verbose_name="Dans cette campagne",
+        help_text="Ce que les joueurs de cette campagne en savent, ou ce qui y change."
+    )
+
+    panels = [
+        FieldPanel('campagne'),
+        FieldPanel('texte'),
+    ]
+
+    class Meta(Orderable.Meta):
+        verbose_name = "Présence dans une campagne"
 
 
 # 4. OUTILS PARTAGÉS : utilisés par l'encyclopédie ET par les "fiches liées"
@@ -183,9 +217,10 @@ def requetes_de_fiches(accueil, campagne=None, type_choisi=''):
     for cle, (modele, libelle) in types_de_fiches().items():
         if type_choisi and cle != type_choisi:
             continue
-        # Les fiches Lore sont communes à tout l'univers (elles ne sont
-        # rangées dans aucune campagne) : un filtre de campagne les écarte.
         if campagne and modele is LorePage:
+            # Le Lore n'est rangé dans aucune campagne : il en fait partie
+            # s'il y est déclaré PRÉSENT (modèle PresenceEnCampagne).
+            yield cle, modele.objects.live().filter(presences__campagne=campagne).distinct()
             continue
         if campagne and modele is LieuPage:
             # Les lieux vivent dans l'encyclopédie, pas dans les campagnes :
@@ -321,3 +356,23 @@ def ranger_par_famille(tags):
     if autres:
         resultat.append({'famille': None, 'tags': autres})
     return resultat
+
+
+def campagnes_de(fiche):
+    """
+    Les campagnes (publiées) d'une fiche, quel que soit son type :
+      - Héros, Événement : la campagne au-dessus d'eux dans l'arbre des pages ;
+      - Lieu : les campagnes des cartes où il apparaît (modèle Apparition) ;
+      - Lore : les campagnes où il est déclaré présent (PresenceEnCampagne).
+    Renvoie [(campagne, texte propre à cette campagne ou ""), …].
+    """
+    campagnes = CampagnePage.objects.live()
+    if isinstance(fiche, LorePage):
+        presences = fiche.presences.filter(campagne__live=True).select_related('campagne')
+        return [(p.campagne, p.texte) for p in presences]
+    if isinstance(fiche, LieuPage):
+        # Arbre Wagtail : le chemin du parent = le chemin de la carte sans son
+        # dernier segment de 4 caractères (même astuce que la migration 0014).
+        chemins = {a.carte.path[:-4] for a in fiche.apparitions.select_related('carte')}
+        return [(c, "") for c in campagnes.filter(path__in=chemins).order_by('path')]
+    return [(c, "") for c in campagnes.ancestor_of(fiche)]

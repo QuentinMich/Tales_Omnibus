@@ -1,0 +1,7 @@
+{% load wagtailcore_tags %}
+{# Une partie de l'article : <section> + <h2>, pour un plan de page lisible #}
+{# par les moteurs de recherche et les lecteurs d'écran.                     #}
+<section class="article-section">
+    <h2 class="article-section-titre">{{ value.titre }}</h2>
+    <div class="richtext">{{ value.texte|richtext }}</div>
+</section>

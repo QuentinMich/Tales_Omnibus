@@ -1,45 +1,21 @@
-{% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% extends "core/fiche_page.html" %}
 
 {% block body_class %}template-evenement{% endblock %}
+{% block fiche_classe %}page-evenement{% endblock %}
 
-{% block content %}
-<main class="container page-fiche page-evenement">
-
-    <div class="fiche-top">
-        <div class="fiche-card">
-            {% if page.date_affichage %}
-                <span class="badge">{{ page.date_affichage }}</span>
-            {% endif %}
-            <h1 class="fiche-title">{{ page.title }}</h1>
-            {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
-            {% if page.intro %}
-                <div class="richtext">{{ page.intro|richtext }}</div>
-            {% endif %}
-        </div>
-        {% if page.main_image %}
-            <figure class="fiche-media">
-                {% image page.main_image fill-600x850 alt=page.title %}
-            </figure>
-        {% endif %}
-    </div>
-
-    {% if page.body %}
-        <section class="panel panel--rounded richtext">{% include_block page.body %}</section>
+{# La date, au-dessus du titre #}
+{% block fiche_surtitre %}
+    {% if page.date_affichage %}
+        <span class="badge">{{ page.date_affichage }}</span>
     {% endif %}
+{% endblock %}
 
-    {# --- LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible --- #}
+{% block fiche_details %}
+    {# LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible #}
     {% if page.lieu.live %}
         <section class="panel panel--rounded fiche-lieu">
             <h2 class="panel-title">Lieu de l'événement</h2>
             {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu apparition=apparition_lieu %}
         </section>
     {% endif %}
-
-    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
-
-    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
-    {% fiches_liees page %}
-
-</main>
 {% endblock %}

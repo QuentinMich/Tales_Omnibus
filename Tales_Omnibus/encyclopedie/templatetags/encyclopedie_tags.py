@@ -1,7 +1,7 @@
 from django import template
 
-from campagnes.models import LieuPage
-from encyclopedie.models import etiqueter, fiches_liees as chercher_fiches_liees, ranger_par_famille
+from campagnes.models import EvenementPage, HeroPage, LieuPage
+from encyclopedie.models import campagnes_de, etiqueter, fiches_liees as chercher_fiches_liees, ranger_par_famille
 
 register = template.Library()
 
@@ -42,3 +42,15 @@ def tags_par_famille(tags):
     {% tags_par_famille page.tags.all as groupes %}
     """
     return ranger_par_famille(tags)
+
+
+@register.inclusion_tag('encyclopedie/includes/dans_les_campagnes.html')
+def dans_les_campagnes(page):
+    """
+    Section « Dans les campagnes » d'une fiche universelle (Lore, Lieu) :
+    les campagnes où elle apparaît, avec le texte propre à chacune.
+    Rien pour un héros ou un événement : leur campagne est déjà leur parent.
+    """
+    if isinstance(page, (HeroPage, EvenementPage)):
+        return {'presences': []}
+    return {'presences': campagnes_de(page)}

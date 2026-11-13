@@ -562,6 +562,61 @@ figure {
     text-align: center;
 }
 
+/* Position choisie dans l'admin (champ « Position » du bloc image) */
+.block-image--centre img {
+    margin-inline: auto;
+    max-height: 70vh;
+    width: auto;
+}
+
+.block-image--large img {
+    width: 100%;
+}
+
+/* Gauche / droite : l'image flotte, le texte qui suit l'entoure */
+.block-image--gauche,
+.block-image--droite {
+    max-width: min(45%, 20rem);
+    margin-block: var(--space-xs) var(--space-md);
+}
+
+.block-image--gauche {
+    float: left;
+    margin-right: var(--space-lg);
+}
+
+.block-image--droite {
+    float: right;
+    margin-left: var(--space-lg);
+}
+
+/* Le bloc qui CONTIENT une image flottante la garde dedans, quelle que soit
+   la page (fiche, campagne, carte, Univers…) : flow-root crée un nouveau
+   contexte de mise en page, qui englobe les flottants. */
+:has(> .block-image--gauche, > .block-image--droite) {
+    display: flow-root;
+}
+
+/* --- Sections d'article (bloc « Section ») et séparateur --- */
+.article-section {
+    margin-block: var(--space-lg);
+}
+
+.article-section-titre {
+    color: var(--color-title);
+    font-size: 1.5rem;
+}
+
+/* Une image à gauche / à droite est entourée par le texte qui SUIT, même
+   s'il est dans la section suivante. Le séparateur, lui, coupe : ce qui vient
+   après lui repart toujours sous l'image. */
+.separateur {
+    clear: both;
+    margin-block: var(--space-lg);
+    border: 0;
+    border-top: 1px solid var(--color-border);
+}
+
 .video-container iframe {
     display: block;
     width: 100%;
@@ -879,6 +934,19 @@ figure {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
 }
 
+/* La description et les articles prennent toute la largeur de la carte
+   (la carte aligne ses enfants à gauche pour le titre et le badge). */
+.fiche-description,
+.fiche-articles {
+    justify-self: stretch;
+}
+
+/* Avec de longs articles, le portrait reste visible pendant la lecture */
+.fiche-media {
+    position: sticky;
+    top: var(--space-md);
+}
+
 .fiche-media img {
     width: 100%;
     aspect-ratio: 6 / 8.5;
@@ -888,6 +956,37 @@ figure {
 /* La fiche n'a pas d'image : la carte prend toute la largeur */
 .fiche-top:not(:has(.fiche-media)) {
     grid-template-columns: 1fr;
+}
+
+/* --- « Dans les campagnes » (wireframe lore-slug : bandeau + bloc ocre) --- */
+.dans-les-campagnes-titre {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-lg);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-text);
+    font-size: 1.25rem;
+}
+
+.dans-les-campagnes-liste {
+    display: grid;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.presence {
+    margin: 0;
+}
+
+.presence-campagne {
+    margin-bottom: var(--space-sm);
+    font-size: 1.25rem;
+}
+
+.presence-campagne a {
+    color: var(--color-highlight);
 }
 
 .joueur-nom {
@@ -1476,6 +1575,15 @@ html:has(.template-home) {
 
     .fiche-media {
         order: -1; /* l'image passe au-dessus du texte sur mobile */
+        position: static;
+    }
+
+    /* Trop étroit pour enrouler du texte autour d'une image */
+    .block-image--gauche,
+    .block-image--droite {
+        float: none;
+        max-width: 100%;
+        margin-inline: 0;
     }
 
     .contact-form {

@@ -222,3 +222,59 @@ class FamillesDeTagsTests(ArborescenceMixin, TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("Déjà rangé dans une autre famille : Dragon", str(form.errors))
+
+
+class CampagnesDesFichesTests(ArborescenceMixin, TestCase):
+    """Dans quelles campagnes est une fiche ? (campagnes_de + PresenceEnCampagne)"""
+
+    def setUp(self):
+        super().setUp()
+        from encyclopedie.models import PresenceEnCampagne
+        self.dieux = LorePage.objects.get(title="Les dieux")
+        PresenceEnCampagne.objects.create(fiche=self.dieux, campagne=self.saison1,
+                                          texte="Vénérés en secret.")
+
+    def test_campagnes_de_chaque_type(self):
+        from encyclopedie.models import campagnes_de
+        port = LieuPage.objects.get(title="Port")
+        for fiche in (self.aldric, port, self.dieux):  # héros, lieu, lore
+            self.assertEqual([c.title for c, _ in campagnes_de(fiche)], ["Saison 1"], fiche.title)
+
+    def test_le_lore_present_apparait_dans_le_filtre_de_campagne(self):
+        response = self.client.get(self.encyclopedie.url, {'campagne': self.saison1.pk})
+        self.assertIn("Les dieux", [f.title for f in response.context['fiches']])
+
+    def test_section_dans_les_campagnes(self):
+        response = self.client.get(self.dieux.url)
+        self.assertContains(response, "Dans les campagnes")
+        self.assertContains(response, "Vénérés en secret.")
+        # Un héros n'a pas cette section : sa campagne est déjà sa page parente
+        self.assertNotContains(self.client.get(self.aldric.url), "Dans les campagnes")
+
+
+class StructureDesFichesTests(ArborescenceMixin, TestCase):
+    """Le squelette commun : un seul h1, <article>, <aside>, et les blocs d'article."""
+
+    def test_structure_semantique(self):
+        html = self.client.get(self.aldric.url).content.decode()
+        self.assertEqual(html.count("<h1"), 1)
+        self.assertIn('<article class="fiche">', html)
+        self.assertIn('<aside class="fiche-annexes"', html)
+        self.assertIn('<nav aria-label="Mots-clés">', html)
+
+    def test_blocs_section_image_separateur(self):
+        from wagtail.images.tests.utils import get_test_image_file
+        from wagtail.images.models import Image
+        image = Image.objects.create(title="test", file=get_test_image_file())
+        dieux = LorePage.objects.get(title="Les dieux")
+        dieux.body = [
+            ('section', {'titre': "Origines", 'texte': "<p>Au commencement…</p>"}),
+            ('image', {'image': image, 'caption': "", 'alt_text': "", 'position': 'droite'}),
+            ('separateur', None),
+        ]
+        dieux.save_revision().publish()
+        html = self.client.get(dieux.url).content.decode()
+        self.assertIn('<section class="article-section">', html)
+        self.assertIn('<h2 class="article-section-titre">Origines</h2>', html)
+        self.assertIn('block-image--droite', html)
+        self.assertIn('<hr class="separateur">', html)

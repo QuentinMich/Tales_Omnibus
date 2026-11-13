@@ -1,34 +1,6 @@
-{% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% extends "core/fiche_page.html" %}
+{# Fiche Lore : tout est dans le squelette commun (description, articles, #}
+{# tags, « Dans les campagnes », fiches liées).                           #}
 
 {% block body_class %}template-lore{% endblock %}
-
-{% block content %}
-<main class="container page-fiche page-lore">
-
-    <div class="fiche-top">
-        <div class="fiche-card">
-            <h1 class="fiche-title">{{ page.title }}</h1>
-            {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
-            {% if page.intro %}
-                <div class="richtext">{{ page.intro|richtext }}</div>
-            {% endif %}
-        </div>
-        {% if page.main_image %}
-            <figure class="fiche-media">
-                {% image page.main_image fill-600x850 alt=page.title %}
-            </figure>
-        {% endif %}
-    </div>
-
-    {% if page.body %}
-        <section class="section richtext">{% include_block page.body %}</section>
-    {% endif %}
-
-    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
-
-    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
-    {% fiches_liees page %}
-
-</main>
-{% endblock %}
+{% block fiche_classe %}page-lore{% endblock %}

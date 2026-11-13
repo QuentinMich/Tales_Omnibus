@@ -69,24 +69,68 @@ class SingleImageBlock(blocks.StructBlock):
     image = ImageChooserBlock(label="Image")
     caption = blocks.CharBlock(required=False, label="Légende")
     alt_text = blocks.CharBlock(required=False, label="Texte alternatif (SEO/Accessibilité)")
+    # Gauche / droite : le texte qui suit s'enroule autour de l'image.
+    # Les images déjà enregistrées sans ce choix prennent la valeur par défaut.
+    position = blocks.ChoiceBlock(
+        choices=[
+            ('centre', "Centrée"),
+            ('gauche', "À gauche, texte autour"),
+            ('droite', "À droite, texte autour"),
+            ('large', "Pleine largeur"),
+        ],
+        default='centre',
+        label="Position",
+    )
 
     class Meta:
         template = "core/blocks/single_image_block.html"
         icon = "image"
         label = "Image simple"
 
+class SectionBlock(blocks.StructBlock):
+    """
+    Un ARTICLE de la page : un titre + son texte, rendu dans une vraie balise
+    <section> avec un <h2>. Pour les moteurs de recherche (et les lecteurs
+    d'écran), la page est ainsi découpée en parties nommées : h1 = la fiche,
+    h2 = chaque section, h3 = les sous-parties dans le texte.
+    """
+    titre = blocks.CharBlock(label="Titre de la section")
+    texte = blocks.RichTextBlock(
+        label="Texte",
+        # Pas de h2 ici : c'est le titre de la section ; h3 pour les sous-parties
+        features=['h3', 'bold', 'italic', 'link', 'ol', 'ul', 'blockquote'],
+    )
+
+    class Meta:
+        template = "core/blocks/section_block.html"
+        icon = "doc-full"
+        label = "Section (titre + texte)"
+
+
+class SeparateurBlock(blocks.StaticBlock):
+    """Un trait de séparation entre deux parties (balise <hr>). Rien à remplir."""
+
+    class Meta:
+        template = "core/blocks/separateur_block.html"
+        icon = "horizontalrule"
+        label = "Séparateur"
+        admin_text = "Trait de séparation entre deux parties."
+
+
 class BaseStreamBlock(blocks.StreamBlock):
     """
     Bloc réutilisable pour le StreamField des pages fixes (Univers, fiches, etc.)
-    et autres contenus éditoriaux du site.
+    et autres contenus éditoriaux du site : de quoi construire de vrais articles.
     """
+    section = SectionBlock()
     paragraph = blocks.RichTextBlock(
         icon="pilcrow",
         label="Paragraphe de texte",
         features=['h2', 'h3', 'bold', 'italic', 'link', 'ol', 'ul', 'blockquote']
     )
     image = SingleImageBlock()
+    separateur = SeparateurBlock()
     embed = EmbedVideoBlock()
-    
+
     class Meta:
         label = "Contenu de la page"

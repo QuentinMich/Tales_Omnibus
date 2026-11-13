@@ -1,34 +1,12 @@
-{% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% extends "core/fiche_page.html" %}
+{% load encyclopedie_tags %}
 
 {% block body_class %}template-lieu{% endblock %}
+{% block fiche_classe %}page-lieu{% endblock %}
 
-{% block content %}
-<main class="container page-fiche page-lieu">
-
-    <div class="fiche-top">
-        <div class="fiche-card">
-            <h1 class="fiche-title">{{ page.title }}</h1>
-            {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
-            {% if page.intro %}
-                <div class="richtext">{{ page.intro|richtext }}</div>
-            {% endif %}
-        </div>
-        {% if page.main_image %}
-            <figure class="fiche-media">
-                {% image page.main_image fill-600x850 alt=page.title %}
-            </figure>
-        {% endif %}
-    </div>
-
-    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
-
-    {% if page.body %}
-        <section class="section richtext">{% include_block page.body %}</section>
-    {% endif %}
-
-    {# --- SUR LES CARTES : une mini-carte par carte où le lieu apparaît, --- #}
-    {#     avec ce qui change à chaque époque (champ « À cette époque »)    #}
+{% block fiche_details %}
+    {# SUR LES CARTES : une mini-carte par carte où le lieu apparaît, #}
+    {# avec ce qui change à chaque époque (champ « À cette époque »)  #}
     {% if apparitions %}
         <section class="panel panel--rounded fiche-lieu">
             <h2 class="panel-title">Sur les cartes</h2>
@@ -39,12 +17,9 @@
             </div>
         </section>
     {% endif %}
+{% endblock %}
 
-    {# --- LIÉS À CE LIEU : événements (champ "lieu") et héros (champ "lieu_origine") --- #}
+{# LIÉS À CE LIEU : événements (champ "lieu") et héros (champ "lieu_origine") #}
+{% block fiche_annexes %}
     {% fiches_du_lieu page %}
-
-    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
-    {% fiches_liees page %}
-
-</main>
 {% endblock %}

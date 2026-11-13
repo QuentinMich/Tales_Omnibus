@@ -6,7 +6,8 @@ Crée une CAMPAGNE DE DÉMONSTRATION pour visualiser toutes les fonctionnalités
 Contenu : une campagne « Les Brumes d'Ardenn » (2 cartes, une chronologie,
 3 héros), des lieux et des fiches Lore dans l'encyclopédie, un arbre de
 catégories, des familles de tags, des tags, des fiches épinglées, un lieu
-présent sur deux cartes…
+présent sur deux cartes, des articles
+(sections, images positionnées, séparateurs), du Lore présent dans la campagne…
 
 Tout le contenu est DÉCLARÉ ci-dessous : c'est ce qui permet à --supprimer de
 retirer exactement ce que la démo a créé, sans toucher aux vraies pages.
@@ -21,7 +22,7 @@ from campagnes.models import (
     Apparition, CampagnePage, CampagnesIndexPage, CartePage, ChronologiePage, EvenementPage, HeroPage, LieuPage,
 )
 from core.models import Categorie
-from encyclopedie.models import EncyclopedieIndexPage, FamilleDeTags, LorePage
+from encyclopedie.models import EncyclopedieIndexPage, FamilleDeTags, LorePage, PresenceEnCampagne
 
 CAMPAGNE = "Les Brumes d'Ardenn"
 
@@ -89,6 +90,13 @@ LORE = {
     "Notes du MJ": (None, "Une fiche sans catégorie : elle tombe dans la catégorie par défaut du Lore.", ["pouet"], False),
 }
 
+# --- Lore présent dans la campagne : titre -> ce qui est propre à la campagne
+PRESENCES = {
+    "Vaël, déesse des Brumes": "Vénérée en secret depuis le Grand Brouillard. Ses prêtres portent des lanternes éteintes.",
+    "L'Ordre du Corbeau": "Ils tiennent Fort-Sombre et contrôlent les routes du nord.",
+    "Le Dragon de Suie": "Endormi sous les cendres de Fort-Sombre. Pour l'instant.",
+}
+
 # --- Chronologie : titre -> (catégorie, date_ordre, date affichée, lieu, intro, tags)
 EVENEMENTS = {
     "La Nuit des Cendres": ("Bataille", -12, "An -12, nuit du solstice", "Fort-Sombre",
@@ -148,6 +156,24 @@ class Command(BaseCommand):
             # Réutilise les images du site, à tour de rôle ; aucune image = placeholder
             return portraits[n % len(portraits)] if portraits else None
 
+        def article(intro, illustration, position):
+            """Un corps d'article de démo : de quoi voir chaque bloc du StreamField."""
+            blocs = [('section', {'titre': "Ce qu'on en sait", 'texte': (
+                f"<p>{intro} Les érudits ne sont d'accord sur rien, sauf sur le fait "
+                "qu'il vaut mieux ne pas en parler la nuit.</p>")})]
+            if illustration:
+                blocs.append(('image', {'image': illustration, 'caption': "Une illustration de démo",
+                                        'alt_text': "", 'position': position}))
+            blocs += [
+                ('section', {'titre': "Rumeurs", 'texte': (
+                    "<p>On raconte beaucoup de choses dans les tavernes de Port-Lanterne. "
+                    "La moitié sont fausses, l'autre moitié aussi, mais pas de la même façon.</p>"
+                    "<h3>Ce qu'en disent les anciens</h3><p>Rien. Ils dorment.</p>")}),
+                ('separateur', None),
+                ('paragraph', "<p><em>Note du MJ : à compléter avant la prochaine séance.</em></p>"),
+            ]
+            return blocs
+
         def publier(parent, page, tags=(), categorie=None):
             if categorie:
                 page.categorie = cats[categorie]
@@ -166,8 +192,7 @@ class Command(BaseCommand):
         for n, (titre, (cat, intro, tags, epingle)) in enumerate(LORE.items()):
             publier(encyclopedie, LorePage(
                 title=titre, intro=f"<p>{intro}</p>", epinglee=epingle, main_image=image(n) if n % 3 else None,
-                body=[('paragraph', f"<h2>Ce qu'on en sait</h2><p>{intro} Les érudits ne sont d'accord sur rien, "
-                                    f"sauf sur le fait qu'il vaut mieux ne pas en parler la nuit.</p>")],
+                body=article(intro, image(n + 1), 'droite' if n % 2 else 'gauche'),
             ), tags, cat)
 
         # La campagne et ses enfants
@@ -178,6 +203,9 @@ class Command(BaseCommand):
             banner_image=next((i for i in images if i.width >= i.height), None),
         ))
         campagne.save_revision().publish()
+
+        for titre, texte in PRESENCES.items():
+            PresenceEnCampagne.objects.create(fiche=LorePage.objects.get(title=titre), campagne=campagne, texte=texte)
 
         carte_image = next((i for i in images if "carte" in i.title.lower()), None)
         cartes = {

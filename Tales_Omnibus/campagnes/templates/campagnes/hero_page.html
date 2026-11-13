@@ -1,27 +1,10 @@
-{% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags encyclopedie_tags %}
+{% extends "core/fiche_page.html" %}
+{% load wagtailcore_tags %}
 
 {% block body_class %}template-hero{% endblock %}
+{% block fiche_classe %}page-hero{% endblock %}
 
-{% block content %}
-<main class="container page-fiche page-hero">
-
-    {# --- PRÉSENTATION DU HÉROS + PORTRAIT --- #}
-    <div class="fiche-top">
-        <div class="fiche-card">
-            <h1 class="fiche-title">{{ page.title }}</h1>
-            {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
-            {% if page.intro %}
-                <div class="richtext">{{ page.intro|richtext }}</div>
-            {% endif %}
-        </div>
-        {% if page.main_image %}
-            <figure class="fiche-media">
-                {% image page.main_image fill-600x850 alt=page.title %}
-            </figure>
-        {% endif %}
-    </div>
-
+{% block fiche_details %}
     {# --- PRÉSENTATION DU JOUEUR --- #}
     {% if page.joueur_nom %}
         <section class="panel joueur-section">
@@ -33,10 +16,6 @@
         </section>
     {% endif %}
 
-    {% if page.body %}
-        <section class="section richtext">{% include_block page.body %}</section>
-    {% endif %}
-
     {# --- LE "PIN" : le lieu choisi dans l'admin, sur une carte de cette campagne si possible --- #}
     {% if page.lieu_origine.live %}
         <section class="panel panel--rounded fiche-lieu">
@@ -44,8 +23,6 @@
             {% include "campagnes/includes/mini_carte.html" with lieu=page.lieu_origine apparition=apparition_lieu %}
         </section>
     {% endif %}
-
-    {% include "core/includes/tags_list.html" with tags=page.tags.all %}
 
     {# --- RÉSEAUX DU JOUEUR --- #}
     {% with links=page.hero_social_links.all %}
@@ -86,9 +63,4 @@
             </form>
         </section>
     {% endif %}
-
-    {# --- FICHES LIÉES : les fiches qui partagent un tag avec celle-ci --- #}
-    {% fiches_liees page %}
-
-</main>
 {% endblock %}
