@@ -87,13 +87,18 @@ def sauvegarder_la_base(simulation=False):
 
 
 # --------------------------------------------------------------- 1. migrations
+def migrations_en_attente():
+    """Les migrations pas encore appliquées, sous la forme « app nom »."""
+    executeur = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+    plan = executeur.migration_plan(executeur.loader.graph.leaf_nodes())
+    return [f"{migration.app_label} {migration.name}" for migration, _ in plan]
+
+
 def appliquer_les_migrations(simulation=False):
     etape = Etape("Migrations")
-    executeur = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
-    a_appliquer = executeur.migration_plan(executeur.loader.graph.leaf_nodes())
-    if not a_appliquer:
+    noms = migrations_en_attente()
+    if not noms:
         return etape.dire("La base est à jour.")
-    noms = [f"{migration.app_label} {migration.name}" for migration, _ in a_appliquer]
     if simulation:
         return etape.dire(f"{len(noms)} à appliquer : {resumer(noms)}")
     call_command("migrate", interactive=False, verbosity=0)
@@ -290,6 +295,15 @@ def lancer_entretien(simulation=False, migrer=True, sauvegarder=True, publier=Fa
         etapes.append(sauvegarder_la_base(simulation))
     if migrer:
         etapes.append(appliquer_les_migrations(simulation))
+    # Si des migrations attendent et qu'on ne les applique pas (simulation, ou
+    # bouton de l'admin), la suite lirait des colonnes qui n'existent pas
+    # encore en base : on s'arrête là, avec une explication plutôt qu'un crash.
+    if (simulation or not migrer) and migrations_en_attente():
+        etapes.append(Etape("Arrêt", a_verifier=True).dire(
+            "Des migrations attendent : la suite ne peut pas être vérifiée avant. "
+            "Lancer « manage.py entretien » (sans --simulation) pour les appliquer."
+        ))
+        return etapes
     if publier:
         # Avant le reste : slugs, géographie et recherche se calculent sur
         # le contenu publié

@@ -380,3 +380,17 @@ class MenuAdminTests(TestCase):
         # Les anciens noms techniques ont disparu
         for ancien in ("Pages", "Fragments", "Formulaires", "Paramètres"):
             self.assertNotIn(ancien, menu)
+
+
+class EntretienMigrationsEnAttenteTests(TestCase):
+    """Juste après un pull : la simulation et le bouton de l'admin ne doivent pas planter."""
+
+    def test_s_arrete_proprement_si_des_migrations_attendent(self):
+        from unittest.mock import patch
+        from core.entretien import lancer_entretien
+        # On fait croire qu'une migration vient d'arriver par un pull
+        with patch("core.entretien.migrations_en_attente", return_value=["campagnes 9999_nouvelle"]):
+            for options in ({"simulation": True, "migrer": True}, {"migrer": False}):
+                titres = [e.titre for e in lancer_entretien(sauvegarder=False, **options)]
+                self.assertEqual(titres[-1], "Arrêt")
+                self.assertNotIn("Redirections", titres)  # la suite n'a pas été lancée
