@@ -1,0 +1,11 @@
+{# Les tableaux de caractéristiques d'une fiche (Héros, Lore : créatures, PNJ…). #}
+{# Un panneau par tableau ; un tableau sans case n'affiche rien.               #}
+{# Usage : {% include "core/includes/tableaux_de_stats.html" with tableaux=page.caracteristiques %} #}
+{% load wagtailcore_tags %}
+{% for tableau in tableaux %}
+    {% if tableau.value.stats %}
+        <section class="panel panel--rounded fiche-stats">
+            {% include_block tableau with niveau_titre=2 %}
+        </section>
+    {% endif %}
+{% endfor %}

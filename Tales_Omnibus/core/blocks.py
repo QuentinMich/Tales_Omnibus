@@ -131,6 +131,51 @@ class DocumentBlock(blocks.StructBlock):
         label = "Document à télécharger (aide de jeu)"
 
 
+# Le tableau par défaut : les 6 caractéristiques de D&D, sur une ligne
+STATS_DND = ["Force", "Dextérité", "Constitution", "Intelligence", "Sagesse", "Charisme"]
+
+
+class StatBlock(blocks.StructBlock):
+    """Une case du tableau : « Force / 15 / +2 »."""
+    libelle = blocks.CharBlock(label="Caractéristique", max_length=40)
+    # Du texte et pas un nombre : « 15 », « 45 % », « 3d6 », « — »… selon le jeu
+    valeur = blocks.CharBlock(required=False, label="Valeur", max_length=12)
+    complement = blocks.CharBlock(
+        required=False, label="Sous la valeur", max_length=12,
+        help_text="Facultatif : le modificateur de D&D (« +2 »), un maximum…",
+    )
+
+
+class TableauDeStatsBlock(blocks.StructBlock):
+    """
+    Un tableau de caractéristiques, adaptable à tous les jeux :
+      - D&D : 6 cases sur 1 ligne (le modèle par défaut) ;
+      - Warhammer : une dizaine de cases, sur 1 ou 2 lignes ;
+      - un système à 30 compétences : 6 colonnes et des petites cases.
+    On choisit le nombre de COLONNES ; les lignes se font toutes seules
+    (10 cases sur 5 colonnes = 2 lignes). Aucune case = rien d'affiché.
+    """
+    titre = blocks.CharBlock(required=False, default="Caractéristiques", label="Titre")
+    colonnes = blocks.IntegerBlock(
+        default=6, min_value=1, max_value=12, label="Nombre de colonnes",
+        help_text="Les lignes se calculent toutes seules. Sur téléphone, ça s'adapte à l'écran.",
+    )
+    taille = blocks.ChoiceBlock(
+        choices=[('grande', "Grandes cases"), ('moyenne', "Moyennes"), ('petite', "Petites (beaucoup de stats)")],
+        default='grande', label="Taille des cases",
+    )
+    stats = blocks.ListBlock(
+        StatBlock(),
+        default=[{'libelle': nom, 'valeur': "", 'complement': ""} for nom in STATS_DND],
+        label="Cases",
+    )
+
+    class Meta:
+        template = "core/blocks/tableau_de_stats_block.html"
+        icon = "table"
+        label = "Tableau de caractéristiques"
+
+
 class SeparateurBlock(blocks.StaticBlock):
     """Un trait de séparation entre deux parties (balise <hr>). Rien à remplir."""
 

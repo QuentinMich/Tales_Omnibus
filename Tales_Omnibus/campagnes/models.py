@@ -12,7 +12,7 @@ from core.models import (
     BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS, arbre_des_categories, categories_en_memoire,
 )
 from core.forms import HeroContactForm
-from core.blocks import BaseStreamBlock
+from core.blocks import STATS_DND, BaseStreamBlock, TableauDeStatsBlock
 from core.panels import panels_avec_enfants
 from core.slugs import SlugAutomatiqueMixin
 from .geometrie import aire, centre, contient, est_une_forme_valide, ranger
@@ -670,9 +670,26 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         verbose_name="Lieu d'origine",
     )
 
+    # La fiche de stats : un ou plusieurs tableaux (Warhammer : profil +
+    # compétences…). Un NOUVEAU héros arrive avec le tableau D&D prérempli ;
+    # vide (on supprime le tableau) = rien sur le site.
+    caracteristiques = StreamField(
+        [('tableau', TableauDeStatsBlock())],
+        blank=True,
+        default=[('tableau', {
+            'titre': "Caractéristiques", 'colonnes': 6, 'taille': 'grande',
+            'stats': [{'libelle': nom, 'valeur': "", 'complement': ""} for nom in STATS_DND],
+        })],
+        verbose_name="Caractéristiques",
+        help_text="Le modèle D&D est prérempli : renomme, ajoute ou retire des cases, "
+                  "change le nombre de colonnes. Supprime le tableau pour ne rien afficher.",
+    )
+
     tags = ClusterTaggableManager(through=HeroPageTag, blank=True)
     
     content_panels = BaseFichePage.content_panels + [
+        # Entre la description du personnage et celle du joueur, comme sur la page
+        FieldPanel('caracteristiques'),
         MultiFieldPanel([
         FieldPanel('joueur_nom'),
         FieldPanel('joueur_email'),

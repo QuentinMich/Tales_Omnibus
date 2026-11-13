@@ -1,0 +1,30 @@
+{# Un tableau de caractéristiques (TableauDeStatsBlock).                       #}
+{# <dl> = une liste de « nom : valeur » : c'est exactement ce qu'est une fiche #}
+{# de stats. Un <div> autour de chaque paire <dt>/<dd> est permis en HTML et   #}
+{# sert de case à la grille.                                                    #}
+{# --colonnes : le nombre de colonnes choisi dans l'admin, lu par le CSS.      #}
+{# niveau_titre=2 : sur la fiche Héros, le titre est un h2 (titre de panneau) ; #}
+{# dans un article, un h3 (sous-partie d'une section).                          #}
+{% if value.stats %}
+    <div class="tableau-stats tableau-stats--{{ value.taille|default:'grande' }}">
+        {% if value.titre %}
+            {% if niveau_titre == 2 %}
+                <h2 class="panel-title">{{ value.titre }}</h2>
+            {% else %}
+                <h3 class="tableau-stats-titre">{{ value.titre }}</h3>
+            {% endif %}
+        {% endif %}
+        <dl class="tableau-stats-grille" style="--colonnes: {{ value.colonnes|default:6 }};">
+            {% for stat in value.stats %}
+                <div class="stat">
+                    <dt class="stat-libelle">{{ stat.libelle }}</dt>
+                    {# Case pas encore remplie : un tiret, la case reste visible #}
+                    <dd class="stat-valeur">
+                        {{ stat.valeur|default:"—" }}
+                        {% if stat.complement %}<small class="stat-complement">{{ stat.complement }}</small>{% endif %}
+                    </dd>
+                </div>
+            {% endfor %}
+        </dl>
+    </div>
+{% endif %}

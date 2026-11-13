@@ -9,11 +9,12 @@ from modelcluster.fields import ParentalKey
 from taggit.models import Tag, TaggedItemBase
 from wagtail.admin.forms import WagtailAdminModelForm
 from wagtail.admin.panels import FieldPanel, InlinePanel
-from wagtail.fields import RichTextField
+from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Orderable, Page
 from wagtail.snippets.models import register_snippet
 
 from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
+from core.blocks import TableauDeStatsBlock
 from core.slugs import SlugAutomatiqueMixin
 from core.models import (
     BaseFichePage, FicheEncyclopedieMixin, arbre_des_categories, categories_en_memoire, ids_de_la_branche,
@@ -151,7 +152,17 @@ class LorePage(FicheEncyclopedieMixin, BaseFichePage):
     subpage_types = []  # Page feuille
     parent_page_types = ['encyclopedie.EncyclopedieIndexPage']
 
+    # Des stats pour une créature, un PNJ, une arme… VIDE par défaut (la
+    # plupart des fiches Lore n'en ont pas) : bouton « + » pour en ajouter.
+    caracteristiques = StreamField(
+        [('tableau', TableauDeStatsBlock())],
+        blank=True,
+        verbose_name="Caractéristiques",
+        help_text="Facultatif : pour une créature, un PNJ… Le modèle D&D est prérempli à l'ajout.",
+    )
+
     content_panels = BaseFichePage.content_panels + [
+        FieldPanel('caracteristiques'),
         FieldPanel('categorie'),
         FieldPanel('tags'),
         FieldPanel('epinglee'),

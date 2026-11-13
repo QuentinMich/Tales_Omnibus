@@ -478,3 +478,61 @@ class VisionneuseTests(CampagneTreeMixin, TestCase):
         self.assertIn("max-1600x1600", html)          # la grande version, jamais recadrée
         self.assertIn('alt="Portrait de Brann"', html)  # l'ALT automatique
         self.assertIn("js/agrandir.js", html)
+
+
+class CaracteristiquesTests(CampagneTreeMixin, TestCase):
+    """Les tableaux de stats : D&D par défaut sur un nouveau héros, adaptables, vides = rien."""
+
+    def tableau(self, colonnes, taille, stats):
+        return ('tableau', {'titre': "Profil", 'colonnes': colonnes, 'taille': taille,
+                            'stats': [{'libelle': l, 'valeur': v, 'complement': c} for l, v, c in stats]})
+
+    def test_un_nouveau_heros_arrive_avec_le_modele_dnd(self):
+        hero = HeroPage(title="Nouveau", joueur_nom="J")
+        (tableau,) = hero.caracteristiques
+        self.assertEqual([s['libelle'] for s in tableau.value['stats']],
+                         ["Force", "Dextérité", "Constitution", "Intelligence", "Sagesse", "Charisme"])
+        self.assertEqual(tableau.value['colonnes'], 6)
+
+    def test_le_tableau_s_affiche_avec_ses_colonnes(self):
+        hero = self.campagne.add_child(instance=HeroPage(
+            title="Brann", joueur_nom="B",
+            caracteristiques=[self.tableau(5, 'moyenne', [("Force", "40", ""), ("Agilité", "33", "+3")])],
+        ))
+        html = self.client.get(hero.url).content.decode()
+        self.assertIn('class="tableau-stats tableau-stats--moyenne"', html)
+        self.assertIn('style="--colonnes: 5;"', html)
+        self.assertIn('<h2 class="panel-title">Profil</h2>', html)
+        self.assertIn('<dt class="stat-libelle">Agilité</dt>', html)
+        self.assertIn('<small class="stat-complement">+3</small>', html)
+
+    def test_sans_tableau_ou_sans_case_rien_ne_s_affiche(self):
+        for tableaux in ([], [self.tableau(6, 'grande', [])]):
+            hero = self.campagne.add_child(instance=HeroPage(
+                title=f"Sans stats {len(tableaux)}", joueur_nom="J", caracteristiques=tableaux))
+            self.assertNotContains(self.client.get(hero.url), "tableau-stats")
+
+    def test_une_case_vide_affiche_un_tiret(self):
+        hero = self.campagne.add_child(instance=HeroPage(
+            title="À remplir", joueur_nom="J", caracteristiques=[self.tableau(6, 'grande', [("Force", "", "")])]))
+        self.assertContains(self.client.get(hero.url), "—")
+
+    def test_une_fiche_lore_peut_avoir_des_stats(self):
+        from encyclopedie.models import EncyclopedieIndexPage, LorePage
+        encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        vide = encyclopedie.add_child(instance=LorePage(title="Légende"))  # par défaut : aucune
+        self.assertEqual(len(vide.caracteristiques), 0)
+        dragon = encyclopedie.add_child(instance=LorePage(
+            title="Dragon", caracteristiques=[self.tableau(3, 'grande', [("Points de vie", "207", "")])]))
+        self.assertContains(self.client.get(dragon.url), "Points de vie")
+        self.assertNotContains(self.client.get(vide.url), "tableau-stats")
+
+    def test_le_formulaire_d_un_nouveau_heros_est_prerempli(self):
+        from django.contrib.auth import get_user_model
+        from django.urls import reverse
+        admin = get_user_model().objects.create_superuser("admin", "admin@example.com", "x")
+        self.client.force_login(admin)
+        url = reverse("wagtailadmin_pages:add", args=["campagnes", "heropage", self.campagne.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "Caractéristiques")
+        self.assertContains(response, "Charisme")  # le modèle D&D, prêt à remplir

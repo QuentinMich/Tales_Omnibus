@@ -144,6 +144,52 @@ EVENEMENTS = {
 }
 
 # --- Héros : titre -> (catégorie, joueur, lieu d'origine, intro, tags, épinglé)
+def tableau(titre, colonnes, taille, stats):
+    """Un tableau de caractéristiques : stats = [(libellé, valeur, complément), …]."""
+    return ('tableau', {
+        'titre': titre, 'colonnes': colonnes, 'taille': taille,
+        'stats': [{'libelle': l, 'valeur': v, 'complement': c} for l, v, c in stats],
+    })
+
+
+# --- Caractéristiques des héros : trois cas à montrer -------------------------
+STATS_DES_HEROS = {
+    # D&D, le modèle par défaut, rempli
+    "Maëlis Ventcourt": [tableau("Caractéristiques", 6, 'grande', [
+        ("Force", "8", "-1"), ("Dextérité", "14", "+2"), ("Constitution", "12", "+1"),
+        ("Intelligence", "17", "+3"), ("Sagesse", "13", "+1"), ("Charisme", "10", "+0"),
+    ])],
+    # Un système à la Warhammer : 10 caractéristiques en %, sur 2 lignes,
+    # puis un 2e tableau de compétences en petites cases
+    "Brann le Rouquin": [
+        tableau("Profil", 5, 'moyenne', [
+            ("Capacité de combat", "45", ""), ("Capacité de tir", "30", ""), ("Force", "40", ""),
+            ("Endurance", "42", ""), ("Initiative", "35", ""), ("Agilité", "33", ""),
+            ("Dextérité", "28", ""), ("Intelligence", "25", ""), ("Force mentale", "38", ""),
+            ("Sociabilité", "31", ""),
+        ]),
+        tableau("Compétences", 6, 'petite', [
+            ("Bûcheronnage", "55", ""), ("Intimidation", "40", ""), ("Pistage", "35", ""),
+            ("Résistance", "50", ""), ("Survie", "45", ""), ("Hache hantée", "?", "elle refuse"),
+        ]),
+    ],
+    # Sœur Ysolde : aucun tableau, rien ne s'affiche
+}
+
+# --- Caractéristiques de fiches Lore (créatures, PNJ) : facultatives ---------
+STATS_DU_LORE = {
+    "Le Dragon de Suie": [tableau("Caractéristiques", 6, 'grande', [
+        ("Force", "23", "+6"), ("Dextérité", "10", "+0"), ("Constitution", "21", "+5"),
+        ("Intelligence", "14", "+2"), ("Sagesse", "11", "+0"), ("Charisme", "19", "+4"),
+    ]), tableau("Combat", 3, 'moyenne', [
+        ("Classe d'armure", "19", ""), ("Points de vie", "207", ""), ("Souffle de suie", "16d6", "1 fois / jour"),
+    ])],
+    "Le Marchand Borgne": [tableau("Caractéristiques", 6, 'moyenne', [
+        ("Force", "9", "-1"), ("Dextérité", "12", "+1"), ("Constitution", "10", "+0"),
+        ("Intelligence", "15", "+2"), ("Sagesse", "16", "+3"), ("Charisme", "18", "+4"),
+    ])],
+}
+
 HEROS = {
     "Maëlis Ventcourt": ("Héros", "Joueuse A", "Port-Lanterne",
                          "Une cartographe qui dessine les routes avant qu'elles bougent.", ["runes", "prophétie"], True),
@@ -226,6 +272,7 @@ class Command(BaseCommand):
             ), tags, cat)
         for n, (titre, (cat, intro, tags, epingle)) in enumerate(LORE.items()):
             publier(encyclopedie, LorePage(
+                caracteristiques=STATS_DU_LORE.get(titre, []),
                 title=titre, intro=f"<p>{intro}</p>", epinglee=epingle, main_image=image(n) if n % 3 else None,
                 body=article(intro, image(n + 1), 'droite' if n % 2 else 'gauche'),
             ), tags, cat)
@@ -286,6 +333,7 @@ class Command(BaseCommand):
 
         for n, (titre, (cat, joueur, origine, intro, tags, epingle)) in enumerate(HEROS.items()):
             publier(campagne, HeroPage(
+                caracteristiques=STATS_DES_HEROS.get(titre, []),
                 title=titre, joueur_nom=joueur, lieu_origine=lieux[origine], epinglee=epingle,
                 intro=f"<p>{intro}</p>", main_image=image(n),
                 joueur_bio="<p>Joue depuis trois campagnes, apporte toujours les chips.</p>",

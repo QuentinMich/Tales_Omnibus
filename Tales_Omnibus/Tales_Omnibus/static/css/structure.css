@@ -50,6 +50,9 @@
     --mini-aspect: 1.3333;             /* forme des mini-cartes zoomées (4/3) */
     --mini-zoom-max: 4;                /* zoom maximum d'une mini-carte */
     --mini-max-width: 28rem;           /* largeur maximum d'une mini-carte */
+    --stat-case-grande: 6rem;          /* tableau de stats : taille des cases */
+    --stat-case-moyenne: 4.5rem;
+    --stat-case-petite: 3.5rem;
     --color-visionneuse-fond: rgb(0 0 0 / 0.85);  /* voile derrière une image agrandie */
     --color-visionneuse-texte: #FFFFFF;
     --map-icon-shadow: drop-shadow(0 0 2px rgb(255 255 255 / 0.9)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
@@ -1399,6 +1402,90 @@ span.carte-map-img {
     gap: var(--space-sm);
 }
 
+/* --- TABLEAU DE CARACTÉRISTIQUES (bloc « stats ») ---
+   Le nombre de colonnes vient de l'admin (--colonnes, posé par le template) ;
+   les lignes se font toutes seules. La TAILLE des cases (grande / moyenne /
+   petite) ne fait que changer deux variables. */
+.tableau-stats {
+    --taille-case: var(--stat-case-grande);
+    --taille-valeur: 2rem;
+}
+
+.tableau-stats--moyenne {
+    --taille-case: var(--stat-case-moyenne);
+    --taille-valeur: 1.5rem;
+}
+
+.tableau-stats--petite {
+    --taille-case: var(--stat-case-petite);
+    --taille-valeur: 1.15rem;
+}
+
+.tableau-stats-titre {
+    margin: var(--space-md) 0 var(--space-sm);
+}
+
+.tableau-stats-grille {
+    display: grid;
+    /* repeat(var(--colonnes)) : le nombre choisi dans l'admin.
+       minmax(0, 1fr) : des colonnes égales qui ne débordent jamais. */
+    grid-template-columns: repeat(var(--colonnes, 6), minmax(0, 1fr));
+    gap: var(--space-sm);
+    /* Pas plus large que nécessaire : 6 grandes cases ne s'étalent pas
+       sur tout l'écran. */
+    max-width: calc(var(--colonnes, 6) * (var(--taille-case) + var(--space-lg)));
+    margin: 0;
+}
+
+/* Une case : le nom en haut, la valeur en gros, le complément dessous */
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--taille-case);
+    padding: var(--space-xs);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+    text-align: center;
+}
+
+.stat-libelle {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    /* « Intimidation » dans une petite case : césure à la française
+       (« Intimi-dation », le navigateur suit <html lang="fr">), et en
+       dernier recours, coupure n'importe où plutôt que de déborder. */
+    hyphens: auto;
+    overflow-wrap: anywhere;
+}
+
+/* Petites cases : en majuscules espacées, « INTIMIDATION » ne tiendrait
+   pas. En minuscules, sans espacement, le mot entier tient sur une ligne. */
+.tableau-stats--petite .stat-libelle {
+    font-size: 0.65rem;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.stat-valeur {
+    margin: 0;
+    font-size: var(--taille-valeur);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.stat-complement {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
 /* --- DOCUMENT À TÉLÉCHARGER (aide de jeu, bloc « document ») --- */
 .document-a-telecharger {
     display: flex;
@@ -1915,6 +2002,13 @@ html:has(.template-home) {
 @media (max-width: 48rem) {
     .site-header {
         justify-content: center;
+    }
+
+    /* Tableau de stats : sur un téléphone, 10 colonnes ne tiennent pas.
+       On oublie le nombre choisi : autant de cases que la largeur en permet,
+       chacune au moins de sa taille (auto-fill). */
+    .tableau-stats-grille {
+        grid-template-columns: repeat(auto-fill, minmax(var(--taille-case), 1fr));
     }
 
     /* Box du lieu : la carte au-dessus des infos */

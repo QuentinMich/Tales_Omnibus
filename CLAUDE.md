@@ -188,6 +188,18 @@ cd Tales_Omnibus
   « Télécharger ». Extensions autorisées : `WAGTAILDOCS_EXTENSIONS`.
   La démo crée « Lettre du messager » (dans « Aide de jeu »), supprimée
   avec `--supprimer`.
+- **Caractéristiques** (`TableauDeStatsBlock` / `StatBlock`, core/blocks.py) :
+  champ StreamField `caracteristiques` (un ou plusieurs tableaux) sur
+  `HeroPage` (défaut = les 6 stats D&D, `STATS_DND`, pour les NOUVEAUX héros
+  seulement : la migration campagnes 0021 utilise `preserve_default=False`)
+  et sur `LorePage` (vide par défaut : créatures, PNJ). Réglages : titre,
+  nombre de COLONNES (les lignes s'en déduisent), taille des cases
+  (grande / moyenne / petite = variables `--stat-case-*`), cases (libellé,
+  valeur en texte, complément facultatif). Rendu : `<dl>` en grille
+  `repeat(var(--colonnes), …)` ; sur téléphone, `auto-fill`. Aucune case =
+  rien. Affiché par `core/includes/tableaux_de_stats.html`, entre la
+  description et la présentation du joueur. Pas dans les articles : un seul
+  endroit pour les stats.
 - **Tests et fichiers** : pendant `manage.py test`, `MEDIA_ROOT` pointe vers
   un dossier temporaire (settings/base.py) : les tests n'écrivent plus dans
   le vrai `media/`.

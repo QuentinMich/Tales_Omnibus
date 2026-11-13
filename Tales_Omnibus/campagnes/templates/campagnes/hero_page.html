@@ -5,6 +5,9 @@
 {% block fiche_classe %}page-hero{% endblock %}
 
 {% block fiche_details %}
+    {# --- CARACTÉRISTIQUES : un panneau par tableau (vide = rien) --- #}
+    {% include "core/includes/tableaux_de_stats.html" with tableaux=page.caracteristiques %}
+
     {# --- PRÉSENTATION DU JOUEUR --- #}
     {% if page.joueur_nom %}
         <section class="panel joueur-section">

@@ -1,6 +1,11 @@
 {% extends "core/fiche_page.html" %}
-{# Fiche Lore : tout est dans le squelette commun (description, articles, #}
-{# tags, « Dans les campagnes », fiches liées).                           #}
+{# Fiche Lore : le squelette commun (description, articles, tags,      #}
+{# « Dans les campagnes », fiches liées) + les stats s'il y en a.       #}
 
 {% block body_class %}template-lore{% endblock %}
 {% block fiche_classe %}page-lore{% endblock %}
+
+{# Créature, PNJ… : ses tableaux de caractéristiques (aucun = rien) #}
+{% block fiche_details %}
+    {% include "core/includes/tableaux_de_stats.html" with tableaux=page.caracteristiques %}
+{% endblock %}
