@@ -18,9 +18,31 @@
             <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
         {% endif %}
 
-        {# Une étoile par lieu POSÉ sur cette carte (modèle Apparition) #}
+        {# --- LES ZONES (royaumes, forêts…) --- #}
+        {# Un SVG posé sur l'image. viewBox 0 0 100 100 + preserveAspectRatio  #}
+        {# "none" : 1 unité SVG = 1 % de l'image, dans les deux sens. Les       #}
+        {# sommets en % se dessinent donc tels quels, quelle que soit la taille. #}
+        {# Les plus grandes d'abord : les petites passent au-dessus (cliquables). #}
+        {% if zones %}
+            <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                {% for apparition in zones %}
+                    {# tabindex -1 : au clavier, on passe par le nom de la zone (plus bas) #}
+                    <a href="{% pageurl apparition.lieu %}" tabindex="-1">
+                        <polygon class="carte-zone" points="{{ apparition.points_svg }}"{% if apparition.lieu.categorie.couleur_effective %} style="--marker-color: {{ apparition.lieu.categorie.couleur_effective }};"{% endif %}>
+                            <title>{{ apparition.lieu.title }}</title>
+                        </polygon>
+                    </a>
+                {% endfor %}
+            </svg>
+        {% endif %}
+
+        {# Une étoile par lieu POSÉ sur cette carte (modèle Apparition) ; #}
+        {# pour une zone, son nom écrit en son centre à la place de l'étoile. #}
         {% for apparition in apparitions %}
-            {% if apparition.est_placee %}
+            {% if apparition.est_zone %}
+                <a href="{% pageurl apparition.lieu %}" class="map-zone-nom"
+                   style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">{{ apparition.lieu.title }}</a>
+            {% elif apparition.est_placee %}
                 {% with lieu=apparition.lieu %}
                     {# Le HTML ne transmet que les DONNÉES (variables CSS --x / --y) : #}
                     {# c'est structure.css qui les transforme en position.            #}

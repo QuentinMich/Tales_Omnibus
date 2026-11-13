@@ -17,7 +17,12 @@
                     <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
                 {% endif %}
 
-                {% if apparition.est_placee %}
+                {% if apparition.est_zone %}
+                    {# Une zone : on la surligne (même SVG que la page Carte) #}
+                    <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                        <polygon class="carte-zone carte-zone--seule" points="{{ apparition.points_svg }}"{% if lieu.categorie.couleur_effective %} style="--marker-color: {{ lieu.categorie.couleur_effective }};"{% endif %}></polygon>
+                    </svg>
+                {% elif apparition.est_placee %}
                     {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
                     <span class="map-marker" aria-hidden="true"
                           style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie.couleur_effective %} --marker-color: {{ lieu.categorie.couleur_effective }};{% endif %}"></span>
@@ -30,6 +35,15 @@
         {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
         {% if apparition %}sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a>{% endif %}
     </figcaption>
+    {# La géographie : les zones de CETTE carte qui contiennent le lieu #}
+    {% with chemin=apparition.chemin %}
+        {% if chemin %}
+            <nav class="carte-mini-chemin" aria-label="Situé dans">
+                Situé dans :
+                {% for zone in chemin %}{% if not forloop.first %} <span aria-hidden="true">›</span> {% endif %}<a href="{% pageurl zone %}">{{ zone.title }}</a>{% endfor %}
+            </nav>
+        {% endif %}
+    {% endwith %}
     {% if apparition.a_cette_epoque %}
         <p class="carte-mini-epoque">{{ apparition.a_cette_epoque|linebreaksbr }}</p>
     {% endif %}

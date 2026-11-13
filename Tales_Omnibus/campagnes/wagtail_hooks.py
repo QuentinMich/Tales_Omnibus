@@ -3,7 +3,11 @@ Raccourcis dans la barre latérale de l'admin : un menu "Univers" qui liste
 directement toutes les campagnes, héros, lieux et événements (toutes
 campagnes confondues), sans passer par l'explorateur de pages.
 """
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import path
 from wagtail import hooks
+from wagtail.images import get_image_model
 from wagtail.admin.ui.tables import Column
 from wagtail.admin.viewsets.base import ViewSetGroup
 from wagtail.admin.viewsets.pages import PageListingViewSet
@@ -63,3 +67,19 @@ class UniversViewSetGroup(ViewSetGroup):
 @hooks.register("register_admin_viewset")
 def register_univers_menu():
     return UniversViewSetGroup()
+
+
+def image_de_carte(request, pk):
+    """
+    Pour l'éditeur de carte (editeur_carte.js) : l'adresse de l'image de la
+    carte en width-1400, LA MÊME version que sur le site (jamais recadrée),
+    pour que les % cliqués dans l'admin tombent au même endroit sur le site.
+    """
+    image = get_object_or_404(get_image_model(), pk=pk)
+    return JsonResponse({"url": image.get_rendition("width-1400").url})
+
+
+@hooks.register("register_admin_urls")
+def urls_de_l_editeur_de_carte():
+    # Les URLs d'admin sont déjà protégées par Wagtail (connexion obligatoire)
+    return [path("carte-image/<int:pk>/", image_de_carte, name="image_de_carte")]

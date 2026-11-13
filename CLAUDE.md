@@ -115,6 +115,24 @@ cd Tales_Omnibus
   = accroche sans HTML coupée à 155 caractères. Plus `canonical` et balises
   Open Graph (aperçu des liens sur Discord / réseaux, image 1200×630).
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
+- **Zones et géographie** : une `Apparition` est un POINT (`coord_x`/`coord_y`)
+  ou une ZONE (`forme` = JSON des sommets en %, ≥ 3). À chaque publication
+  de la carte, `CartePage.ranger_les_lieux()` calcule `contenu_dans` (FK vers
+  un `LieuPage`, non éditable) : la plus PETITE zone qui contient le point
+  (ou le centre de la zone), jamais une zone plus petite ni le même lieu.
+  Géométrie pure dans `campagnes/geometrie.py` (aire, centre, point dans
+  polygone par l'algorithme du rayon). Affichage : SVG `viewBox 0 0 100 100`
+  + `preserveAspectRatio="none"` posé sur l'image, zones triées de la plus
+  grande à la plus petite ; « Situé dans » sous les mini-cartes
+  (`Apparition.chemin()`), « Dans ce lieu » sur la fiche (enfants directs).
+- **Éditeur de carte (admin)** : `EditeurDeCartePanel` (campagnes/panels.py)
+  affiche l'image dans le formulaire de la Carte ; sur chaque lieu,
+  `OutilsDeCarteWidget` (boutons Placer / Tracer / Effacer) ;
+  `campagnes/static/campagnes/js/editeur_carte.js` remplit les champs.
+  L'image vient de la vue d'admin `image_de_carte` (width-1400, comme le site).
+  Bouton « Placer le centre » (+ case `centre_manuel`, migration 0018) : pour
+  une zone en croissant ou en L dont le centre calculé tombe dehors ; le
+  centre manuel doit être DANS la zone (validé dans `Apparition.clean`).
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
   template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un
@@ -163,8 +181,8 @@ cd Tales_Omnibus
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
-- **Démo** : `manage.py creer_demo` crée une campagne factice complète (24
-  pages, catégories, familles, apparitions) ; `creer_demo --supprimer` la
+- **Démo** : `manage.py creer_demo` crée une campagne factice complète (25
+  pages, catégories, familles, apparitions, zones imbriquées) ; `creer_demo --supprimer` la
   retire (les catégories restent). Le contenu est déclaré dans la commande.
 - **Migration core 0004** (renommage de `CategorieLieu`) : elle dépend de
   `campagnes 0014`, sinon une base NEUVE (tests) plante, car les anciennes
@@ -177,8 +195,10 @@ cd Tales_Omnibus
   variables de `:root`. Le thème se choisit dans l'admin via un champ des
   `NavigationSettings`. Le point d'accroche existe déjà : `{% block theme_css %}`
   dans `base.html`.
-- **Sélecteur de coordonnées** : un widget d'admin pour cliquer sur l'image de
-  la carte parente et remplir `coord_x` / `coord_y`.
+- **Cartes reliées** : cliquer sur la zone d'un royaume (carte du monde)
+  pour ouvrir la carte détaillée de ce royaume.
+- **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),
+  à partir de `contenu_dans`.
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
 - CSS de la recherche.

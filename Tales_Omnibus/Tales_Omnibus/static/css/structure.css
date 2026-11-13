@@ -37,6 +37,12 @@
     --color-type-lore: #6B4C9A;       /* violet */
     --color-type-text: #FFFFFF;
 
+    /* --- Couleurs : cartes (zones et noms posés sur l'image) --- */
+    --color-zone-opacity: 0.18;       /* remplissage d'une zone (0 = vide, 1 = plein) */
+    --color-map-label: rgb(0 0 0 / 0.55);       /* fond du nom d'une zone */
+    --color-map-label-hover: rgb(0 0 0 / 0.8);
+    --color-map-label-text: #FFFFFF;
+
     /* --- Typographie --- */
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-title: var(--font-body);
@@ -1219,6 +1225,54 @@ span.carte-map-img {
     transform: translate(-50%, -50%) scale(1.3);
 }
 
+/* --- Les ZONES (royaumes, forêts…) : un SVG qui recouvre l'image --- */
+.carte-zones {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* le SVG laisse passer les clics… */
+}
+
+.carte-zone {
+    pointer-events: visiblePainted; /* …sauf sur les zones elles-mêmes */
+    fill: var(--marker-color, var(--color-highlight));
+    fill-opacity: var(--color-zone-opacity);
+    stroke: var(--marker-color, var(--color-highlight));
+    stroke-width: 2;
+    /* Le SVG est étiré (preserveAspectRatio="none") : sans ça, le trait
+       serait plus épais dans un sens que dans l'autre. */
+    vector-effect: non-scaling-stroke;
+    transition: fill-opacity var(--transition);
+}
+
+.carte-zones a:hover .carte-zone,
+.carte-zone--seule {
+    fill-opacity: 0.4;
+}
+
+/* Le nom d'une zone, écrit en son centre (à la place de l'étoile) */
+.map-zone-nom {
+    position: absolute;
+    left: calc(var(--x, 50) * 1%);
+    top: calc(var(--y, 50) * 1%);
+    transform: translate(-50%, -50%);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: var(--color-map-label);
+    color: var(--color-map-label-text);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.map-zone-nom:hover,
+.map-zone-nom:focus-visible {
+    background: var(--color-map-label-hover);
+}
+
 /* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */
 .map-marker-label {
     position: absolute;
@@ -1258,6 +1312,12 @@ span.carte-map-img {
     justify-content: center;
     align-items: center;
     gap: var(--space-sm);
+}
+
+/* « Situé dans : Ardenn › Royaume du Val Gris », sous la mini-carte */
+.carte-mini-chemin {
+    margin: var(--space-sm) 0 0;
+    text-align: center;
 }
 
 /* Ce qui change à cette époque, sous la mini-carte */

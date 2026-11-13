@@ -1,0 +1,11 @@
+{# Le champ « forme » d'un lieu sur la carte (OutilsDeCarteWidget).         #}
+{# La valeur JSON voyage dans l'input caché ; les boutons sont branchés     #}
+{# par editeur_carte.js (data-outil = ce que fait le bouton).               #}
+<div class="outils-carte" data-outils-carte>
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value|default_if_none:'' }}"{% include "django/forms/widgets/attrs.html" %}>
+    <button type="button" class="button button-small button-secondary" data-outil="point">📍 Placer un point</button>
+    <button type="button" class="button button-small button-secondary" data-outil="zone">⬠ Tracer une zone</button>
+    <button type="button" class="button button-small button-secondary" data-outil="centre">🎯 Placer le centre</button>
+    <button type="button" class="button button-small button-secondary no" data-outil="effacer">Effacer</button>
+    <span class="outils-carte__resume" data-resume aria-live="polite"></span>
+</div>

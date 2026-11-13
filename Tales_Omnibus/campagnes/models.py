@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -12,6 +13,9 @@ from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
 from core.slugs import SlugAutomatiqueMixin
+from .geometrie import aire, centre, contient, est_une_forme_valide, ranger
+from .panels import EditeurDeCartePanel
+from .widgets import OutilsDeCarteWidget
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from taggit.models import TaggedItemBase
@@ -164,17 +168,65 @@ class CartePage(BaseFichePage):
     content_panels = BaseFichePage.content_panels + [
         FieldPanel('is_main_map'),
         FieldPanel('echelle_km'),
+        # L'image de la carte, cliquable : sert aux boutons « Placer » / « Tracer »
+        # de chaque lieu ci-dessous (voir campagnes/static/campagnes/js/editeur_carte.js)
+        EditeurDeCartePanel(heading="Placer les lieux sur la carte"),
         InlinePanel('apparitions', heading="Lieux sur cette carte", label="Lieu"),
     ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # update_fields rempli = Wagtail n'enregistre que quelques champs
+        # (ex. un brouillon) : les apparitions en base ne bougent pas, on ne
+        # recalcule rien. Sinon (publication) : on refait l'arbre de la carte.
+        if kwargs.get('update_fields') is None:
+            self.ranger_les_lieux()
+
+    def ranger_les_lieux(self):
+        """
+        « Qui est dans qui » sur CETTE carte (règles dans geometrie.ranger) :
+        remplit Apparition.contenu_dans. Pour une zone, l'étoile (coord_x /
+        coord_y) est replacée au centre de la zone.
+        Appelé à chaque publication de la carte : l'arbre est toujours à jour.
+        """
+        apparitions = list(self.apparitions.all())
+        for apparition in apparitions:
+            # Centre placé à la main (forme en croissant, en L…) : on le garde
+            if apparition.est_zone and not (apparition.centre_manuel and apparition.est_placee):
+                x, y = centre(apparition.forme)
+                apparition.coord_x, apparition.coord_y = round(x, 2), round(y, 2)
+
+        parents = ranger([
+            {
+                'cle': index,
+                'lieu': apparition.lieu_id,
+                'point': (apparition.coord_x, apparition.coord_y) if apparition.est_placee else None,
+                'zone': apparition.forme if apparition.est_zone else None,
+            }
+            for index, apparition in enumerate(apparitions)
+        ])
+        for index, apparition in enumerate(apparitions):
+            parent = parents[index]
+            apparition.contenu_dans_id = apparitions[parent].lieu_id if parent is not None else None
+            if apparition.pk:
+                # update() : écrit directement en base, sans repasser par save()
+                Apparition.objects.filter(pk=apparition.pk).update(
+                    coord_x=apparition.coord_x, coord_y=apparition.coord_y,
+                    contenu_dans_id=apparition.contenu_dans_id,
+                )
 
     def get_context(self, request):
         context = super().get_context(request)
         # Les lieux posés sur CETTE carte (seulement les fiches publiées),
         # avec leur catégorie en une seule requête (couleur des étoiles).
-        context['apparitions'] = (
+        apparitions = list(
             self.apparitions.filter(lieu__live=True)
             .select_related('lieu', 'lieu__categorie', 'lieu__categorie__parent')
         )
+        context['apparitions'] = apparitions
+        # Les zones, des plus grandes aux plus petites : en SVG, ce qui est
+        # dessiné en dernier passe AU-DESSUS. La ville reste cliquable sur le royaume.
+        context['zones'] = sorted((a for a in apparitions if a.est_zone), key=lambda a: -a.aire)
 
         parent_campagne = self.get_parent().specific
         autres_cartes = parent_campagne.get_children().live().type(CartePage).not_page(self)
@@ -212,6 +264,34 @@ class Apparition(Orderable):
         verbose_name="Coordonnée Y (%)",
         help_text="Position verticale sur cette carte (de 0 à 100)"
     )
+    # Une ZONE (royaume, forêt…) : la liste des sommets du polygone, en %.
+    # Vide = le lieu est un simple point (coord_x / coord_y).
+    forme = models.JSONField(
+        null=True, blank=True,
+        verbose_name="Position sur la carte",
+        help_text="Un point (une ville) ou une zone (un royaume) : utilise les boutons.",
+    )
+    # Pour une zone, l'étoile (coord_x / coord_y) est son centre, calculé tout
+    # seul. Mais le centre d'une forme en croissant ou en L tombe parfois en
+    # DEHORS de la forme : on peut alors le placer soi-même (bouton
+    # « Placer le centre »), et cette case dit au calcul de ne pas l'écraser.
+    centre_manuel = models.BooleanField(
+        default=False,
+        verbose_name="Centre placé à la main",
+        help_text="Décoche pour revenir au centre calculé automatiquement.",
+    )
+    # CALCULÉ, jamais saisi : la plus petite zone de cette carte qui contient
+    # ce lieu (voir CartePage.ranger_les_lieux). C'est la « géographie » :
+    # Port-Lanterne est dans le Val Gris, lui-même dans Ardenn.
+    # On pointe vers le LIEU (une page, stable) et pas vers son Apparition,
+    # que Wagtail recrée quand on publie une ancienne révision.
+    contenu_dans = models.ForeignKey(
+        'campagnes.LieuPage',
+        null=True, blank=True, editable=False,
+        on_delete=models.SET_NULL,
+        related_name='contenus',  # lieu.contenus = apparitions situées dans ce lieu
+        verbose_name="Situé dans",
+    )
     a_cette_epoque = models.TextField(
         blank=True,
         verbose_name="À cette époque",
@@ -220,17 +300,63 @@ class Apparition(Orderable):
 
     panels = [
         FieldPanel('lieu'),
+        FieldPanel('forme', widget=OutilsDeCarteWidget),
         FieldPanel('coord_x'),
         FieldPanel('coord_y'),
+        FieldPanel('centre_manuel'),
         FieldPanel('a_cette_epoque'),
     ]
 
     class Meta(Orderable.Meta):
         verbose_name = "Apparition d'un lieu"
 
+    def clean(self):
+        super().clean()
+        if self.forme in ([], ""):
+            self.forme = None
+        if self.forme is not None and not est_une_forme_valide(self.forme):
+            raise ValidationError({'forme': "Une zone a besoin d'au moins 3 points, entre 0 et 100."})
+        # Le centre sert aussi à savoir dans quelle zone ELLE est rangée :
+        # posé hors de la forme, il rangerait la zone n'importe où.
+        if (self.centre_manuel and self.est_zone and self.est_placee
+                and not contient(self.forme, self.coord_x, self.coord_y)):
+            raise ValidationError({'coord_x': "Le centre placé à la main doit être à l'intérieur de la zone."})
+
     @property
     def est_placee(self):
         return self.coord_x is not None and self.coord_y is not None
+
+    @property
+    def est_zone(self):
+        return bool(self.forme) and len(self.forme) >= 3
+
+    @property
+    def aire(self):
+        return aire(self.forme) if self.est_zone else 0
+
+    @property
+    def points_svg(self):
+        """
+        L'attribut points d'un <polygon> SVG : « 10,20 40,25 30,60 ».
+        Fabriqué en Python (et pas avec |unlocalize dans le template) :
+        str() d'un nombre écrit toujours 12.5, jamais 12,5.
+        """
+        return " ".join(f"{x},{y}" for x, y in self.forme) if self.est_zone else ""
+
+    def chemin(self):
+        """
+        La géographie de ce lieu SUR CETTE CARTE, du plus grand au plus
+        proche : [Ardenn, Royaume du Val Gris]. On remonte de zone en zone.
+        """
+        chemin, vus, courant = [], {self.lieu_id}, self
+        while courant.contenu_dans_id and courant.contenu_dans_id not in vus:
+            vus.add(courant.contenu_dans_id)
+            chemin.insert(0, courant.contenu_dans)
+            courant = (Apparition.objects.filter(carte_id=self.carte_id, lieu_id=courant.contenu_dans_id)
+                       .select_related('contenu_dans').first())
+            if courant is None:
+                break
+        return [lieu for lieu in chemin if lieu.live]
 
 
 class LieuPageTag(TaggedItemBase):
@@ -265,6 +391,12 @@ class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
                 .select_related('carte', 'lieu__categorie')
                 .order_by('carte__path'))
 
+    def lieux_contenus(self):
+        """Les lieux situés DANS celui-ci, sur au moins une carte publiée."""
+        return (LieuPage.objects.live()
+                .filter(apparitions__contenu_dans=self, apparitions__carte__live=True)
+                .distinct().order_by('title'))
+
     def apparition_vue_depuis(self, page):
         """
         La carte à montrer sur la fiche d'un héros ou d'un événement : de
@@ -282,6 +414,7 @@ class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
         context['apparitions'] = self.apparitions_publiees()
+        context['lieux_contenus'] = self.lieux_contenus()
         return context
 
 # 4. CHRONOLOGIE (Conteneur d'événements)

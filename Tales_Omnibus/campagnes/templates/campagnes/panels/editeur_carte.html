@@ -1,0 +1,24 @@
+{# La « table de travail » de la carte dans l'admin (EditeurDeCartePanel). #}
+{# Tout ce qui est dedans est rempli et animé par editeur_carte.js.       #}
+<div class="editeur-carte" data-editeur-carte data-url-image="{{ url_image }}">
+    <p class="help" data-sans-image>
+        Choisis d'abord l'<strong>image de la carte</strong> (plus haut) : elle s'affichera ici.
+        Ensuite, sur chaque lieu ci-dessous : « Placer un point » puis un clic sur la carte,
+        ou « Tracer une zone » puis un clic par coin (double-clic, ou clic sur le premier coin, pour fermer).
+        À la publication, un lieu posé DANS une zone devient automatiquement son enfant.
+    </p>
+
+    {# La barre d'état : visible pendant qu'on place ou qu'on trace #}
+    <div class="editeur-carte__barre" data-barre hidden>
+        <span data-statut aria-live="polite"></span>
+        <button type="button" class="button button-small" data-action="terminer">Terminer la zone</button>
+        <button type="button" class="button button-small button-secondary" data-action="annuler">Annuler</button>
+    </div>
+
+    {# L'image + deux calques : les zones (SVG) et les points / noms (HTML) #}
+    <div class="editeur-carte__cadre" data-cadre hidden>
+        <img data-image alt="Image de la carte">
+        <svg class="editeur-carte__zones" data-zones viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="editeur-carte__points" data-points aria-hidden="true"></div>
+    </div>
+</div>

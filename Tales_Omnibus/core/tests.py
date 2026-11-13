@@ -137,7 +137,10 @@ class CreerDemoTests(TestCase):
 
         call_command('creer_demo', stdout=StringIO())
         self.assertGreaterEqual(Page.objects.count() - avant, 20)
-        self.assertEqual(Apparition.objects.count(), 7)
+        self.assertEqual(Apparition.objects.count(), 8)
+        # Les zones de la démo rangent les lieux : Hameau › Bois des Murmures › Ardenn
+        hameau = Apparition.objects.get(lieu__title="Hameau des Saules")
+        self.assertEqual([l.title for l in hameau.chemin()], ["Ardenn", "Bois des Murmures"])
         # Toutes les pages de la démo s'affichent
         for page in Page.objects.live().specific().filter(depth__gt=2):
             self.assertEqual(self.client.get(page.url).status_code, 200, page.title)

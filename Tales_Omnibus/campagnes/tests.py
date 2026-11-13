@@ -181,3 +181,170 @@ class RangerLieuxTests(CampagneTreeMixin, TestCase):
         sortie = StringIO()
         call_command('ranger_lieux', stdout=sortie)
         self.assertIn("déjà", sortie.getvalue())
+
+
+class GeometrieTests(TestCase):
+    """Les fonctions pures de campagnes/geometrie.py : des nombres, pas de base."""
+
+    CARRE = [[0, 0], [10, 0], [10, 10], [0, 10]]
+
+    def test_aire_et_centre_d_un_carre(self):
+        from campagnes.geometrie import aire, centre
+        self.assertEqual(aire(self.CARRE), 100)
+        self.assertEqual(centre(self.CARRE), (5, 5))
+        # Le sens de rotation (horaire ou non) ne change pas l'aire
+        self.assertEqual(aire(list(reversed(self.CARRE))), 100)
+
+    def test_point_dedans_ou_dehors(self):
+        from campagnes.geometrie import contient
+        self.assertTrue(contient(self.CARRE, 5, 5))
+        self.assertFalse(contient(self.CARRE, 15, 5))
+        # Une forme en L (concave) : le creux du L est DEHORS
+        en_l = [[0, 0], [10, 0], [10, 4], [4, 4], [4, 10], [0, 10]]
+        self.assertTrue(contient(en_l, 2, 8))
+        self.assertFalse(contient(en_l, 8, 8))
+
+    def test_ranger_choisit_la_plus_petite_zone(self):
+        from campagnes.geometrie import ranger
+        parents = ranger([
+            {'cle': 'royaume', 'lieu': 1, 'point': (50, 50), 'zone': [[0, 0], [100, 0], [100, 100], [0, 100]]},
+            {'cle': 'duche', 'lieu': 2, 'point': (25, 25), 'zone': [[10, 10], [40, 10], [40, 40], [10, 40]]},
+            {'cle': 'ville', 'lieu': 3, 'point': (20, 20), 'zone': None},
+            {'cle': 'port', 'lieu': 4, 'point': (80, 80), 'zone': None},
+            {'cle': 'perdu', 'lieu': 5, 'point': None, 'zone': None},
+        ])
+        self.assertEqual(parents, {'royaume': None, 'duche': 'royaume', 'ville': 'duche',
+                                   'port': 'royaume', 'perdu': None})
+
+    def test_un_lieu_n_est_pas_dans_lui_meme(self):
+        from campagnes.geometrie import ranger
+        parents = ranger([
+            {'cle': 'zone', 'lieu': 1, 'point': (5, 5), 'zone': self.CARRE},
+            {'cle': 'etoile', 'lieu': 1, 'point': (5, 5), 'zone': None},  # même lieu, dessiné 2 fois
+        ])
+        self.assertIsNone(parents['etoile'])
+
+    def test_forme_valide(self):
+        from campagnes.geometrie import est_une_forme_valide
+        self.assertTrue(est_une_forme_valide(self.CARRE))
+        self.assertFalse(est_une_forme_valide([[0, 0], [10, 10]]))            # 2 coins : une ligne
+        self.assertFalse(est_une_forme_valide([[0, 0], [10, 0], [150, 10]]))  # hors de l'image
+        self.assertFalse(est_une_forme_valide("pas une liste"))
+
+
+class ZonesTests(CampagneTreeMixin, TestCase):
+    """
+    Sur la carte « Monde » : la zone Ardenn, la zone Bois (dans Ardenn),
+    le point Hameau (dans le Bois) et le point Large (hors de tout).
+    """
+
+    def setUp(self):
+        super().setUp()
+        from campagnes.models import Apparition, CartePage, LieuPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.lieux = {nom: encyclopedie.add_child(instance=LieuPage(title=nom))
+                      for nom in ("Ardenn", "Bois", "Hameau", "Large")}
+        self.carte = self.campagne.add_child(instance=CartePage(title="Monde"))
+        for nom, forme, x, y in [
+            ("Ardenn", [[10, 10], [90, 10], [90, 90], [10, 90]], None, None),
+            ("Bois", [[40, 40], [60, 40], [60, 60], [40, 60]], None, None),
+            ("Hameau", None, 50, 50),
+            ("Large", None, 95, 5),
+        ]:
+            Apparition.objects.create(carte=self.carte, lieu=self.lieux[nom], forme=forme, coord_x=x, coord_y=y)
+        self.carte.save_revision().publish()  # la publication range les lieux
+
+    def apparition(self, nom):
+        from campagnes.models import Apparition
+        return Apparition.objects.get(carte=self.carte, lieu=self.lieux[nom])
+
+    def test_la_publication_range_les_lieux(self):
+        self.assertIsNone(self.apparition("Ardenn").contenu_dans)
+        self.assertEqual(self.apparition("Bois").contenu_dans, self.lieux["Ardenn"])
+        self.assertEqual(self.apparition("Hameau").contenu_dans, self.lieux["Bois"])
+        self.assertIsNone(self.apparition("Large").contenu_dans)
+
+    def test_l_etoile_d_une_zone_est_son_centre(self):
+        bois = self.apparition("Bois")
+        self.assertEqual((bois.coord_x, bois.coord_y), (50, 50))
+
+    def test_un_centre_place_a_la_main_est_garde(self):
+        carte = self.carte.get_latest_revision_as_object()
+        bois = next(a for a in carte.apparitions.all() if a.lieu_id == self.lieux["Bois"].pk)
+        bois.coord_x, bois.coord_y, bois.centre_manuel = 42, 58, True
+        carte.save_revision().publish()
+        bois = self.apparition("Bois")
+        self.assertEqual((bois.coord_x, bois.coord_y), (42, 58))  # pas écrasé par (50, 50)
+        self.assertEqual(bois.contenu_dans, self.lieux["Ardenn"])
+
+    def test_un_centre_hors_de_la_zone_est_refuse(self):
+        from django.core.exceptions import ValidationError
+        bois = self.apparition("Bois")
+        bois.coord_x, bois.coord_y, bois.centre_manuel = 5, 5, True
+        with self.assertRaises(ValidationError):
+            bois.full_clean()
+
+    def test_le_chemin_va_du_plus_grand_au_plus_proche(self):
+        self.assertEqual([l.title for l in self.apparition("Hameau").chemin()], ["Ardenn", "Bois"])
+
+    def test_deplacer_un_point_le_change_de_zone(self):
+        # On sort le hameau du bois (mais il reste dans Ardenn), puis on republie
+        carte = self.carte.get_latest_revision_as_object()
+        hameau = next(a for a in carte.apparitions.all() if a.lieu_id == self.lieux["Hameau"].pk)
+        hameau.coord_x, hameau.coord_y = 20, 20
+        carte.save_revision().publish()
+        self.assertEqual(self.apparition("Hameau").contenu_dans, self.lieux["Ardenn"])
+
+    def test_la_page_carte_dessine_les_zones(self):
+        response = self.client.get(self.carte.url)
+        self.assertContains(response, 'class="carte-zones"')
+        self.assertContains(response, 'points="10,10 90,10 90,90 10,90"')
+        self.assertContains(response, 'class="map-zone-nom"')
+        # La plus grande zone d'abord : le Bois passe au-dessus d'Ardenn
+        html = response.content.decode()
+        self.assertLess(html.index('points="10,10'), html.index('points="40,40'))
+
+    def test_les_fiches_montrent_la_geographie(self):
+        hameau = self.client.get(self.lieux["Hameau"].url)
+        self.assertContains(hameau, "Situé dans")
+        ardenn = self.client.get(self.lieux["Ardenn"].url)
+        self.assertContains(ardenn, "Dans ce lieu")
+        # Un seul niveau, comme un dossier : le Bois est dans Ardenn,
+        # le Hameau est dans le Bois (on le voit sur la fiche du Bois)
+        self.assertContains(ardenn, "/encyclopedie/bois/")
+        self.assertNotContains(ardenn, "/encyclopedie/hameau/")
+        self.assertContains(self.client.get(self.lieux["Bois"].url), "/encyclopedie/hameau/")
+
+    def test_une_zone_de_deux_coins_est_refusee(self):
+        from django.core.exceptions import ValidationError
+        from campagnes.models import Apparition
+        apparition = Apparition(carte=self.carte, lieu=self.lieux["Large"], forme=[[0, 0], [10, 10]])
+        with self.assertRaises(ValidationError):
+            apparition.full_clean()
+
+
+class EditeurDeCarteAdminTests(CampagneTreeMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        from django.contrib.auth import get_user_model
+        from campagnes.models import CartePage
+        self.carte = self.campagne.add_child(instance=CartePage(title="Monde"))
+        admin = get_user_model().objects.create_superuser("admin", "admin@example.com", "x")
+        self.client.force_login(admin)
+
+    def test_le_formulaire_contient_l_editeur(self):
+        from django.urls import reverse
+        response = self.client.get(reverse("wagtailadmin_pages:edit", args=[self.carte.pk]))
+        self.assertContains(response, "data-editeur-carte")
+        self.assertContains(response, "campagnes/js/editeur_carte.js")
+        self.assertContains(response, 'data-outil="zone"')  # dans le modèle de ligne vide
+
+    def test_la_vue_donne_l_image_non_recadree(self):
+        from django.urls import reverse
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        image = get_image_model().objects.create(title="Carte", file=get_test_image_file())
+        response = self.client.get(reverse("image_de_carte", args=[image.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("width-1400", response.json()["url"])

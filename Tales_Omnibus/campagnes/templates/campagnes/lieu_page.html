@@ -17,6 +17,18 @@
             </div>
         </section>
     {% endif %}
+
+    {# DANS CE LIEU : les lieux posés à l'intérieur de sa zone, sur une carte #}
+    {% if lieux_contenus %}
+        <section class="panel panel--rounded fiche-lieu">
+            <h2 class="panel-title">Dans ce lieu</h2>
+            <ul class="lieux-list">
+                {% for lieu in lieux_contenus %}
+                    <li>{% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
 {% endblock %}
 
 {# LIÉS À CE LIEU : événements (champ "lieu") et héros (champ "lieu_origine") #}

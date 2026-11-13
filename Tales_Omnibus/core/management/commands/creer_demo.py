@@ -38,6 +38,7 @@ CATEGORIES = [
     ("Lieu", None, "#3B6EA2", 'lieux'),
     ("Continent", "Lieu", "", None),
     ("Royaume", "Lieu", "", None),
+    ("Région", "Lieu", "#4F7942", None),
     ("Ville", "Lieu", "#1E88E5", None),
     ("Village", "Lieu", "", None),
     ("Lieu-dit", "Lieu", "#5C6BC0", None),
@@ -65,17 +66,23 @@ LIEUX = {
     "Port-Lanterne": ("Ville", "La seule ville où les lanternes ne s'éteignent jamais. On dit qu'elles regardent.", ["Guilde des Brumes", "esprit"], False),
     "Fort-Sombre": ("Lieu-dit", "Une forteresse en ruines. Les corbeaux y sont plus nombreux que les pierres.", ["Ordre du Corbeau", "malédiction"], False),
     "Hameau des Saules": ("Village", "Trois maisons, un puits, et un saule qui chante quand il pleut.", ["esprit"], False),
+    "Bois des Murmures": ("Région", "Une forêt où les arbres se répètent des secrets. Mal, en général.", ["esprit"], False),
 }
 
-# --- Apparitions : (carte, lieu, x, y, à cette époque) ------------------------
+# --- Apparitions : (carte, lieu, position, à cette époque) -------------------
+# position = (x, y) pour un point, une liste de sommets pour une zone, ou None.
+# Les zones rangent les lieux toutes seules à la publication de la carte :
+# ici, Hameau des Saules est dans le Bois des Murmures, lui-même dans Ardenn.
 APPARITIONS = [
-    ("Carte d'Ardenn", "Ardenn", 50, 50, ""),
-    ("Carte d'Ardenn", "Port-Lanterne", 30, 62, ""),
-    ("Carte d'Ardenn", "Fort-Sombre", 66, 24, "Encore debout, tenu par l'Ordre du Corbeau."),
-    ("Carte d'Ardenn", "Hameau des Saules", 44, 80, ""),
-    ("Carte du Val Gris", "Royaume du Val Gris", 50, 45, "Caché par le brouillard : aucune carte du monde ne le montre."),
-    ("Carte du Val Gris", "Port-Lanterne", 18, 70, "Reconstruit après le Grand Brouillard."),
-    ("Carte du Val Gris", "Fort-Sombre", None, None, ""),  # ajouté à la carte mais pas encore placé
+    ("Carte d'Ardenn", "Ardenn", [[12, 10], [55, 4], [90, 14], [94, 55], [80, 92], [35, 95], [6, 70]], ""),
+    ("Carte d'Ardenn", "Bois des Murmures", [[30, 68], [52, 66], [58, 82], [44, 90], [28, 84]], ""),
+    ("Carte d'Ardenn", "Port-Lanterne", (30, 52), ""),
+    ("Carte d'Ardenn", "Fort-Sombre", (66, 24), "Encore debout, tenu par l'Ordre du Corbeau."),
+    ("Carte d'Ardenn", "Hameau des Saules", (44, 80), ""),
+    ("Carte du Val Gris", "Royaume du Val Gris", [[8, 30], [60, 18], [88, 40], [70, 88], [12, 85]],
+     "Caché par le brouillard : aucune carte du monde ne le montre."),
+    ("Carte du Val Gris", "Port-Lanterne", (18, 70), "Reconstruit après le Grand Brouillard."),
+    ("Carte du Val Gris", "Fort-Sombre", None, ""),  # ajouté à la carte mais pas encore placé
 ]
 
 # --- Fiches Lore : titre -> (catégorie, intro, tags, épinglé) -----------------
@@ -220,10 +227,14 @@ class Command(BaseCommand):
         }
         for carte in cartes.values():
             campagne.add_child(instance=carte)
-        for nom_carte, nom_lieu, x, y, epoque in APPARITIONS:
+        for nom_carte, nom_lieu, position, epoque in APPARITIONS:
+            est_zone = isinstance(position, list)
+            x, y = position if position and not est_zone else (None, None)
             Apparition.objects.create(carte=cartes[nom_carte], lieu=lieux[nom_lieu],
+                                      forme=position if est_zone else None,
                                       coord_x=x, coord_y=y, a_cette_epoque=epoque)
         for carte in cartes.values():
+            # La publication range les lieux (CartePage.ranger_les_lieux)
             carte.save_revision().publish()
 
         chrono = campagne.add_child(instance=ChronologiePage(

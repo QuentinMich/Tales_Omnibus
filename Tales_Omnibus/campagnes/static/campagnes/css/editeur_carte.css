@@ -1,0 +1,167 @@
+/* ÉDITEUR DE CARTE (admin Wagtail) : voir editeur_carte.js */
+
+.editeur-carte__cadre {
+    position: relative; /* repère des calques posés par-dessus l'image */
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 1rem;
+    user-select: none;
+}
+
+.editeur-carte__cadre[hidden] {
+    display: none;
+}
+
+.editeur-carte__cadre img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+}
+
+/* En mode placement : curseur de visée */
+.editeur-carte__cadre.est-en-mode {
+    cursor: crosshair;
+    outline: 3px solid #FFD952;
+}
+
+/* Les deux calques recouvrent exactement l'image. pointer-events: none :
+   les clics traversent les dessins et arrivent toujours au cadre. */
+.editeur-carte__zones,
+.editeur-carte__points {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Le SVG est étiré (preserveAspectRatio="none") : sans non-scaling-stroke,
+   les traits seraient plus épais dans un sens que dans l'autre. */
+.editeur-carte__zone,
+.editeur-carte__trace {
+    vector-effect: non-scaling-stroke;
+    stroke-width: 2;
+}
+
+.editeur-carte__zone {
+    fill: rgba(140, 120, 44, 0.25);
+    stroke: #8C782C;
+}
+
+.editeur-carte__zone.est-active {
+    fill: rgba(255, 217, 82, 0.35);
+    stroke: #FFD952;
+}
+
+.editeur-carte__trace {
+    fill: rgba(255, 217, 82, 0.2);
+    stroke: #FFD952;
+    stroke-dasharray: 4 3;
+}
+
+.editeur-carte__point,
+.editeur-carte__nom,
+.editeur-carte__coin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+/* Un point : un rond posé PILE sur la coordonnée, et le nom à sa droite.
+   translate(-0.45rem) = la moitié du rond, pour que son centre soit le point. */
+.editeur-carte__point {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transform: translate(-0.45rem, -50%);
+    color: #fff;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
+
+.editeur-carte__point::before {
+    content: "";
+    flex: none;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #8C782C;
+    box-sizing: border-box;
+}
+
+.editeur-carte__point.est-active::before {
+    border-color: #000;
+    background: #FFD952;
+}
+
+/* Le nom d'une zone, écrit en son centre */
+.editeur-carte__nom {
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.editeur-carte__nom.est-active {
+    background: #FFD952;
+    color: #000;
+}
+
+/* Les coins de la zone en cours de tracé */
+.editeur-carte__coin {
+    width: 0.6rem;
+    height: 0.6rem;
+    border: 1px solid #000;
+    border-radius: 50%;
+    background: #FFD952;
+}
+
+/* Le premier coin, plus gros : on clique dessus pour fermer la zone */
+.editeur-carte__coin.est-premier {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.editeur-carte__barre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    background: #FFD952;
+    color: #000;
+}
+
+.editeur-carte__barre[hidden],
+.editeur-carte__barre [hidden] {
+    display: none;
+}
+
+.editeur-carte__barre [data-statut] {
+    flex: 1 1 15rem;
+}
+
+/* Les boutons sous chaque lieu */
+.outils-carte {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.outils-carte__resume {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Le lieu en cours d'édition, repérable dans la liste */
+.est-en-edition {
+    outline: 3px solid #FFD952;
+    outline-offset: 4px;
+}
