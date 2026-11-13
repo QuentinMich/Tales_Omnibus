@@ -393,3 +393,26 @@ class StyleDesCartesTests(CampagneTreeMixin, TestCase):
     def test_la_mini_carte_garde_le_style(self):
         self.assertContains(self.client.get(self.brulees.url), 'class="carte-hachures"')
         self.assertContains(self.client.get(self.saules.url), 'map-marker--icone')
+
+
+class FiltreAfficherTests(StyleDesCartesTests):
+    """Le menu « Afficher » de la page Carte (même carte que StyleDesCartesTests)."""
+
+    def test_le_menu_ne_propose_que_les_categories_de_la_carte(self):
+        from core.models import Categorie
+        Categorie.objects.create(nom="Déité")  # aucune fiche de la carte : pas dans le menu
+        response = self.client.get(self.carte.url)
+        self.assertContains(response, 'data-filtre-carte hidden')  # montré par le JS seulement
+        options = [libelle.strip() for _, libelle in response.context['options_categories']]
+        self.assertEqual(options, ["Lieu", "Village", "Hameau"])
+
+    def test_chaque_element_porte_sa_branche(self):
+        from core.models import Categorie
+        lieu = Categorie.objects.get(par_defaut_pour="lieux")
+        village = Categorie.objects.get(nom="Village")
+        hameau = Categorie.objects.get(nom="Hameau")
+        html = self.client.get(self.carte.url).content.decode()
+        # Saules (Hameau) : choisir Village ou Lieu le montre aussi
+        self.assertIn(f'data-categories="{lieu.pk} {village.pk} {hameau.pk}"', html)
+        # Puits, sans catégorie : rangé dans « Lieu », la catégorie par défaut
+        self.assertIn(f'<li data-categories="{lieu.pk}">', html)

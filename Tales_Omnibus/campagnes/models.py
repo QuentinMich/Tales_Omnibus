@@ -8,7 +8,9 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
-from core.models import BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS, categories_en_memoire
+from core.models import (
+    BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS, arbre_des_categories, categories_en_memoire,
+)
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
@@ -228,9 +230,24 @@ class CartePage(BaseFichePage):
         # hériter de l'icône ne coûte alors plus rien.
         toutes = categories_en_memoire()
         defaut = next((c for c in toutes.values() if c.par_defaut_pour == LieuPage.type_fiche), None)
+        presentes = set()  # les catégories présentes sur la carte, avec leurs ancêtres
         for apparition in apparitions:
-            apparition.categorie_affichee = toutes.get(apparition.lieu.categorie_id) or defaut
+            categorie = toutes.get(apparition.lieu.categorie_id) or defaut
+            apparition.categorie_affichee = categorie
+            ancetres = categorie.ancetres() if categorie else []
+            presentes.update(c.pk for c in ancetres)
+            # Pour le filtre « Afficher » : « 8 10 11 » = Lieu, Village, Hameau.
+            # Le JS montre l'élément si la catégorie choisie est DANS cette
+            # liste : choisir « Village » montre donc aussi les hameaux.
+            apparition.ids_categories = " ".join(str(c.pk) for c in ancetres)
         context['apparitions'] = apparitions
+        # Le menu « Afficher » : l'arbre des catégories, réduit à celles
+        # qui ont au moins un lieu sur CETTE carte (inutile de proposer
+        # « Déité » sur une carte de villages).
+        context['options_categories'] = [
+            (c.pk, "\u00a0\u00a0\u00a0" * profondeur + c.nom)
+            for c, profondeur in arbre_des_categories(toutes) if c.pk in presentes
+        ]
         # Les zones, des plus grandes aux plus petites : en SVG, ce qui est
         # dessiné en dernier passe AU-DESSUS. La ville reste cliquable sur le royaume.
         context['zones'] = sorted((a for a in apparitions if a.est_zone), key=lambda a: -a.aire)

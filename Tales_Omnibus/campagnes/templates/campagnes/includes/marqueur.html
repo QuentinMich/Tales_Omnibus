@@ -11,7 +11,7 @@
 {# deviendrait "12,5" et le CSS serait invalide.                             #}
 {% with categorie=apparition.categorie_affichee %}{% with icone=categorie.icone_effective couleur=categorie.couleur_effective %}
     {% if lien %}<a href="{% pageurl apparition.lieu %}"{% else %}<span aria-hidden="true"{% endif %}
-       class="map-marker{% if icone %} map-marker--icone{% endif %}"
+       class="map-marker{% if icone %} map-marker--icone{% endif %}"{% if apparition.ids_categories %} data-categories="{{ apparition.ids_categories }}"{% endif %}
        style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if couleur %} --marker-color: {{ couleur }};{% endif %}">
         {% if icone %}{% image icone max-64x64 alt="" class="map-marker-icone" %}{% endif %}
         {% if lien %}<span class="map-marker-label">{{ apparition.lieu.title }}</span>{% endif %}

@@ -1,12 +1,33 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags l10n %}
+{% load static wagtailcore_tags wagtailimages_tags l10n %}
 
 {% block body_class %}template-carte{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'campagnes/js/filtre_carte.js' %}" defer></script>
+{% endblock %}
 
 {% block content %}
 <main class="container page-carte-detail">
 
     <h1 class="page-title page-title--left">{{ page.title }}</h1>
+
+    {# --- FILTRE « AFFICHER » --- #}
+    {# Caché sans JavaScript (attribut hidden, retiré par filtre_carte.js) : #}
+    {# sans JS il ne marcherait pas, autant ne pas le montrer.              #}
+    {# Inutile s'il n'y a qu'une catégorie sur la carte.                    #}
+    {% if options_categories|length > 1 %}
+        <div class="form-group carte-filtre" data-filtre-carte hidden>
+            <label for="filtre-carte">Afficher</label>
+            <select id="filtre-carte">
+                <option value="">Tous les lieux</option>
+                {% for pk, libelle in options_categories %}
+                    <option value="{{ pk }}">{{ libelle }}</option>
+                {% endfor %}
+            </select>
+            <span class="filtres-resultat" data-filtre-resultat aria-live="polite"></span>
+        </div>
+    {% endif %}
 
     {# --- CARTE + MARQUEURS --- #}
     {# width-1400 et pas fill-... : l'image ne doit PAS être recadrée, #}
@@ -23,7 +44,7 @@
         {# Sous le SVG : ce sont les polygones du SVG qui restent cliquables. #}
         {% for apparition in zones %}
             {% if apparition.est_hachuree %}
-                <span class="carte-hachures" aria-hidden="true"
+                <span class="carte-hachures" aria-hidden="true" data-categories="{{ apparition.ids_categories }}"
                       style="clip-path: {{ apparition.clip_path }};{% if apparition.categorie_affichee.couleur_effective %} --marker-color: {{ apparition.categorie_affichee.couleur_effective }};{% endif %}"></span>
             {% endif %}
         {% endfor %}
@@ -37,7 +58,7 @@
             <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 {% for apparition in zones %}
                     {# tabindex -1 : au clavier, on passe par le nom de la zone (plus bas) #}
-                    <a href="{% pageurl apparition.lieu %}" tabindex="-1">
+                    <a href="{% pageurl apparition.lieu %}" tabindex="-1" data-categories="{{ apparition.ids_categories }}">
                         <polygon class="{{ apparition.classes_zone }}" points="{{ apparition.points_svg }}"{% if apparition.categorie_affichee.couleur_effective %} style="--marker-color: {{ apparition.categorie_affichee.couleur_effective }};"{% endif %}>
                             <title>{{ apparition.lieu.title }}</title>
                         </polygon>
@@ -52,7 +73,7 @@
         {% for apparition in apparitions %}
             {% if apparition.est_zone %}
                 {% with icone=apparition.categorie_affichee.icone_effective %}
-                    <a href="{% pageurl apparition.lieu %}" class="map-zone-nom"
+                    <a href="{% pageurl apparition.lieu %}" class="map-zone-nom" data-categories="{{ apparition.ids_categories }}"
                        style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">
                         {% if icone %}{% image icone max-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
                     </a>
@@ -80,7 +101,7 @@
             <h2 class="section-title section-title--left">Lieux de cette carte</h2>
             <ul class="lieux-list">
                 {% for apparition in apparitions %}
-                    <li>
+                    <li data-categories="{{ apparition.ids_categories }}">
                         {% include "campagnes/includes/lieu_chip.html" with lieu=apparition.lieu %}
                     </li>
                 {% endfor %}

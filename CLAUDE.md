@@ -145,6 +145,12 @@ cd Tales_Omnibus
     séparément. Les hachures sont un `repeating-linear-gradient` découpé par
     `clip-path: polygon(…)` (`Apparition.clip_path`), PAS un motif SVG (il
     serait étiré). Réglages dans `:root` : `--hatch-*`, `--border-dash`.
+- **Filtre « Afficher » de la page Carte** (`campagnes/js/filtre_carte.js`,
+  sans rechargement) : chaque élément d'un lieu porte `data-categories`
+  (sa catégorie + ses ancêtres, `apparition.ids_categories`) ; choisir une
+  catégorie montre TOUTE sa branche (comme l'encyclopédie). Le menu ne
+  propose que les catégories présentes sur la carte, il est caché sans JS
+  (`hidden`), et le choix est recopié dans l'adresse (`?afficher=<id>`).
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
   template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un

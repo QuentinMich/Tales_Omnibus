@@ -1345,6 +1345,14 @@ span.carte-map-img {
     object-fit: contain;
 }
 
+/* Le menu « Afficher » au-dessus de la carte */
+.carte-filtre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+}
+
 /* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */
 .map-marker-label {
     position: absolute;
