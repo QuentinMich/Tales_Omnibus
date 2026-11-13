@@ -67,6 +67,7 @@ LIEUX = {
     "Fort-Sombre": ("Lieu-dit", "Une forteresse en ruines. Les corbeaux y sont plus nombreux que les pierres.", ["Ordre du Corbeau", "malédiction"], False),
     "Hameau des Saules": ("Village", "Trois maisons, un puits, et un saule qui chante quand il pleut.", ["esprit"], False),
     "Bois des Murmures": ("Région", "Une forêt où les arbres se répètent des secrets. Mal, en général.", ["esprit"], False),
+    "Terres Brûlées": ("Région", "Ce qu'il reste après le passage du Dragon de Suie. Personne n'en revendique un seul caillou.", ["dragon", "malédiction"], False),
 }
 
 # --- Apparitions : (carte, lieu, position, à cette époque) -------------------
@@ -76,6 +77,7 @@ LIEUX = {
 APPARITIONS = [
     ("Carte d'Ardenn", "Ardenn", [[12, 10], [55, 4], [90, 14], [94, 55], [80, 92], [35, 95], [6, 70]], ""),
     ("Carte d'Ardenn", "Bois des Murmures", [[30, 68], [52, 66], [58, 82], [44, 90], [28, 84]], ""),
+    ("Carte d'Ardenn", "Terres Brûlées", [[56, 12], [82, 10], [86, 34], [60, 38]], "Un no man's land : ni l'Ordre ni la Guilde n'y mettent les pieds."),
     ("Carte d'Ardenn", "Port-Lanterne", (30, 52), ""),
     ("Carte d'Ardenn", "Fort-Sombre", (66, 24), "Encore debout, tenu par l'Ordre du Corbeau."),
     ("Carte d'Ardenn", "Hameau des Saules", (44, 80), ""),
@@ -84,6 +86,15 @@ APPARITIONS = [
     ("Carte du Val Gris", "Port-Lanterne", (18, 70), "Reconstruit après le Grand Brouillard."),
     ("Carte du Val Gris", "Fort-Sombre", None, ""),  # ajouté à la carte mais pas encore placé
 ]
+
+# --- Style de certaines zones : (carte, lieu) -> champs de l'Apparition -------
+STYLES_DE_ZONES = {
+    # Hachurée, frontière en tirets, et nom décalé à la main : au centre
+    # calculé, il cacherait l'étoile de Fort-Sombre.
+    ("Carte d'Ardenn", "Terres Brûlées"): {'motif': 'hachures', 'bordure': 'tirets',
+                                           'centre_manuel': True, 'coord_x': 74, 'coord_y': 31},
+    ("Carte du Val Gris", "Royaume du Val Gris"): {'bordure': 'tirets'},  # frontière floue, dans la brume
+}
 
 # --- Fiches Lore : titre -> (catégorie, intro, tags, épinglé) -----------------
 LORE = {
@@ -230,9 +241,9 @@ class Command(BaseCommand):
         for nom_carte, nom_lieu, position, epoque in APPARITIONS:
             est_zone = isinstance(position, list)
             x, y = position if position and not est_zone else (None, None)
-            Apparition.objects.create(carte=cartes[nom_carte], lieu=lieux[nom_lieu],
-                                      forme=position if est_zone else None,
-                                      coord_x=x, coord_y=y, a_cette_epoque=epoque)
+            champs = dict(forme=position if est_zone else None, coord_x=x, coord_y=y, a_cette_epoque=epoque)
+            champs.update(STYLES_DE_ZONES.get((nom_carte, nom_lieu), {}))
+            Apparition.objects.create(carte=cartes[nom_carte], lieu=lieux[nom_lieu], **champs)
         for carte in cartes.values():
             # La publication range les lieux (CartePage.ranger_les_lieux)
             carte.save_revision().publish()

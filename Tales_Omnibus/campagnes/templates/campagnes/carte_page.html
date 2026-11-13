@@ -18,6 +18,16 @@
             <span class="img-placeholder carte-map-img" aria-hidden="true"></span>
         {% endif %}
 
+        {# --- LES HACHURES (no man's land…) --- #}
+        {# Un calque CSS par zone hachurée, découpé à sa forme (clip-path). #}
+        {# Sous le SVG : ce sont les polygones du SVG qui restent cliquables. #}
+        {% for apparition in zones %}
+            {% if apparition.est_hachuree %}
+                <span class="carte-hachures" aria-hidden="true"
+                      style="clip-path: {{ apparition.clip_path }};{% if apparition.categorie_affichee.couleur_effective %} --marker-color: {{ apparition.categorie_affichee.couleur_effective }};{% endif %}"></span>
+            {% endif %}
+        {% endfor %}
+
         {# --- LES ZONES (royaumes, forêts…) --- #}
         {# Un SVG posé sur l'image. viewBox 0 0 100 100 + preserveAspectRatio  #}
         {# "none" : 1 unité SVG = 1 % de l'image, dans les deux sens. Les       #}
@@ -28,7 +38,7 @@
                 {% for apparition in zones %}
                     {# tabindex -1 : au clavier, on passe par le nom de la zone (plus bas) #}
                     <a href="{% pageurl apparition.lieu %}" tabindex="-1">
-                        <polygon class="carte-zone" points="{{ apparition.points_svg }}"{% if apparition.lieu.categorie.couleur_effective %} style="--marker-color: {{ apparition.lieu.categorie.couleur_effective }};"{% endif %}>
+                        <polygon class="{{ apparition.classes_zone }}" points="{{ apparition.points_svg }}"{% if apparition.categorie_affichee.couleur_effective %} style="--marker-color: {{ apparition.categorie_affichee.couleur_effective }};"{% endif %}>
                             <title>{{ apparition.lieu.title }}</title>
                         </polygon>
                     </a>
@@ -36,22 +46,19 @@
             </svg>
         {% endif %}
 
-        {# Une étoile par lieu POSÉ sur cette carte (modèle Apparition) ; #}
-        {# pour une zone, son nom écrit en son centre à la place de l'étoile. #}
+        {# Un repère par lieu POSÉ sur cette carte (modèle Apparition) :     #}
+        {# un point = médaillon avec l'icône de sa catégorie, sinon étoile ; #}
+        {# une zone = son nom (précédé de l'icône) écrit en son centre.       #}
         {% for apparition in apparitions %}
             {% if apparition.est_zone %}
-                <a href="{% pageurl apparition.lieu %}" class="map-zone-nom"
-                   style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">{{ apparition.lieu.title }}</a>
-            {% elif apparition.est_placee %}
-                {% with lieu=apparition.lieu %}
-                    {# Le HTML ne transmet que les DONNÉES (variables CSS --x / --y) : #}
-                    {# c'est structure.css qui les transforme en position.            #}
-                    {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
-                    <a href="{% pageurl lieu %}" class="map-marker"
-                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie.couleur_effective %} --marker-color: {{ lieu.categorie.couleur_effective }};{% endif %}">
-                        <span class="map-marker-label">{{ lieu.title }}</span>
+                {% with icone=apparition.categorie_affichee.icone_effective %}
+                    <a href="{% pageurl apparition.lieu %}" class="map-zone-nom"
+                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">
+                        {% if icone %}{% image icone fill-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
                     </a>
                 {% endwith %}
+            {% elif apparition.est_placee %}
+                {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=True %}
             {% endif %}
         {% endfor %}
     </div>

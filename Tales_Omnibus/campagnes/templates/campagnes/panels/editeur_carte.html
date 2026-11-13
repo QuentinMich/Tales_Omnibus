@@ -15,6 +15,16 @@
         <button type="button" class="button button-small button-secondary" data-action="annuler">Annuler</button>
     </div>
 
+    {# Le motif des hachures, pour l'aperçu des zones hachurées. Dans un SVG #}
+    {# à part : le calque des zones est vidé et redessiné à chaque clic.     #}
+    <svg width="0" height="0" class="editeur-carte__motifs" aria-hidden="true">
+        <defs>
+            <pattern id="editeur-carte-hachures" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="2" stroke="#8C782C" stroke-width="0.7"></line>
+            </pattern>
+        </defs>
+    </svg>
+
     {# L'image + deux calques : les zones (SVG) et les points / noms (HTML) #}
     <div class="editeur-carte__cadre" data-cadre hidden>
         <img data-image alt="Image de la carte">

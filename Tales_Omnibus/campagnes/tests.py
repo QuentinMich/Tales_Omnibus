@@ -348,3 +348,48 @@ class EditeurDeCarteAdminTests(CampagneTreeMixin, TestCase):
         response = self.client.get(reverse("image_de_carte", args=[image.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertIn("width-1400", response.json()["url"])
+
+
+class StyleDesCartesTests(CampagneTreeMixin, TestCase):
+    """Icône de catégorie sur les points et les zones, zones hachurées, frontières en tirets."""
+
+    def setUp(self):
+        super().setUp()
+        from campagnes.models import Apparition, CartePage, LieuPage
+        from core.models import Categorie
+        from encyclopedie.models import EncyclopedieIndexPage
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        icone = get_image_model().objects.create(title="Maison", file=get_test_image_file())
+        lieu = Categorie.objects.get(par_defaut_pour="lieux")
+        # L'icône est sur « Village » : « Hameau », sa sous-catégorie, en hérite
+        village = Categorie.objects.create(nom="Village", parent=lieu, icone=icone)
+        hameau = Categorie.objects.create(nom="Hameau", parent=village)
+        encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.saules = encyclopedie.add_child(instance=LieuPage(title="Saules", categorie=hameau))
+        self.puits = encyclopedie.add_child(instance=LieuPage(title="Puits"))  # sans catégorie : étoile
+        self.brulees = encyclopedie.add_child(instance=LieuPage(title="Brûlées", categorie=village))
+        self.carte = self.campagne.add_child(instance=CartePage(title="Monde"))
+        Apparition.objects.create(carte=self.carte, lieu=self.saules, coord_x=20, coord_y=20)
+        Apparition.objects.create(carte=self.carte, lieu=self.puits, coord_x=40, coord_y=40)
+        Apparition.objects.create(carte=self.carte, lieu=self.brulees, forme=[[50, 50], [90, 50], [90, 90]],
+                                  motif='hachures', bordure='tirets')
+        self.carte.save_revision().publish()
+
+    def test_un_point_prend_l_icone_heritee_de_sa_categorie(self):
+        html = self.client.get(self.carte.url).content.decode()
+        self.assertEqual(html.count('map-marker map-marker--icone'), 1)  # Saules, pas Puits
+        self.assertIn('class="map-marker-icone"', html)
+        self.assertIn('class="map-marker"', html)  # Puits garde son étoile
+
+    def test_le_nom_d_une_zone_a_son_icone(self):
+        self.assertContains(self.client.get(self.carte.url), 'class="map-zone-icone"')
+
+    def test_zone_hachuree_et_en_tirets(self):
+        response = self.client.get(self.carte.url)
+        self.assertContains(response, 'class="carte-zone carte-zone--hachuree carte-zone--tirets"')
+        self.assertContains(response, 'clip-path: polygon(50% 50%, 90% 50%, 90% 90%)')
+
+    def test_la_mini_carte_garde_le_style(self):
+        self.assertContains(self.client.get(self.brulees.url), 'class="carte-hachures"')
+        self.assertContains(self.client.get(self.saules.url), 'map-marker--icone')

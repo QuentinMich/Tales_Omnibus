@@ -42,6 +42,10 @@
     --color-map-label: rgb(0 0 0 / 0.55);       /* fond du nom d'une zone */
     --color-map-label-hover: rgb(0 0 0 / 0.8);
     --color-map-label-text: #FFFFFF;
+    --hatch-width: 3px;                /* épaisseur d'une hachure */
+    --hatch-gap: 10px;                 /* espace entre deux hachures */
+    --hatch-opacity: 0.75;
+    --border-dash: 6 4;                /* frontière en tirets : trait, vide */
 
     /* --- Typographie --- */
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -1251,6 +1255,41 @@ span.carte-map-img {
     fill-opacity: 0.4;
 }
 
+/* Zone hachurée : le polygone ne garde que son contour ; les hachures
+   sont dessinées par .carte-hachures, juste en dessous. Le remplissage
+   reste « peint » (opacité 0, pas « none ») : la zone reste cliquable sur
+   toute sa surface. */
+.carte-zone--hachuree,
+.carte-zone--hachuree.carte-zone--seule {
+    fill-opacity: 0;
+}
+
+/* Frontière en tirets : 6 unités de trait, 4 de vide (en pixels grâce à
+   vector-effect: non-scaling-stroke) */
+.carte-zone--tirets {
+    stroke-dasharray: var(--border-dash);
+}
+
+.carte-zones a:hover .carte-zone--hachuree {
+    fill-opacity: var(--color-zone-opacity);
+}
+
+/* Les hachures : un dégradé RÉPÉTÉ (une bande de couleur, une bande
+   transparente…) à 45°, découpé à la forme de la zone par le clip-path
+   que fournit le template. En CSS, les traits restent droits à 45°,
+   alors qu'un motif SVG serait étiré avec la carte. */
+.carte-hachures {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--hatch-opacity);
+    background: repeating-linear-gradient(
+        45deg,
+        var(--marker-color, var(--color-highlight)) 0 var(--hatch-width),
+        transparent var(--hatch-width) var(--hatch-gap)
+    );
+}
+
 /* Le nom d'une zone, écrit en son centre (à la place de l'étoile) */
 .map-zone-nom {
     position: absolute;
@@ -1266,11 +1305,41 @@ span.carte-map-img {
     text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
+    /* L'icône de la catégorie, devant le nom */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .map-zone-nom:hover,
 .map-zone-nom:focus-visible {
     background: var(--color-map-label-hover);
+}
+
+/* Point avec l'icône de sa catégorie : un médaillon rond, cerclé de la
+   couleur de la catégorie, à la place de l'étoile. Bordure sur TOUT le
+   tour : pas d'effet « croissant ». */
+.map-marker--icone {
+    width: 2.5rem;
+    height: 2.5rem;
+    clip-path: none;
+    border: 3px solid var(--marker-color, var(--color-highlight));
+    border-radius: 50%;
+    background: var(--color-bg);
+    overflow: hidden;
+}
+
+.map-marker-icone {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* L'icône devant le nom d'une zone */
+.map-zone-icone {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
 }
 
 /* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */

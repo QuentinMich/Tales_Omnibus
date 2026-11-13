@@ -54,6 +54,19 @@
     stroke: #FFD952;
 }
 
+/* Aperçu des réglages « Remplissage » et « Frontière » de chaque zone */
+.editeur-carte__zone.est-hachuree {
+    fill: url(#editeur-carte-hachures);
+}
+
+.editeur-carte__zone.est-en-tirets {
+    stroke-dasharray: 6 4;
+}
+
+.editeur-carte__motifs {
+    position: absolute;
+}
+
 .editeur-carte__trace {
     fill: rgba(255, 217, 82, 0.2);
     stroke: #FFD952;

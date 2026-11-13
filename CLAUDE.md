@@ -133,6 +133,16 @@ cd Tales_Omnibus
   Bouton « Placer le centre » (+ case `centre_manuel`, migration 0018) : pour
   une zone en croissant ou en L dont le centre calculé tombe dehors ; le
   centre manuel doit être DANS la zone (validé dans `Apparition.clean`).
+- **Style des cartes** (migration campagnes 0019) :
+  - un POINT dont la catégorie (ou un parent) a une icône devient un
+    médaillon rond (`includes/marqueur.html`, partagé par la page Carte et
+    la mini-carte), sinon une étoile ; l'icône précède aussi le nom des zones.
+    `Apparition.categorie_affichee` : pré-remplie par `CartePage.get_context`
+    avec `categories_en_memoire()` (1 requête), sinon `categorie_effective` ;
+  - `motif` (pleine / hachurée) et `bordure` (continue / tirets), réglables
+    séparément. Les hachures sont un `repeating-linear-gradient` découpé par
+    `clip-path: polygon(…)` (`Apparition.clip_path`), PAS un motif SVG (il
+    serait étiré). Réglages dans `:root` : `--hatch-*`, `--border-dash`.
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
   template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un
@@ -181,8 +191,8 @@ cd Tales_Omnibus
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
-- **Démo** : `manage.py creer_demo` crée une campagne factice complète (25
-  pages, catégories, familles, apparitions, zones imbriquées) ; `creer_demo --supprimer` la
+- **Démo** : `manage.py creer_demo` crée une campagne factice complète (26
+  pages, catégories, familles, apparitions, zones imbriquées, zone hachurée) ; `creer_demo --supprimer` la
   retire (les catégories restent). Le contenu est déclaré dans la commande.
 - **Migration core 0004** (renommage de `CategorieLieu`) : elle dépend de
   `campagnes 0014`, sinon une base NEUVE (tests) plante, car les anciennes

@@ -18,14 +18,19 @@
                 {% endif %}
 
                 {% if apparition.est_zone %}
-                    {# Une zone : on la surligne (même SVG que la page Carte) #}
-                    <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                        <polygon class="carte-zone carte-zone--seule" points="{{ apparition.points_svg }}"{% if lieu.categorie.couleur_effective %} style="--marker-color: {{ lieu.categorie.couleur_effective }};"{% endif %}></polygon>
-                    </svg>
+                    {# Une zone : on la surligne (même dessin que la page Carte) #}
+                    {% with couleur=apparition.categorie_affichee.couleur_effective %}
+                        {% if apparition.est_hachuree %}
+                            <span class="carte-hachures" aria-hidden="true"
+                                  style="clip-path: {{ apparition.clip_path }};{% if couleur %} --marker-color: {{ couleur }};{% endif %}"></span>
+                        {% endif %}
+                        <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                            <polygon class="{{ apparition.classes_zone }} carte-zone--seule" points="{{ apparition.points_svg }}"{% if couleur %} style="--marker-color: {{ couleur }};"{% endif %}></polygon>
+                        </svg>
+                    {% endwith %}
                 {% elif apparition.est_placee %}
-                    {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
-                    <span class="map-marker" aria-hidden="true"
-                          style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie.couleur_effective %} --marker-color: {{ lieu.categorie.couleur_effective }};{% endif %}"></span>
+                    {# Un dessin et pas un lien : le lien vers le lieu est juste en dessous #}
+                    {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=False %}
                 {% endif %}
             </div>
         {% endwith %}

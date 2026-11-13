@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
-from core.models import BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS
+from core.models import BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS, categories_en_memoire
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
@@ -223,6 +223,13 @@ class CartePage(BaseFichePage):
             self.apparitions.filter(lieu__live=True)
             .select_related('lieu', 'lieu__categorie', 'lieu__categorie__parent')
         )
+        # La catégorie de chaque lieu (pour sa couleur et son icône), avec
+        # tout l'arbre chargé en UNE requête : remonter aux parents pour
+        # hériter de l'icône ne coûte alors plus rien.
+        toutes = categories_en_memoire()
+        defaut = next((c for c in toutes.values() if c.par_defaut_pour == LieuPage.type_fiche), None)
+        for apparition in apparitions:
+            apparition.categorie_affichee = toutes.get(apparition.lieu.categorie_id) or defaut
         context['apparitions'] = apparitions
         # Les zones, des plus grandes aux plus petites : en SVG, ce qui est
         # dessiné en dernier passe AU-DESSUS. La ville reste cliquable sur le royaume.
@@ -280,6 +287,27 @@ class Apparition(Orderable):
         verbose_name="Centre placé à la main",
         help_text="Décoche pour revenir au centre calculé automatiquement.",
     )
+    # Une zone pleine (un royaume) ou hachurée (no man's land, zone interdite…)
+    MOTIFS = [
+        ('plein', "Pleine"),
+        ('hachures', "Hachurée"),
+    ]
+    motif = models.CharField(
+        max_length=20, choices=MOTIFS, default='plein',
+        verbose_name="Remplissage de la zone",
+        help_text="Hachurée : pour un no man's land, une zone interdite… (sans effet sur un point)",
+    )
+    # Le trait du contour : une frontière nette, ou en tirets (frontière
+    # floue, contestée, territoire revendiqué…). Indépendant du remplissage.
+    BORDURES = [
+        ('continue', "Trait continu"),
+        ('tirets', "Tirets"),
+    ]
+    bordure = models.CharField(
+        max_length=20, choices=BORDURES, default='continue',
+        verbose_name="Frontière de la zone",
+        help_text="Tirets : frontière floue ou contestée (sans effet sur un point)",
+    )
     # CALCULÉ, jamais saisi : la plus petite zone de cette carte qui contient
     # ce lieu (voir CartePage.ranger_les_lieux). C'est la « géographie » :
     # Port-Lanterne est dans le Val Gris, lui-même dans Ardenn.
@@ -301,6 +329,8 @@ class Apparition(Orderable):
     panels = [
         FieldPanel('lieu'),
         FieldPanel('forme', widget=OutilsDeCarteWidget),
+        FieldPanel('motif'),
+        FieldPanel('bordure'),
         FieldPanel('coord_x'),
         FieldPanel('coord_y'),
         FieldPanel('centre_manuel'),
@@ -342,6 +372,45 @@ class Apparition(Orderable):
         str() d'un nombre écrit toujours 12.5, jamais 12,5.
         """
         return " ".join(f"{x},{y}" for x, y in self.forme) if self.est_zone else ""
+
+    @property
+    def clip_path(self):
+        """
+        La même zone en CSS : « polygon(10% 20%, 40% 25%, …) ». Sert aux
+        hachures, dessinées en CSS (un dégradé répété) puis découpées à la
+        forme de la zone. En SVG étiré, les hachures seraient déformées ;
+        en CSS, elles restent droites à 45°.
+        """
+        return "polygon(" + ", ".join(f"{x}% {y}%" for x, y in self.forme) + ")" if self.est_zone else ""
+
+    @property
+    def est_hachuree(self):
+        return self.est_zone and self.motif == 'hachures'
+
+    @property
+    def classes_zone(self):
+        """Les classes CSS du polygone : « carte-zone carte-zone--hachuree carte-zone--tirets »."""
+        classes = ["carte-zone"]
+        if self.est_hachuree:
+            classes.append("carte-zone--hachuree")
+        if self.bordure == 'tirets':
+            classes.append("carte-zone--tirets")
+        return " ".join(classes)
+
+    @property
+    def categorie_affichee(self):
+        """
+        La catégorie du lieu (couleur, icône sur la carte). La page Carte la
+        pré-remplit pour tous ses lieux en une requête (voir get_context) ;
+        ailleurs (mini-cartes), on la calcule ici.
+        """
+        if not hasattr(self, '_categorie_affichee'):
+            self._categorie_affichee = self.lieu.categorie_effective
+        return self._categorie_affichee
+
+    @categorie_affichee.setter
+    def categorie_affichee(self, valeur):
+        self._categorie_affichee = valeur
 
     def chemin(self):
         """

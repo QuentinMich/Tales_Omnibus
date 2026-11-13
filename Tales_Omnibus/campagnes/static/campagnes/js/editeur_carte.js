@@ -48,6 +48,8 @@
             x: champ("coord_x"),
             y: champ("coord_y"),
             manuel: champ("centre_manuel"), // case « Centre placé à la main »
+            motif: champ("motif"),          // remplissage : pleine / hachurée
+            bordure: champ("bordure"),      // frontière : continue / tirets
             supprimee: !!supprime && (supprime.value === "1" || supprime.checked === true),
         };
     }
@@ -145,7 +147,10 @@
             const classe = active ? " est-active" : "";
 
             if (zone) {
-                element("polygon", { points: zone.map((p) => p.join(",")).join(" "), class: "editeur-carte__zone" + classe }, calqueZones, true);
+                // Aperçu du remplissage et de la frontière choisis dans les menus de la ligne
+                const style = (ligne.motif?.value === "hachures" ? " est-hachuree" : "")
+                    + (ligne.bordure?.value === "tirets" ? " est-en-tirets" : "");
+                element("polygon", { points: zone.map((p) => p.join(",")).join(" "), class: "editeur-carte__zone" + style + classe }, calqueZones, true);
             }
             if (pt) {
                 const repere = element("span", { class: (zone ? "editeur-carte__nom" : "editeur-carte__point") + classe }, calquePoints);
