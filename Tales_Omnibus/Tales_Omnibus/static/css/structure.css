@@ -440,6 +440,18 @@ figure {
     background: var(--color-bg);
 }
 
+/* Chaque niveau de la catégorie est un lien vers l'encyclopédie filtrée */
+.badge--categorie a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.badge--categorie a:hover,
+.badge--categorie a:focus-visible {
+    color: var(--color-title);
+    text-decoration: underline;
+}
+
 /* Pastille de la couleur de la catégorie, devant le texte (une bordure
    gauche, sur un badge arrondi, dessinerait un croissant). L'icône, si la
    catégorie en a une, est affichée à la place. */
@@ -537,8 +549,10 @@ figure {
 
 /* --- Petites cartes génériques (autres cartes, etc.) --- */
 .cards-grid {
+    /* min(14rem, 100%) : sur un écran plus étroit que 14rem, la colonne
+       prend toute la largeur au lieu de déborder (même astuce partout). */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
     gap: var(--space-md);
 }
 
@@ -657,7 +671,7 @@ figure {
 
 .campagnes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
     gap: var(--space-lg);
 }
 
@@ -795,7 +809,7 @@ figure {
 /* --- Nos Héros : grandes cartes verticales --- */
 .heros-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
     gap: var(--space-lg);
 }
 
@@ -926,7 +940,9 @@ figure {
 
 .fiche-top {
     display: grid;
-    grid-template-columns: 1fr minmax(0, 0.9fr);
+    /* minmax(0, 1fr) et pas 1fr : une colonne en 1fr refuse d'être plus
+       étroite que son contenu, et la carte déborderait sur un petit écran. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
     gap: var(--space-xl);
     align-items: start;
     margin-bottom: var(--space-lg);
@@ -977,7 +993,7 @@ figure {
 
 /* La fiche n'a pas d'image : la carte prend toute la largeur */
 .fiche-top:not(:has(.fiche-media)) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
 }
 
 /* --- « Dans les campagnes » (wireframe lore-slug : bandeau + bloc ocre) --- */
@@ -1231,8 +1247,9 @@ span.carte-map-img {
     /* Le rectangle barré n'a pas de taille propre. Pas de « 100% » ici : le
        cadre (fit-content) prend la taille de son contenu, et ce contenu
        demanderait 100% du cadre -> boucle, que le navigateur résout à 0 px. */
-    width: 20rem;
-    max-width: 100%;
+    /* Plafond en vw (largeur de l'écran) : un max-width en % renverrait
+       encore au cadre, donc à la même boucle, et serait ignoré. */
+    width: min(20rem, 65vw);
 }
 
 .carte-mini-legende {
@@ -1253,7 +1270,7 @@ span.carte-map-img {
 /* Fiche lieu : une mini-carte par carte où il apparaît, côte à côte */
 .cartes-du-lieu {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
     gap: var(--space-lg);
     align-items: start;
 }
@@ -1591,7 +1608,7 @@ html:has(.template-home) {
     }
 
     .fiche-top {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--space-lg);
     }
 
@@ -1609,7 +1626,7 @@ html:has(.template-home) {
     }
 
     .contact-form {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .contact-form .form-group--message {
@@ -1619,7 +1636,7 @@ html:has(.template-home) {
 
     .timeline-item,
     .timeline-item:nth-child(even) {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .timeline-item:nth-child(even) .timeline-media {

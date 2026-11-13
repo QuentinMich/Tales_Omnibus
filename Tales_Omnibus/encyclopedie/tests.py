@@ -158,6 +158,15 @@ class EncyclopedieTests(ArborescenceMixin, TestCase):
         self.creer_arbre()
         self.assertContains(self.client.get(self.aldric.url), "Personnage")
 
+    def test_chaque_niveau_du_badge_mene_a_l_encyclopedie_filtree(self):
+        self.creer_arbre()
+        dieux = LorePage.objects.get(title="Les dieux")
+        dieux.categorie = self.mineure
+        dieux.save_revision().publish()
+        html = self.client.get(dieux.url).content.decode()
+        for categorie in (self.personnage, self.deite, self.mineure):
+            self.assertIn(f'href="{self.encyclopedie.url}?categorie={categorie.pk}"', html)
+
 
 class FichesLieesTests(ArborescenceMixin, TestCase):
     def test_fiches_liees_par_tag_commun(self):

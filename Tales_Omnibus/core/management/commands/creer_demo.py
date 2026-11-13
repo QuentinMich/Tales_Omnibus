@@ -87,7 +87,8 @@ LORE = {
     "Le Dragon de Suie": ("Créature", "Un dragon fait de fumée. Il éternue des incendies.", ["dragon", "malédiction"], True),
     "L'Épée sans Nom": ("Objet", "Une épée qui refuse qu'on la nomme. Le dernier qui a essayé s'appelle désormais « Machin ».", ["runes", "malédiction"], False),
     "La Légende du Lac Gris": ("Légende", "Au fond du lac dort un royaume entier. Il ronfle.", ["esprit", "prophétie"], False),
-    "Notes du MJ": (None, "Une fiche sans catégorie : elle tombe dans la catégorie par défaut du Lore.", ["pouet"], False),
+    # Sans catégorie : cette fiche tombe dans la catégorie par défaut du Lore (« Divers »)
+    "Notes du MJ": (None, "Des notes griffonnées entre deux séances. Une tache de café cache la moitié des secrets.", ["pouet"], False),
 }
 
 # --- Lore présent dans la campagne : titre -> ce qui est propre à la campagne
@@ -105,8 +106,9 @@ EVENEMENTS = {
                             "La brume recouvre le continent. Le calendrier repart de zéro, par commodité.", ["prophétie"]),
     "Le Bal des Lanternes": ("Fête", 3, "An 3, premier jour du printemps", "Port-Lanterne",
                              "Une fête où chacun danse avec une lanterne. Certaines lanternes dansent mieux.", ["esprit", "pouet"]),
+    # Sans catégorie : cet événement tombe dans la catégorie par défaut (« Événement »)
     "Le Pacte du Corbeau": (None, 7, "An 7", "Fort-Sombre",
-                            "Sans catégorie : il apparaît sous « Événement » par défaut.", ["Ordre du Corbeau", "runes"]),
+                            "L'Ordre jure de protéger Port-Lanterne. Les corbeaux, eux, n'ont rien juré.", ["Ordre du Corbeau", "runes"]),
 }
 
 # --- Héros : titre -> (catégorie, joueur, lieu d'origine, intro, tags, épinglé)
@@ -116,7 +118,8 @@ HEROS = {
     "Brann le Rouquin": ("Héros", "Joueur B", "Hameau des Saules",
                          "Un bûcheron convaincu que son hache est hantée. Elle l'est.", ["esprit", "pouet"], False),
     "Sœur Ysolde": ("PNJ", "MJ", "Fort-Sombre",
-                    "Un PNJ rangé comme fiche Héros : sa catégorie le classe quand même en PNJ.", ["Ordre du Corbeau"], False),
+                    # Fiche Héros mais catégorie « PNJ » : l'encyclopédie la range avec les PNJ
+                    "Une nonne de l'Ordre du Corbeau, qui suit le groupe « pour son salut ». Le sien, surtout.", ["Ordre du Corbeau"], False),
 }
 
 
@@ -162,7 +165,7 @@ class Command(BaseCommand):
                 f"<p>{intro} Les érudits ne sont d'accord sur rien, sauf sur le fait "
                 "qu'il vaut mieux ne pas en parler la nuit.</p>")})]
             if illustration:
-                blocs.append(('image', {'image': illustration, 'caption': "Une illustration de démo",
+                blocs.append(('image', {'image': illustration, 'caption': "Gravure d'un érudit anonyme",
                                         'alt_text': "", 'position': position}))
             blocs += [
                 ('section', {'titre': "Rumeurs", 'texte': (
@@ -198,7 +201,7 @@ class Command(BaseCommand):
         # La campagne et ses enfants
         campagne = index.add_child(instance=CampagnePage(
             title=CAMPAGNE, subtitle="Campagne de démonstration", status='en_cours',
-            card_description="Une campagne factice pour tester toutes les fonctionnalités du site.",
+            card_description="Le brouillard est tombé sur Ardenn. Les routes bougent, les lanternes regardent.",
             synopsis="<p>Le brouillard est tombé sur Ardenn, et avec lui les vieilles légendes.</p>",
             banner_image=next((i for i in images if i.width >= i.height), None),
         ))
@@ -212,7 +215,8 @@ class Command(BaseCommand):
             "Carte d'Ardenn": CartePage(title="Carte d'Ardenn", main_image=carte_image, is_main_map=True,
                                          intro="<p>La carte du continent, telle qu'on la dessinait avant le Grand Brouillard.</p>"),
             "Carte du Val Gris": CartePage(title="Carte du Val Gris",
-                                           intro="<p>Une carte régionale (sans image : on voit le placeholder).</p>"),
+                                           # Sans image : on voit l'image d'attente (placeholder)
+                                           intro="<p>Le Val Gris, tel que l'ont dessiné ceux qui en sont revenus.</p>"),
         }
         for carte in cartes.values():
             campagne.add_child(instance=carte)

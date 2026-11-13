@@ -1,12 +1,22 @@
-{% load wagtailimages_tags %}
+{% load wagtailimages_tags navigation_tags %}
 {# Badge de catégorie d'une fiche : « Personnage › Déité › Déité mineure »,  #}
 {# avec l'icône et la couleur de la catégorie (ou héritées de ses parents). #}
+{# Chaque niveau est un lien vers l'encyclopédie filtrée sur cette          #}
+{# catégorie (et toute sa branche) : c'est un fil d'Ariane de catégories.   #}
 {# Usage : {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %} #}
 {% if categorie %}
-    <span class="badge badge--categorie"{% if categorie.couleur_effective %} style="--marker-color: {{ categorie.couleur_effective }};"{% endif %}>
+    {% encyclopedie_url as url_encyclopedie %}
+    <nav class="badge badge--categorie" aria-label="Catégorie"{% if categorie.couleur_effective %} style="--marker-color: {{ categorie.couleur_effective }};"{% endif %}>
         {% with icone=categorie.icone_effective %}
             {% if icone %}{% image icone fill-32x32 alt="" class="badge-icon" %}{% endif %}
         {% endwith %}
-        {% for etape in categorie.ancetres %}{% if not forloop.first %} › {% endif %}{{ etape.nom }}{% endfor %}
-    </span>
+        {% for etape in categorie.ancetres %}
+            {% if not forloop.first %}<span aria-hidden="true">›</span>{% endif %}
+            {% if url_encyclopedie %}
+                <a href="{{ url_encyclopedie }}?categorie={{ etape.pk }}"{% if forloop.last %} aria-current="true"{% endif %}>{{ etape.nom }}</a>
+            {% else %}
+                {{ etape.nom }}
+            {% endif %}
+        {% endfor %}
+    </nav>
 {% endif %}
