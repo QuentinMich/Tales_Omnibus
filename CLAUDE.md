@@ -134,9 +134,11 @@ cd Tales_Omnibus
   une zone en croissant ou en L dont le centre calculé tombe dehors ; le
   centre manuel doit être DANS la zone (validé dans `Apparition.clean`).
 - **Style des cartes** (migration campagnes 0019) :
-  - un POINT dont la catégorie (ou un parent) a une icône devient un
-    médaillon rond (`includes/marqueur.html`, partagé par la page Carte et
-    la mini-carte), sinon une étoile ; l'icône précède aussi le nom des zones.
+  - un POINT dont la catégorie (ou un parent) a une icône est représenté
+    par l'icône SEULE, sans fond ni couleur (`includes/marqueur.html`,
+    partagé par la page Carte et la mini-carte), sinon par une étoile ;
+    rendition `max-64x64` (jamais `fill-` : pas de recadrage, PNG
+    transparent conservé) ; l'icône précède aussi le nom des zones.
     `Apparition.categorie_affichee` : pré-remplie par `CartePage.get_context`
     avec `categories_en_memoire()` (1 requête), sinon `categorie_effective` ;
   - `motif` (pleine / hachurée) et `bordure` (continue / tirets), réglables

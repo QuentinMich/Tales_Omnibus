@@ -1,7 +1,8 @@
 {% load wagtailcore_tags wagtailimages_tags l10n %}
-{# Le repère d'un POINT sur une carte : un médaillon avec l'icône de sa     #}
-{# catégorie (ou d'une catégorie parente), sinon une étoile. Toujours à la #}
-{# couleur de la catégorie.                                                 #}
+{# Le repère d'un POINT sur une carte : l'icône de sa catégorie (ou d'une   #}
+{# catégorie parente), posée telle quelle, sinon une étoile à la couleur de #}
+{# la catégorie. max-64x64 et pas fill- : l'icône est réduite sans être     #}
+{# recadrée, et un PNG reste un PNG (fond transparent conservé).            #}
 {# Usage : {% include "campagnes/includes/marqueur.html" with apparition=... lien=True %} #}
 {#   lien=True : un lien vers la fiche (page Carte) ;                       #}
 {#   sinon un simple dessin (mini-carte : le lien est dans la légende).     #}
@@ -12,7 +13,7 @@
     {% if lien %}<a href="{% pageurl apparition.lieu %}"{% else %}<span aria-hidden="true"{% endif %}
        class="map-marker{% if icone %} map-marker--icone{% endif %}"
        style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if couleur %} --marker-color: {{ couleur }};{% endif %}">
-        {% if icone %}{% image icone fill-64x64 alt="" class="map-marker-icone" %}{% endif %}
+        {% if icone %}{% image icone max-64x64 alt="" class="map-marker-icone" %}{% endif %}
         {% if lien %}<span class="map-marker-label">{{ apparition.lieu.title }}</span>{% endif %}
     {% if lien %}</a>{% else %}</span>{% endif %}
 {% endwith %}{% endwith %}

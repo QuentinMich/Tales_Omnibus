@@ -46,6 +46,8 @@
     --hatch-gap: 10px;                 /* espace entre deux hachures */
     --hatch-opacity: 0.75;
     --border-dash: 6 4;                /* frontière en tirets : trait, vide */
+    --map-icon-size: 2.5rem;           /* taille d'une icône posée sur la carte */
+    --map-icon-shadow: drop-shadow(0 0 2px rgb(255 255 255 / 0.9)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
 
     /* --- Typographie --- */
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -1316,30 +1318,31 @@ span.carte-map-img {
     background: var(--color-map-label-hover);
 }
 
-/* Point avec l'icône de sa catégorie : un médaillon rond, cerclé de la
-   couleur de la catégorie, à la place de l'étoile. Bordure sur TOUT le
-   tour : pas d'effet « croissant ». */
+/* Point avec l'icône de sa catégorie : L'ICÔNE EST LE MARQUEUR (une hutte
+   pour un village…). Pas de fond ni de couleur : on reconnaît le type de
+   lieu à son dessin. On retire l'étoile (clip-path) et son fond. */
 .map-marker--icone {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: var(--map-icon-size);
+    height: var(--map-icon-size);
     clip-path: none;
-    border: 3px solid var(--marker-color, var(--color-highlight));
-    border-radius: 50%;
-    background: var(--color-bg);
-    overflow: hidden;
+    background: none;
 }
 
+/* contain : l'icône entière, jamais recadrée, dans le carré.
+   drop-shadow (et pas box-shadow) : l'ombre suit la SILHOUETTE du dessin,
+   pas le carré de l'image. Elle détache l'icône d'une carte chargée. */
 .map-marker-icone {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    filter: var(--map-icon-shadow);
 }
 
 /* L'icône devant le nom d'une zone */
 .map-zone-icone {
     width: 1.1rem;
     height: 1.1rem;
-    border-radius: 50%;
+    object-fit: contain;
 }
 
 /* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */

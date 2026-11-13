@@ -47,14 +47,14 @@
         {% endif %}
 
         {# Un repère par lieu POSÉ sur cette carte (modèle Apparition) :     #}
-        {# un point = médaillon avec l'icône de sa catégorie, sinon étoile ; #}
+        {# un point = l'icône de sa catégorie, sinon une étoile ;            #}
         {# une zone = son nom (précédé de l'icône) écrit en son centre.       #}
         {% for apparition in apparitions %}
             {% if apparition.est_zone %}
                 {% with icone=apparition.categorie_affichee.icone_effective %}
                     <a href="{% pageurl apparition.lieu %}" class="map-zone-nom"
                        style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">
-                        {% if icone %}{% image icone fill-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
+                        {% if icone %}{% image icone max-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
                     </a>
                 {% endwith %}
             {% elif apparition.est_placee %}
