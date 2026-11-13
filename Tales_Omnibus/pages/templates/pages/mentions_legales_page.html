@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-mentions{% endblock %}
+
+{% block content %}
+{# Wireframe : panneau gris arrondi (titre) + bloc foncé (texte).          #}
+{# Le TEXTE est fixe ; les {{ … }} sont les inserts : soit des champs que   #}
+{# l'admin remplit, soit des infos que le site connaît déjà (nom, adresse,   #}
+{# page Contact, date de publication).                                       #}
+{% with site_name=settings.core.NavigationSettings.site_name %}
+<main class="container page-mentions">
+    <section class="panel panel--rounded">
+        <h1 class="page-title page-title--left">{{ page.title }}</h1>
+
+        <div class="panel panel--strong panel--rounded richtext mentions">
+
+            <h2>Éditeur du site</h2>
+            <p>
+                Le site <strong>{{ site_name }}</strong>
+                (<a href="{{ adresse_site }}">{{ adresse_site }}</a>) est édité par
+                <strong>{{ page.editeur_nom }}</strong>, {{ page.get_editeur_statut_display|lower }}.
+            </p>
+            <ul>
+                {% if page.editeur_adresse %}<li>Adresse : {{ page.editeur_adresse|linebreaksbr }}</li>{% endif %}
+                <li>Email : <a href="mailto:{{ page.editeur_email }}">{{ page.editeur_email }}</a></li>
+                {% if page.siret %}<li>{% if page.editeur_statut == 'association' %}RNA{% else %}SIRET{% endif %} : {{ page.siret }}</li>{% endif %}
+                <li>Directeur de la publication : {{ page.directeur_publication|default:page.editeur_nom }}</li>
+            </ul>
+
+            <h2>Hébergement</h2>
+            <p>
+                Le site est hébergé par <strong>{{ page.hebergeur_nom }}</strong>,
+                {{ page.hebergeur_adresse|linebreaksbr }}{% if page.hebergeur_contact %} ({{ page.hebergeur_contact }}){% endif %}.
+            </p>
+
+            <h2>Propriété intellectuelle</h2>
+            <p>
+                L'univers {{ site_name }}, ses textes, cartes, illustrations et personnages
+                appartiennent à leur auteur, {{ page.editeur_nom }}, sauf mention contraire
+                dans les crédits ci-dessous. Toute reproduction, même partielle, sans
+                autorisation écrite est interdite.
+            </p>
+
+            <h2>Données personnelles</h2>
+            <p>
+                Les formulaires de contact du site (page Contact et fiches des héros)
+                recueillent votre nom, votre adresse email et votre message, dans le
+                seul but de vous répondre. Un message envoyé depuis la fiche d'un héros
+                est transmis au joueur qui l'incarne. Ces données ne sont ni vendues,
+                ni utilisées à des fins commerciales, et sont conservées le temps de
+                traiter votre demande.
+            </p>
+            <p>
+                Conformément au RGPD, vous pouvez demander l'accès, la rectification
+                ou la suppression de vos données en écrivant à
+                <a href="mailto:{{ page.editeur_email }}">{{ page.editeur_email }}</a>{% if page_contact and page_contact.live %}
+                ou via la <a href="{% pageurl page_contact %}">page {{ page_contact.title }}</a>{% endif %}.
+                En cas de désaccord, vous pouvez saisir la CNIL (<a href="https://www.cnil.fr">cnil.fr</a>).
+            </p>
+
+            <h2>Cookies</h2>
+            <p>
+                Ce site n'utilise aucun cookie publicitaire ni de mesure d'audience.
+                Seuls des cookies techniques, indispensables à la sécurité des
+                formulaires, sont déposés : ils ne nécessitent pas votre consentement.
+            </p>
+            {# Insert automatique : seulement si l'accueil affiche un lecteur de live #}
+            {% if lecteur_live %}
+                <p>
+                    La page d'accueil intègre un lecteur {{ lecteur_live }}. Ce service
+                    peut déposer ses propres cookies, régis par sa politique de
+                    confidentialité.
+                </p>
+            {% endif %}
+
+            {% if page.credits %}
+                <h2>Crédits</h2>
+                {{ page.credits|richtext }}
+            {% endif %}
+
+            {% if page.complement %}
+                {{ page.complement|richtext }}
+            {% endif %}
+
+            {% if page.last_published_at %}
+                <p class="mentions-maj">Dernière mise à jour : {{ page.last_published_at|date:"j F Y" }}</p>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endwith %}
+{% endblock %}

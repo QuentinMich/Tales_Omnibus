@@ -1386,6 +1386,32 @@ html:has(.template-home) {
 
 
 /* ==========================================================================
+   11 bis. MENTIONS LÉGALES : texte clair sur le bloc foncé (wireframe)
+   ========================================================================== */
+
+.mentions h2,
+.mentions h3 {
+    margin-top: var(--space-lg);
+    color: var(--color-highlight);
+    font-size: 1.25rem;
+}
+
+.mentions h2:first-child {
+    margin-top: 0;
+}
+
+.mentions a {
+    color: var(--color-highlight);
+}
+
+.mentions-maj {
+    margin-top: var(--space-lg);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+
+/* ==========================================================================
    12. RESPONSIVE
    ========================================================================== */
 

@@ -58,3 +58,44 @@ class PrestationsTests(TestCase):
         self.assertContains(response, "Initiation")
         self.assertContains(response, "Gratuit")
         self.assertNotContains(response, "Détail long")  # le détail reste sur la page Contact
+
+
+class MentionsLegalesTests(TestCase):
+    def setUp(self):
+        from pages.models import MentionsLegalesPage
+        self.home = HomePage.objects.first()
+        self.page = self.home.add_child(instance=MentionsLegalesPage(
+            title="Mentions légales",
+            editeur_nom="Jean Conteur", editeur_email="jean@example.com",
+            hebergeur_nom="Hébergeur SAS", hebergeur_adresse="1 rue du Serveur, Paris",
+        ))
+        # Publiée comme dans l'admin : c'est ce qui date la « dernière mise à jour »
+        self.page.save_revision().publish()
+
+    def test_slug_fixe_et_lien_dans_le_pied_de_page(self):
+        self.assertEqual(self.page.slug, "mentions-legales")
+        self.assertContains(self.client.get(self.home.url), 'href="/mentions-legales/"')
+
+    def test_inserts_automatiques(self):
+        html = self.client.get(self.page.url).content.decode()
+        self.assertIn("Jean Conteur", html)
+        self.assertIn("http://testserver/", html)  # adresse du site, déduite de la requête
+        self.assertIn("Directeur de la publication : Jean Conteur", html)  # défaut = l'éditeur
+        self.assertIn("Dernière mise à jour", html)
+        self.assertNotIn("SIRET", html)  # vide : la ligne n'apparaît pas
+
+    def test_lien_vers_la_page_contact(self):
+        contact = self.home.add_child(instance=ContactPage(title="Écris-moi", slug="x"))
+        self.home.page_contact = contact
+        self.home.save_revision().publish()
+        self.assertContains(self.client.get(self.page.url), "page Écris-moi")
+
+    def test_cookies_du_lecteur_live_signales_seulement_s_il_existe(self):
+        self.assertNotContains(self.client.get(self.page.url), "intègre un lecteur")
+        self.home.stream_player = [('lecteur', {'plateforme': 'youtube', 'chaine': 'UC' + 'a' * 22, 'titre': ''})]
+        self.home.save_revision().publish()
+        self.assertContains(self.client.get(self.page.url), "intègre un lecteur YouTube")
+
+    def test_une_seule_page_de_mentions(self):
+        from pages.models import MentionsLegalesPage
+        self.assertFalse(MentionsLegalesPage.can_create_at(self.home))

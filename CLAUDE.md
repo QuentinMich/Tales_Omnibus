@@ -82,6 +82,12 @@ cd Tales_Omnibus
   (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
   réutilise le composant `.timeline` de la chronologie.
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
+- **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
+  `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
+  template ; l'admin ne remplit que l'éditeur, l'hébergeur, les crédits et un
+  complément libre. Inserts automatiques : nom et adresse du site, page
+  Contact, date de publication, et cookies du lecteur de live s'il existe.
+  `StandardPage` a été supprimée (aucune page ne l'utilisait).
 - **Slugs automatiques** (`core/slugs.py`, `SlugAutomatiqueMixin`, placé AVANT
   `Page` dans l'héritage) : le slug est recalculé dans `full_clean()` à chaque
   enregistrement. Fiches (`BaseFichePage`) et campagnes : slug = titre, sans
@@ -135,7 +141,6 @@ cd Tales_Omnibus
   la carte parente et remplir `coord_x` / `coord_y`.
 - **Fiche Lore** : section « Dans une autre campagne » du wireframe
   (`lore-slug.pdf`), pas encore faite.
-- **Mentions légales** : `StandardPage`, template vide (`standard_page.html`).
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
 - CSS de la recherche.

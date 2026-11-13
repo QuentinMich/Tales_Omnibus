@@ -1,6 +1,6 @@
 from django.db import models
 from modelcluster.fields import ParentalKey
-from wagtail.models import Page
+from wagtail.models import Page, Site
 from wagtail.fields import RichTextField, StreamField
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
@@ -13,15 +13,95 @@ from core.slugs import SlugAutomatiqueMixin
 from encyclopedie.models import EncyclopedieIndexPage
 
 
-# 1. Modèle pour la page standard (Mentions légales, pages libres...)
-class StandardPage(Page):
-    intro = models.CharField(max_length=255, blank=True, verbose_name="Introduction")
-    body = StreamField(BaseStreamBlock(), use_json_field=True, blank=True, verbose_name="Contenu")
+# 1. MENTIONS LÉGALES : le texte légal est FIXE (dans le template), le client
+#    ne remplit que ce qu'on ne peut pas deviner (qui édite, qui héberge).
+#    Le reste s'insère tout seul : nom du site, adresse, page Contact, date.
+class MentionsLegalesPage(SlugAutomatiqueMixin, Page):
+    slug_fixe = "mentions-legales"  # = le lien du pied de page
+
+    class Meta:
+        verbose_name = "Mentions légales"
+        verbose_name_plural = "Mentions légales"
+
+    STATUTS = [
+        ('particulier', "Particulier"),
+        ('professionnel', "Professionnel (micro-entreprise, société…)"),
+        ('association', "Association"),
+    ]
+
+    # --- Éditeur : la personne (ou structure) responsable du site ---
+    editeur_nom = models.CharField(max_length=255, verbose_name="Nom ou raison sociale")
+    editeur_statut = models.CharField(max_length=20, choices=STATUTS, default='particulier', verbose_name="Statut")
+    editeur_adresse = models.TextField(
+        blank=True, verbose_name="Adresse",
+        help_text="Un particulier peut la laisser vide : elle doit alors être connue de l'hébergeur."
+    )
+    editeur_email = models.EmailField(verbose_name="Email de contact")
+    siret = models.CharField(
+        max_length=20, blank=True, verbose_name="SIRET / RNA",
+        help_text="Obligatoire pour un professionnel (SIRET) ou une association (RNA)."
+    )
+    directeur_publication = models.CharField(
+        max_length=255, blank=True, verbose_name="Directeur de la publication",
+        help_text="Si vide, c'est l'éditeur."
+    )
+
+    # --- Hébergeur : obligatoire (loi pour la confiance dans l'économie numérique) ---
+    hebergeur_nom = models.CharField(max_length=255, verbose_name="Nom de l'hébergeur")
+    hebergeur_adresse = models.TextField(verbose_name="Adresse de l'hébergeur")
+    hebergeur_contact = models.CharField(
+        max_length=255, blank=True, verbose_name="Téléphone ou site de l'hébergeur"
+    )
+
+    # --- Parties libres ---
+    credits = RichTextField(
+        blank=True, features=['bold', 'italic', 'link', 'ul'],
+        verbose_name="Crédits",
+        help_text="Illustrations, cartes, polices, musiques… et leurs auteurs."
+    )
+    complement = RichTextField(
+        blank=True, features=['h3', 'bold', 'italic', 'link', 'ul', 'ol'],
+        verbose_name="Informations complémentaires",
+        help_text="Ajouté à la fin, après les sections automatiques."
+    )
 
     content_panels = Page.content_panels + [
-        FieldPanel('intro'),
-        FieldPanel('body'),
+        MultiFieldPanel([
+            FieldPanel('editeur_nom'),
+            FieldPanel('editeur_statut'),
+            FieldPanel('editeur_adresse'),
+            FieldPanel('editeur_email'),
+            FieldPanel('siret'),
+            FieldPanel('directeur_publication'),
+        ], heading="Éditeur du site"),
+        MultiFieldPanel([
+            FieldPanel('hebergeur_nom'),
+            FieldPanel('hebergeur_adresse'),
+            FieldPanel('hebergeur_contact'),
+        ], heading="Hébergeur"),
+        FieldPanel('credits'),
+        FieldPanel('complement'),
     ]
+
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+    max_count = 1  # une seule page de mentions légales
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        # Inserts automatiques : rien à retaper si le site change d'adresse
+        # ou si la page Contact est renommée.
+        accueil = Site.find_for_request(request).root_page.specific
+        context['adresse_site'] = request.build_absolute_uri('/')
+        context['page_contact'] = getattr(accueil, 'page_contact', None)
+        # Le lecteur Twitch/YouTube de l'accueil dépose ses propres cookies :
+        # on le signale seulement s'il est réellement affiché.
+        noms = {'twitch': "Twitch", 'youtube': "YouTube"}
+        lecteurs = getattr(accueil, 'stream_player', None) or []
+        context['lecteur_live'] = next(
+            (noms.get(bloc.value.get('plateforme'), "vidéo") for bloc in lecteurs), None
+        )
+        return context
 
 
 # 1 bis. Page UNIVERS : le MJ d'un côté, le monde qu'il a construit de l'autre

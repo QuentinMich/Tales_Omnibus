@@ -77,7 +77,7 @@ class SingleImageBlock(blocks.StructBlock):
 
 class BaseStreamBlock(blocks.StreamBlock):
     """
-    Bloc réutilisable pour le StreamField des pages fixes (StandardPage, Univers, etc.)
+    Bloc réutilisable pour le StreamField des pages fixes (Univers, fiches, etc.)
     et autres contenus éditoriaux du site.
     """
     paragraph = blocks.RichTextBlock(
