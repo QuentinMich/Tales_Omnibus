@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from taggit.models import Tag, TaggedItemBase
@@ -15,7 +15,9 @@ from wagtail.snippets.models import register_snippet
 
 from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
 from core.slugs import SlugAutomatiqueMixin
-from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin
+from core.models import (
+    BaseFichePage, FicheEncyclopedieMixin, arbre_des_categories, categories_en_memoire, ids_de_la_branche,
+)
 
 
 # 1. INDEX DE L'ENCYCLOPÉDIE : rassemble TOUTES les fiches taguables du site
@@ -64,36 +66,43 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
         types = types_de_fiches()
         accueil = self.get_parent()
         campagnes = CampagnePage.objects.live().descendant_of(accueil)
+        toutes_les_categories = categories_en_memoire()
 
-        # --- 1. Les filtres choisis, lus dans l'URL (?campagne=3&type=lieux&tag=dragon)
+        # --- 1. Les filtres choisis, lus dans l'URL (?campagne=3&categorie=7&tag=dragon)
         #     Formulaire en GET : l'URL filtrée peut être partagée ou mise en favori.
         #     Une valeur inconnue est simplement ignorée (pas d'erreur 500).
         id_campagne = request.GET.get('campagne', '')
         campagne = campagnes.filter(pk=id_campagne).first() if id_campagne.isdigit() else None
-        type_choisi = request.GET.get('type') if request.GET.get('type') in types else ''
+        id_categorie = request.GET.get('categorie', '')
+        categorie = toutes_les_categories.get(int(id_categorie)) if id_categorie.isdigit() else None
         tag_choisi = request.GET.get('tag', '')
-        # La catégorie n'a de sens que pour les lieux : ignorée pour les autres types
-        id_categorie = request.GET.get('categorie', '') if type_choisi == 'lieux' else ''
+        # ?type=lieux reste accepté (liens existants), mais le visiteur filtre
+        # désormais par CATÉGORIE : c'est son vocabulaire, pas celui de l'admin.
+        type_choisi = request.GET.get('type') if request.GET.get('type') in types else ''
+
+        # Choisir « Personnage » = la catégorie ET toute sa branche (Héros, PNJ, Déités…)
+        branche = ids_de_la_branche(categorie, toutes_les_categories) if categorie else set()
 
         # --- 2. Pour chaque type de fiche, une requête avec les filtres
         fiches = []
         slugs_disponibles = set()
-        categories = CategorieLieu.objects.none()
         for cle, requete in requetes_de_fiches(accueil, campagne, type_choisi):
+            if categorie:
+                condition = Q(categorie_id__in=branche)
+                # Les fiches SANS catégorie sont dans la catégorie par défaut de
+                # leur type : si celle-ci est dans la branche, elles en font partie.
+                defaut = next((c for c in toutes_les_categories.values() if c.par_defaut_pour == cle), None)
+                if defaut and defaut.pk in branche:
+                    condition |= Q(categorie__isnull=True)
+                requete = requete.filter(condition)
+
             # Les tags proposés = ceux des fiches AVANT le filtre de tag,
             # sinon il ne resterait que le tag cliqué et on ne pourrait plus en changer.
             slugs_disponibles.update(requete.filter(tags__isnull=False).values_list('tags__slug', flat=True))
 
-            if cle == 'lieux':
-                # Catégories proposées : seulement celles des lieux affichables
-                # (pas de catégorie vide dans le menu).
-                categories = CategorieLieu.objects.filter(lieux__in=requete).distinct().order_by('nom')
-                if id_categorie.isdigit():
-                    requete = requete.filter(categorie_id=id_categorie)
-
             if tag_choisi:
                 requete = requete.filter(tags__slug=tag_choisi)
-            fiches += etiqueter(requete, cle)
+            fiches += etiqueter(requete, cle, toutes_les_categories)
 
         # Les 4 types sont mélangés : un seul tri pour tout le monde,
         # les fiches épinglées d'abord, puis par ordre alphabétique.
@@ -106,13 +115,16 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
         context.update({
             'fiches': page_de_fiches,
             'campagnes': campagnes,
-            'types': {cle: libelle for cle, (_, libelle) in types.items()},
+            # Le menu « Catégorie » : l'arbre à plat, indenté selon la profondeur
+            'options_categories': [
+                (c.pk, "\u00a0\u00a0\u00a0" * profondeur + c.nom)
+                for c, profondeur in arbre_des_categories(toutes_les_categories)
+            ],
             # Les pastilles, rangées par famille (snippet FamilleDeTags)
             'groupes_de_tags': ranger_par_famille(Tag.objects.filter(slug__in=slugs_disponibles)),
             'campagne_choisie': campagne,
+            'categorie_choisie': categorie,
             'type_choisi': type_choisi,
-            'categories': categories,
-            'categorie_choisie': int(id_categorie) if id_categorie.isdigit() else None,
             'tag_choisi': tag_choisi,
         })
         return context
@@ -135,10 +147,12 @@ class LorePage(FicheEncyclopedieMixin, BaseFichePage):
 
     tags = ClusterTaggableManager(through=LorePageTag, blank=True)
 
+    type_fiche = 'lore'
     subpage_types = []  # Page feuille
     parent_page_types = ['encyclopedie.EncyclopedieIndexPage']
 
     content_panels = BaseFichePage.content_panels + [
+        FieldPanel('categorie'),
         FieldPanel('tags'),
         FieldPanel('epinglee'),
     ]
@@ -183,16 +197,21 @@ def requetes_de_fiches(accueil, campagne=None, type_choisi=''):
         yield cle, modele.objects.live().descendant_of(campagne or accueil)
 
 
-def etiqueter(requete, cle):
+def etiqueter(requete, cle, toutes_les_categories=None):
     """
-    Exécute la requête et colle sur chaque fiche son type (clé + libellé) :
-    le template s'en sert pour le badge et la couleur (data-type).
+    Exécute la requête et colle sur chaque fiche :
+      - son type (clé + libellé), pour la couleur par défaut (data-type) ;
+      - sa catégorie affichée (la sienne ou celle par défaut de son type),
+        avec ses parents déjà en mémoire : aucune requête de plus par fiche.
     """
+    toutes = toutes_les_categories or categories_en_memoire()
+    defaut = next((c for c in toutes.values() if c.par_defaut_pour == cle), None)
     libelle = types_de_fiches()[cle][1]
     fiches = list(requete.prefetch_related('tags'))
     for fiche in fiches:
         fiche.type_cle = cle
         fiche.type_libelle = libelle
+        fiche.categorie_affichee = toutes.get(fiche.categorie_id) or defaut
     return fiches
 
 

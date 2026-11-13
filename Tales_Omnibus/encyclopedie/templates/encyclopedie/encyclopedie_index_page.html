@@ -40,28 +40,21 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="filtre-type">Par type de fiche</label>
-                <select name="type" id="filtre-type">
-                    <option value="">Tous les types</option>
-                    {% for cle, libelle in types.items %}
-                        <option value="{{ cle }}"{% if cle == type_choisi %} selected{% endif %}>{{ libelle }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            {# Sous-filtre des lieux : n'apparaît que si le type « Lieux » est choisi #}
-            {% if type_choisi == 'lieux' and categories %}
+            {# Le vocabulaire du VISITEUR (Personnage › PNJ), pas celui de l'admin #}
+            {# (types de pages). Choisir une catégorie inclut toute sa branche.  #}
+            {% if options_categories %}
                 <div class="form-group">
-                    <label for="filtre-categorie">Par catégorie de lieu</label>
+                    <label for="filtre-categorie">Par catégorie</label>
                     <select name="categorie" id="filtre-categorie">
                         <option value="">Toutes les catégories</option>
-                        {% for categorie in categories %}
-                            <option value="{{ categorie.pk }}"{% if categorie.pk == categorie_choisie %} selected{% endif %}>{{ categorie.nom }}</option>
+                        {% for pk, libelle in options_categories %}
+                            <option value="{{ pk }}"{% if pk == categorie_choisie.pk %} selected{% endif %}>{{ libelle }}</option>
                         {% endfor %}
                     </select>
                 </div>
             {% endif %}
+            {# Ancien filtre par type de page : gardé caché pour les liens existants #}
+            {% if type_choisi %}<input type="hidden" name="type" value="{{ type_choisi }}">{% endif %}
 
             {# Les tags sont des boutons radio déguisés en pastilles : un seul tag  #}
             {# à la fois, et ça marche même sans JavaScript. Ils sont regroupés     #}
@@ -99,7 +92,7 @@
 
             <div class="filtres-actions">
                 <button type="submit" class="btn">Filtrer</button>
-                {% if campagne_choisie or type_choisi or tag_choisi or categorie_choisie %}
+                {% if campagne_choisie or categorie_choisie or tag_choisi or type_choisi %}
                     <a href="{% pageurl page %}" class="btn-link">Effacer les filtres</a>
                 {% endif %}
             </div>
@@ -123,7 +116,8 @@
         <ul class="timeline">
             {% for fiche in fiches %}
                 {# data-type : chaque type de fiche a sa couleur (section 11 du CSS) #}
-                <li class="timeline-item fiche-typee{% if fiche.epinglee %} is-epinglee{% endif %}" data-type="{{ fiche.type_cle }}">
+                {# Couleur : celle de la catégorie si elle en a une, sinon celle du type (data-type) #}
+                <li class="timeline-item fiche-typee{% if fiche.epinglee %} is-epinglee{% endif %}" data-type="{{ fiche.type_cle }}"{% with couleur=fiche.categorie_affichee.couleur_effective %}{% if couleur %} style="--type-color: {{ couleur }};"{% endif %}{% endwith %}>
                     <a href="{% pageurl fiche %}" class="timeline-media" tabindex="-1" aria-hidden="true">
                         {% if fiche.main_image %}
                             {% image fiche.main_image fill-300x240 alt="" class="timeline-img" %}
@@ -132,7 +126,7 @@
                         {% endif %}
                     </a>
                     <div class="timeline-card">
-                        <span class="fiche-type">{{ fiche.type_libelle }}</span>
+                        <span class="fiche-type">{{ fiche.categorie_affichee.nom|default:fiche.type_libelle }}</span>
                         {% if fiche.epinglee %}<span class="fiche-epingle">Épinglée</span>{% endif %}
                         <h2 class="timeline-title"><a href="{% pageurl fiche %}">{{ fiche.title }}</a></h2>
                         {% if fiche.intro %}

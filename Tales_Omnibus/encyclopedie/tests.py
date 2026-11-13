@@ -100,28 +100,63 @@ class EncyclopedieTests(ArborescenceMixin, TestCase):
         self.assertEqual(len(self.titres(page="abc")), 4)
 
 
-    # --- Catégorie de lieu --------------------------------------------------
-    def ranger_port_en_village(self):
-        from core.models import CategorieLieu
-        village = CategorieLieu.objects.create(nom="Village")
-        CategorieLieu.objects.create(nom="Donjon")  # aucun lieu : ne doit pas être proposée
-        port = LieuPage.objects.get(title="Port")
-        port.categorie = village
-        port.save_revision().publish()
-        return village
+    # --- Arbre des catégories -----------------------------------------------
+    def creer_arbre(self):
+        """
+        Personnage (défaut des héros)          Divers (défaut du lore)
+        ├─ PNJ                                 Lieu (défaut des lieux)
+        └─ Déité                               └─ Port de commerce
+           └─ Déité mineure
+        """
+        from core.models import Categorie
+        C = Categorie.objects.create
+        self.personnage = C(nom="Personnage", par_defaut_pour='heros', couleur="#A23B3B")
+        self.pnj = C(nom="PNJ", parent=self.personnage)
+        self.deite = C(nom="Déité", parent=self.personnage)
+        self.mineure = C(nom="Déité mineure", parent=self.deite)
+        self.divers = C(nom="Divers", par_defaut_pour='lore')
+        self.lieu = Categorie.objects.get(par_defaut_pour="lieux")  # créée par la migration core 0004
+        self.port_cat = C(nom="Port de commerce", parent=self.lieu)
 
-    def test_filtre_par_categorie_de_lieu(self):
-        village = self.ranger_port_en_village()
-        response = self.client.get(self.encyclopedie.url, {'type': "lieux", 'categorie': village.pk})
-        self.assertEqual([f.title for f in response.context['fiches']], ["Port"])
-        # Seules les catégories utilisées sont proposées
-        self.assertEqual([c.nom for c in response.context['categories']], ["Village"])
+    def test_une_categorie_inclut_toute_sa_branche(self):
+        self.creer_arbre()
+        dieux = LorePage.objects.get(title="Les dieux")
+        dieux.categorie = self.mineure  # une fiche Lore… rangée dans Personnage !
+        dieux.save_revision().publish()
+        # Personnage = les héros (par défaut, sans catégorie) + la déité mineure
+        self.assertEqual(self.titres(categorie=self.personnage.pk), ["Aldric", "Brune", "Les dieux"])
+        self.assertEqual(self.titres(categorie=self.deite.pk), ["Les dieux"])
 
-    def test_categorie_ignoree_hors_des_lieux(self):
-        village = self.ranger_port_en_village()
-        # Sans type "lieux", le paramètre categorie n'a aucun effet
-        self.assertEqual(len(self.titres(categorie=village.pk)), 4)
-        self.assertNotContains(self.client.get(self.encyclopedie.url), "Par catégorie de lieu")
+    def test_categorie_par_defaut_du_type(self):
+        self.creer_arbre()
+        # « Les dieux » n'a pas de catégorie : c'est une fiche Lore -> « Divers »
+        self.assertEqual(self.titres(categorie=self.divers.pk), ["Les dieux"])
+        response = self.client.get(self.encyclopedie.url)
+        self.assertContains(response, '<span class="fiche-type">Divers</span>', html=True)
+
+    def test_le_menu_montre_l_arbre_indente(self):
+        self.creer_arbre()
+        options = dict(self.client.get(self.encyclopedie.url).context['options_categories'])
+        self.assertEqual(options[self.mineure.pk], "\u00a0" * 6 + "Déité mineure")  # profondeur 2
+        self.assertEqual(options[self.personnage.pk], "Personnage")
+
+    def test_couleur_heritee_du_parent(self):
+        self.creer_arbre()
+        self.assertEqual(self.mineure.couleur_effective, "#A23B3B")
+        self.assertEqual(str(self.mineure), "Personnage › Déité › Déité mineure")
+
+    def test_pas_de_boucle_dans_l_arbre(self):
+        from core.models import Categorie, CategorieForm
+        self.creer_arbre()
+        Form = type('F', (CategorieForm,), {'Meta': type('Meta', (), {
+            'model': Categorie, 'fields': ['nom', 'parent', 'ordre']})})
+        # « Personnage » rangé dans sa propre petite-fille : refusé
+        form = Form(instance=self.personnage, data={'nom': "Personnage", 'parent': self.mineure.pk, 'ordre': 0})
+        self.assertFalse(form.is_valid())
+
+    def test_badge_sur_la_fiche(self):
+        self.creer_arbre()
+        self.assertContains(self.client.get(self.aldric.url), "Personnage")
 
 
 class FichesLieesTests(ArborescenceMixin, TestCase):

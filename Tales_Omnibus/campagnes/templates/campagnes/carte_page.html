@@ -26,7 +26,7 @@
                     {# c'est structure.css qui les transforme en position.            #}
                     {# |unlocalize : en "fr", 12.5 deviendrait "12,5" -> CSS invalide #}
                     <a href="{% pageurl lieu %}" class="map-marker"
-                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}">
+                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie.couleur_effective %} --marker-color: {{ lieu.categorie.couleur_effective }};{% endif %}">
                         <span class="map-marker-label">{{ lieu.title }}</span>
                     </a>
                 {% endwith %}

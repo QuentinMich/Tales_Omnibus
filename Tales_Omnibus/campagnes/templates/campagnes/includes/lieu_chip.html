@@ -1,6 +1,6 @@
 {% load wagtailcore_tags %}
 {# Pastille d'un lieu, à la couleur de sa catégorie.                       #}
 {# Usage : {% include "campagnes/includes/lieu_chip.html" with lieu=... %} #}
-<a href="{% pageurl lieu %}" class="lieu-chip"{% if lieu.categorie %} style="--marker-color: {{ lieu.categorie.couleur_marqueur }};"{% endif %}>
+<a href="{% pageurl lieu %}" class="lieu-chip"{% if lieu.categorie.couleur_effective %} style="--marker-color: {{ lieu.categorie.couleur_effective }};"{% endif %}>
     {{ lieu.title }}{% if lieu.categorie %} <small>({{ lieu.categorie.nom }})</small>{% endif %}
 </a>

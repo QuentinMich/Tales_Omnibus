@@ -114,3 +114,36 @@ class SlugAutomatiqueTests(TestCase):
         self.campagne.refresh_from_db()
         self.assertEqual(self.campagne.url_path, f"{racine}campagnes/saison-1/")
         self.assertEqual(self.client.get("/campagnes/saison-1/").status_code, 200)
+
+
+class CreerDemoTests(TestCase):
+    """La commande creer_demo crée une campagne complète et la retire proprement."""
+
+    def setUp(self):
+        from campagnes.models import CampagnesIndexPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        from home.models import HomePage
+        home = HomePage.objects.first()
+        home.add_child(instance=CampagnesIndexPage(title="Campagnes"))
+        home.add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+
+    def test_creation_puis_suppression(self):
+        from io import StringIO
+        from django.core.management import call_command
+        from wagtail.models import Page
+        from campagnes.models import Apparition
+        from encyclopedie.models import FamilleDeTags
+        avant = Page.objects.count()
+
+        call_command('creer_demo', stdout=StringIO())
+        self.assertGreaterEqual(Page.objects.count() - avant, 20)
+        self.assertEqual(Apparition.objects.count(), 7)
+        # Toutes les pages de la démo s'affichent
+        for page in Page.objects.live().specific().filter(depth__gt=2):
+            self.assertEqual(self.client.get(page.url).status_code, 200, page.title)
+
+        call_command('creer_demo', '--supprimer', stdout=StringIO())
+        self.assertEqual(Page.objects.count(), avant)
+        self.assertFalse(FamilleDeTags.objects.exists())
+
+        call_command('creer_demo', stdout=StringIO())  # et on peut la recréer

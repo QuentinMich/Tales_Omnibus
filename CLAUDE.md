@@ -81,6 +81,14 @@ cd Tales_Omnibus
   des fiches (`core/includes/tags_list.html`) mènent à l'encyclopédie filtrée
   (tag `{% encyclopedie_url %}`). `TAGGIT_CASE_INSENSITIVE = True`. La liste
   réutilise le composant `.timeline` de la chronologie.
+- **Catégories** (snippet `core.Categorie`, ex-`CategorieLieu` renommé) :
+  l'arborescence du SITE, pour le visiteur (Personnage › Déité › Déité
+  mineure), indépendante de l'arbre des PAGES (rangement admin). Champ
+  `categorie` sur les 4 fiches (`FicheEncyclopedieMixin`) ; sans catégorie,
+  une fiche tombe dans la catégorie `par_defaut_pour` de son `type_fiche`.
+  Couleur et icône héritées du parent (`couleur_effective`). Le filtre de
+  l'encyclopédie inclut toute la branche (`ids_de_la_branche`) ; helpers en
+  mémoire (`categories_en_memoire`, `arbre_des_categories`) : 1 requête.
 - **Familles de tags** (snippet `encyclopedie.FamilleDeTags` : nom, icône,
   couleur, ordre, M2M vers les `Tag` de taggit) : elles RANGENT les tags
   existants (un tag = une seule famille, vérifié par `FamilleDeTagsForm`).
@@ -136,6 +144,13 @@ cd Tales_Omnibus
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
+- **Démo** : `manage.py creer_demo` crée une campagne factice complète (24
+  pages, catégories, familles, apparitions) ; `creer_demo --supprimer` la
+  retire (les catégories restent). Le contenu est déclaré dans la commande.
+- **Migration core 0004** (renommage de `CategorieLieu`) : elle dépend de
+  `campagnes 0014`, sinon une base NEUVE (tests) plante, car les anciennes
+  migrations de campagnes visent encore `core.categorielieu`.
+
 ## Feuille de route (pas des bugs !)
 
 - **Thèmes** : un fichier CSS par thème (High Fantasy, Dark Fantasy,
@@ -146,7 +161,12 @@ cd Tales_Omnibus
 - **Sélecteur de coordonnées** : un widget d'admin pour cliquer sur l'image de
   la carte parente et remplir `coord_x` / `coord_y`.
 - **Fiche Lore** : section « Dans une autre campagne » du wireframe
-  (`lore-slug.pdf`), pas encore faite.
+  (`lore-slug.pdf`), pas encore faite. Piste validée : la campagne d'une
+  fiche se DÉDUIT (héros/événement = campagne parente ; lieu = campagnes de
+  ses cartes via `Apparition`) ; seul le Lore a besoin d'un lien explicite,
+  un InlinePanel « Dans les campagnes » (campagne + texte propre à cette
+  campagne), sur le modèle d'`Apparition`. Un helper commun
+  `campagnes_de(fiche)` servira au filtre et à la section.
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
 - CSS de la recherche.

@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -7,6 +9,7 @@ from wagtail.snippets.models import register_snippet
 
 from wagtail.models import Orderable, Page
 from wagtail.fields import StreamField, RichTextField
+from wagtail.admin.forms import WagtailAdminModelForm
 from wagtail.admin.panels import FieldPanel, InlinePanel
 
 from core.blocks import BaseStreamBlock
@@ -64,35 +67,159 @@ class NavigationSettings(ClusterableModel, BaseGenericSetting):
         InlinePanel('social_links', label="Réseaux Sociaux"),
     ]
 
+# --- CATÉGORIES : l'arborescence du SITE (ce que cherche le visiteur) -------
+#
+# Deux arbres différents dans Tales Omnibus :
+#   - l'arbre des PAGES (Campagne > Héros, Encyclopédie > Lore…) range les
+#     fiches pour l'ADMIN et donne les adresses ;
+#   - l'arbre des CATÉGORIES (Personnage > Déité > Déité mineure) range les
+#     fiches pour le VISITEUR. Il ne dépend pas du type de page : un PNJ est
+#     une fiche Lore rangée dans « Personnage > PNJ ».
+# Chaque fiche a UNE catégorie ; sans catégorie, elle tombe dans la catégorie
+# « par défaut » de son type de page (ex. Lore -> « Divers »).
+
+TYPES_DE_FICHES = [
+    ('heros', "Héros"),
+    ('lieux', "Lieux"),
+    ('evenements', "Événements"),
+    ('lore', "Lore"),
+]
+
+
+class CategorieForm(WagtailAdminModelForm):
+    """Formulaire d'admin : pas de boucle dans l'arbre."""
+
+    def clean_parent(self):
+        parent = self.cleaned_data.get('parent')
+        ancetre = parent
+        while ancetre is not None:
+            # En remontant depuis le parent choisi, on ne doit jamais retomber
+            # sur la catégorie elle-même (sinon : A rangée dans B rangée dans A)
+            if self.instance.pk and ancetre.pk == self.instance.pk:
+                raise ValidationError(
+                    "Une catégorie ne peut pas être rangée dans elle-même "
+                    "ou dans une de ses sous-catégories."
+                )
+            ancetre = ancetre.parent
+        return parent
+
+    def clean_par_defaut_pour(self):
+        # Champ unique mais facultatif : deux "" seraient un doublon, deux None non
+        return self.cleaned_data.get('par_defaut_pour') or None
+
+
 @register_snippet
-class CategorieLieu(models.Model):
+class Categorie(models.Model):
     nom = models.CharField(max_length=100, verbose_name="Nom de la catégorie")
+    parent = models.ForeignKey(
+        'self',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,  # supprimer « Personnage » remonte ses enfants à la racine
+        related_name='enfants',
+        verbose_name="Catégorie parente",
+        help_text="Vide = catégorie principale (Personnage, Lieu…)."
+    )
     icone = models.ForeignKey(
         'wagtailimages.Image',
         null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='+',
-        verbose_name="Icône / Picto de carte"
+        verbose_name="Icône",
+        help_text="Si vide, reprend celle de la catégorie parente."
     )
-    couleur_marqueur = models.CharField(
-        max_length=7,
-        default="#FF0000",
-        verbose_name="Couleur du marqueur (Code HEX)",
-        help_text="Ex: #FF0000 pour rouge, #00FF00 pour vert..."
+    couleur = models.CharField(
+        max_length=7, blank=True,
+        validators=[RegexValidator(r'^#[0-9A-Fa-f]{6}$', "Code couleur au format #RRGGBB.")],
+        verbose_name="Couleur",
+        help_text="Code HEX (#3B6EA2). Si vide, reprend celle de la catégorie parente. "
+                  "Sert aussi de couleur d'étoile sur les cartes pour les lieux."
+    )
+    ordre = models.PositiveIntegerField(default=0, verbose_name="Ordre d'affichage")
+    par_defaut_pour = models.CharField(
+        max_length=20, choices=TYPES_DE_FICHES,
+        null=True, blank=True, unique=True,  # une seule catégorie par défaut par type
+        verbose_name="Catégorie par défaut pour",
+        help_text="Les fiches de ce type SANS catégorie seront rangées ici."
     )
 
+    base_form_class = CategorieForm
     panels = [
         FieldPanel('nom'),
+        FieldPanel('parent'),
         FieldPanel('icone'),
-        FieldPanel('couleur_marqueur'),
+        FieldPanel('couleur'),
+        FieldPanel('ordre'),
+        FieldPanel('par_defaut_pour'),
     ]
 
-    def __str__(self):
-        return self.nom
-
     class Meta:
-        verbose_name = "Catégorie de lieu"
-        verbose_name_plural = "Catégories de lieux"
+        ordering = ['ordre', 'nom']
+        verbose_name = "Catégorie"
+        verbose_name_plural = "Catégories"
+
+    def ancetres(self):
+        """[Personnage, Déité, Déité mineure] pour « Déité mineure »."""
+        chemin, categorie = [], self
+        while categorie is not None:
+            chemin.insert(0, categorie)
+            categorie = categorie.parent
+        return chemin
+
+    def __str__(self):
+        # Le chemin complet : c'est ce qui s'affiche dans le sélecteur de l'admin
+        return " › ".join(c.nom for c in self.ancetres())
+
+    @property
+    def couleur_effective(self):
+        """Sa couleur, sinon celle du plus proche ancêtre qui en a une."""
+        return next((c.couleur for c in reversed(self.ancetres()) if c.couleur), "")
+
+    @property
+    def icone_effective(self):
+        return next((c.icone for c in reversed(self.ancetres()) if c.icone_id), None)
+
+
+def categories_en_memoire():
+    """
+    Toutes les catégories en UNE requête, avec leurs parents reliés en mémoire :
+    ensuite ancetres(), couleur_effective… ne font plus aucune requête.
+    (Il y en a quelques dizaines : les charger toutes coûte moins cher que
+    de remonter l'arbre fiche par fiche.)
+    """
+    toutes = {c.pk: c for c in Categorie.objects.select_related('icone')}
+    for categorie in toutes.values():
+        categorie.parent = toutes.get(categorie.parent_id)  # remplit le cache du ForeignKey
+    return toutes
+
+
+def arbre_des_categories(toutes=None):
+    """L'arbre « à plat », dans l'ordre d'affichage : [(categorie, profondeur), …]."""
+    toutes = toutes or categories_en_memoire()
+    enfants = {}
+    for categorie in sorted(toutes.values(), key=lambda c: (c.ordre, c.nom.lower())):
+        enfants.setdefault(categorie.parent_id, []).append(categorie)
+
+    resultat = []
+
+    def parcourir(parent_id, profondeur):
+        for categorie in enfants.get(parent_id, []):
+            resultat.append((categorie, profondeur))
+            parcourir(categorie.pk, profondeur + 1)
+
+    parcourir(None, 0)
+    return resultat
+
+
+def ids_de_la_branche(categorie, toutes=None):
+    """La catégorie ET toutes ses sous-catégories (choisir Personnage = héros + PNJ + déités)."""
+    toutes = toutes or categories_en_memoire()
+    ids = {categorie.pk}
+    while True:  # on descend niveau par niveau jusqu'à ne plus rien trouver
+        nouveaux = {c.pk for c in toutes.values() if c.parent_id in ids} - ids
+        if not nouveaux:
+            return ids
+        ids |= nouveaux
+
 
 class BaseFichePage(SlugAutomatiqueMixin, Page):
     intro = RichTextField(
@@ -135,6 +262,23 @@ class FicheEncyclopedieMixin(models.Model):
         verbose_name="Épingler dans l'encyclopédie",
         help_text="Les fiches épinglées apparaissent en tête de liste."
     )
+    categorie = models.ForeignKey(
+        'core.Categorie',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Catégorie",
+        help_text="Où ranger cette fiche pour le visiteur (ex : Personnage › PNJ). "
+                  "Vide = la catégorie par défaut de ce type de fiche."
+    )
+
+    #: Clé du type de fiche ('heros', 'lieux'…), définie dans chaque modèle
+    type_fiche = None
 
     class Meta:
         abstract = True
+
+    @property
+    def categorie_effective(self):
+        """Sa catégorie, sinon la catégorie par défaut de son type de page."""
+        return self.categorie or Categorie.objects.filter(par_defaut_pour=self.type_fiche).first()

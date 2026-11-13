@@ -10,6 +10,7 @@
     <div class="fiche-top">
         <div class="fiche-card">
             <h1 class="fiche-title">{{ page.title }}</h1>
+            {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %}
             {% if page.intro %}
                 <div class="richtext">{{ page.intro|richtext }}</div>
             {% endif %}

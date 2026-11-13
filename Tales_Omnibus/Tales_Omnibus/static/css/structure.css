@@ -1107,7 +1107,11 @@ span.carte-map-img {
 }
 
 .carte-mini span.carte-map-img {
-    width: min(20rem, 100%); /* le rectangle barré n'a pas de taille propre */
+    /* Le rectangle barré n'a pas de taille propre. Pas de « 100% » ici : le
+       cadre (fit-content) prend la taille de son contenu, et ce contenu
+       demanderait 100% du cadre -> boucle, que le navigateur résout à 0 px. */
+    width: 20rem;
+    max-width: 100%;
 }
 
 .carte-mini-legende {

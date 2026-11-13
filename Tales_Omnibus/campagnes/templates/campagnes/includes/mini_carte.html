@@ -20,7 +20,7 @@
                 {% if apparition.est_placee %}
                     {# Un span et pas un lien : le lien vers le lieu est juste en dessous #}
                     <span class="map-marker" aria-hidden="true"
-                          style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie %} --marker-color: {{ lieu.categorie.couleur_marqueur }};{% endif %}"></span>
+                          style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};{% if lieu.categorie.couleur_effective %} --marker-color: {{ lieu.categorie.couleur_effective }};{% endif %}"></span>
                 {% endif %}
             </div>
         {% endwith %}

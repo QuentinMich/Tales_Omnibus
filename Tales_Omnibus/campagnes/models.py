@@ -7,7 +7,7 @@ from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
-from core.models import BaseFichePage, CategorieLieu, FicheEncyclopedieMixin, SOCIAL_PLATFORMS
+from core.models import BaseFichePage, FicheEncyclopedieMixin, SOCIAL_PLATFORMS
 from core.forms import HeroContactForm
 from core.blocks import BaseStreamBlock
 from core.panels import panels_avec_enfants
@@ -173,7 +173,7 @@ class CartePage(BaseFichePage):
         # avec leur catégorie en une seule requête (couleur des étoiles).
         context['apparitions'] = (
             self.apparitions.filter(lieu__live=True)
-            .select_related('lieu', 'lieu__categorie')
+            .select_related('lieu', 'lieu__categorie', 'lieu__categorie__parent')
         )
 
         parent_campagne = self.get_parent().specific
@@ -245,13 +245,8 @@ class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
         verbose_name = "Lieu"
         verbose_name_plural = "Lieux"
 
-    categorie = models.ForeignKey(
-        CategorieLieu,  # <-- Utilisation directe
-        null=True, blank=True,
-        on_delete=models.SET_NULL,
-        related_name='lieux',
-        verbose_name="Catégorie de lieu"
-    )
+    # Le champ « categorie » vient de FicheEncyclopedieMixin (arbre des catégories)
+    type_fiche = 'lieux'
     # Un lieu est une fiche UNIVERSELLE (comme le Lore) : il vit dans
     # l'encyclopédie. Ses positions sont dans les Apparitions des cartes.
     subpage_types = []  # Page feuille (pas d'enfants)
@@ -348,6 +343,7 @@ class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
         help_text="Un champ de bataille, une clairière… crée-le d'abord comme Lieu sur une carte."
     )
 
+    type_fiche = 'evenements'
     subpage_types = []
     parent_page_types = ['campagnes.ChronologiePage']
     tags = ClusterTaggableManager(through=EvenementPageTag, blank=True)
@@ -358,6 +354,7 @@ class EvenementPage(FicheEncyclopedieMixin, BaseFichePage):
             FieldPanel('date_affichage'),
         ], heading="Horodatage"),
         FieldPanel('lieu'),
+        FieldPanel('categorie'),
         FieldPanel("tags"),
         FieldPanel("epinglee"),
     ]
@@ -399,6 +396,7 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         verbose_name = "Héros"
         verbose_name_plural = "Héros"
 
+    type_fiche = 'heros'
     subpage_types = []  # Page feuille
     parent_page_types = ['campagnes.CampagnePage']
     joueur_nom = models.CharField(max_length=100, verbose_name="Nom / Pseudo du joueur")
@@ -431,6 +429,7 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         FieldPanel("tags"),
         ]),
         FieldPanel("lieu_origine"),
+        FieldPanel("categorie"),
         FieldPanel("epinglee"),
     ]
 

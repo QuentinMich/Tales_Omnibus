@@ -1,0 +1,12 @@
+{% load wagtailimages_tags %}
+{# Badge de catégorie d'une fiche : « Personnage › Déité › Déité mineure »,  #}
+{# avec l'icône et la couleur de la catégorie (ou héritées de ses parents). #}
+{# Usage : {% include "core/includes/categorie_badge.html" with categorie=page.categorie_effective %} #}
+{% if categorie %}
+    <span class="badge badge--categorie"{% if categorie.couleur_effective %} style="--marker-color: {{ categorie.couleur_effective }};"{% endif %}>
+        {% with icone=categorie.icone_effective %}
+            {% if icone %}{% image icone fill-32x32 alt="" class="badge-icon" %}{% endif %}
+        {% endwith %}
+        {% for etape in categorie.ancetres %}{% if not forloop.first %} › {% endif %}{{ etape.nom }}{% endfor %}
+    </span>
+{% endif %}
