@@ -109,6 +109,11 @@ cd Tales_Omnibus
   le texte qui suit l'entoure), `separateur` (`<hr>`, coupe les flottants),
   `paragraph`, `embed`. Le parent d'une image flottante est en `flow-root`
   (règle `:has()` générique).
+- **SEO automatique** (`core/seo.py`, tag `{% seo_de_la_page as seo %}` dans
+  `base.html`) : si les champs « Promotion » sont vides, titre =
+  « Titre · Catégorie | Nom de l'univers » (accueil : nom seul), description
+  = accroche sans HTML coupée à 155 caractères. Plus `canonical` et balises
+  Open Graph (aperçu des liens sur Discord / réseaux, image 1200×630).
 - La carte place les lieux en `%` à partir des `coord_x` / `coord_y` de leurs `Apparition`.
 - **Mentions légales** (`pages.MentionsLegalesPage`, une seule, slug fixe
   `mentions-legales` = lien du pied de page) : le texte légal est fixe dans le
@@ -174,9 +179,6 @@ cd Tales_Omnibus
   dans `base.html`.
 - **Sélecteur de coordonnées** : un widget d'admin pour cliquer sur l'image de
   la carte parente et remplir `coord_x` / `coord_y`.
-- **SEO automatique** (idée de Quentin) : générer la balise titre et la méta
-  description à partir du type de page, de la catégorie et de l'intro quand
-  le client laisse les champs « Promotion » vides.
 - **Ménage du menu admin** : masquer les entrées inutiles avec le hook
   `construct_main_menu`. Quentin doit fournir la liste.
 - CSS de la recherche.

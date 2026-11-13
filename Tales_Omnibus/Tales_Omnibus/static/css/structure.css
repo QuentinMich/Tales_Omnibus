@@ -437,8 +437,19 @@ figure {
 }
 
 .badge--categorie {
-    border-left: 0.75rem solid var(--marker-color, var(--color-accent));
     background: var(--color-bg);
+}
+
+/* Pastille de la couleur de la catégorie, devant le texte (une bordure
+   gauche, sur un badge arrondi, dessinerait un croissant). L'icône, si la
+   catégorie en a une, est affichée à la place. */
+.badge--categorie:not(:has(.badge-icon))::before {
+    content: "";
+    flex-shrink: 0;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    background: var(--marker-color, var(--color-accent));
 }
 
 .badge-icon {
@@ -592,8 +603,12 @@ figure {
 
 /* Le bloc qui CONTIENT une image flottante la garde dedans, quelle que soit
    la page (fiche, campagne, carte, Univers…) : flow-root crée un nouveau
-   contexte de mise en page, qui englobe les flottants. */
-:has(> .block-image--gauche, > .block-image--droite) {
+   contexte de mise en page, qui englobe les flottants.
+   Attention : Wagtail enveloppe chaque bloc du StreamField dans son propre
+   <div class="block-image">. On vise donc le conteneur de CES enveloppes
+   (si on visait l'enveloppe, elle garderait l'image pour elle seule et le
+   texte suivant ne pourrait plus l'entourer). */
+:has(> .block-image > .block-image--gauche, > .block-image > .block-image--droite) {
     display: flow-root;
 }
 
@@ -926,6 +941,13 @@ figure {
     padding: var(--space-lg);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
+}
+
+/* En-tête de fiche : surtitre (date), titre, badge de catégorie, espacés */
+.fiche-entete {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-sm);
 }
 
 .fiche-title {

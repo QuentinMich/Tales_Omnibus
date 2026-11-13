@@ -29,8 +29,14 @@ class SlugAutomatiqueMixin:
             help_text="Générée automatiquement à partir du titre.",
         ),
         MultiFieldPanel([
-            FieldPanel("seo_title"),
-            FieldPanel("search_description"),
+            FieldPanel("seo_title", help_text=(
+                "Laisser vide pour un titre automatique : "
+                "« Titre de la page · Catégorie | Nom de l'univers »."
+            )),
+            FieldPanel("search_description", help_text=(
+                "Laisser vide pour reprendre automatiquement l'accroche de la page "
+                "(coupée à 155 caractères)."
+            )),
         ], heading="Pour les moteurs de recherche"),
     ]
 

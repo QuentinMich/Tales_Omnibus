@@ -147,3 +147,50 @@ class CreerDemoTests(TestCase):
         self.assertFalse(FamilleDeTags.objects.exists())
 
         call_command('creer_demo', stdout=StringIO())  # et on peut la recréer
+
+
+class SeoAutomatiqueTests(TestCase):
+    """core/seo.py : titre et méta description générés quand l'admin les laisse vides."""
+
+    def setUp(self):
+        from encyclopedie.models import EncyclopedieIndexPage, LorePage
+        from core.models import Categorie
+        from home.models import HomePage
+        self.home = HomePage.objects.first()
+        encyclopedie = self.home.add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.deite = Categorie.objects.create(nom="Déité majeure")
+        self.vael = encyclopedie.add_child(instance=LorePage(
+            title="Vaël", categorie=self.deite,
+            intro="<p>Elle tisse le <b>brouillard</b>&nbsp;et décide qui s'y perd.</p>",
+        ))
+        self.vael.save_revision().publish()
+
+    def test_couper_a_la_fin_d_un_mot(self):
+        from core.seo import couper
+        texte = "mot " * 60
+        coupe = couper(texte.strip())
+        self.assertLessEqual(len(coupe), 155)
+        self.assertTrue(coupe.endswith("mot…"))
+
+    def test_titre_et_description_automatiques(self):
+        from core.seo import description_seo, titre_seo
+        self.assertEqual(titre_seo(self.vael, "Tales Omnibus"), "Vaël · Déité majeure | Tales Omnibus")
+        # HTML retiré, entités (&nbsp;) décodées, espaces normalisés
+        self.assertEqual(description_seo(self.vael, "Tales Omnibus"), "Elle tisse le brouillard et décide qui s'y perd.")
+
+    def test_les_champs_promotion_du_client_ont_la_priorite(self):
+        from core.seo import description_seo, titre_seo
+        self.vael.seo_title = "La déesse des Brumes"
+        self.vael.search_description = "Tout sur Vaël."
+        self.assertEqual(titre_seo(self.vael, "Tales Omnibus"), "La déesse des Brumes | Tales Omnibus")
+        self.assertEqual(description_seo(self.vael, "Tales Omnibus"), "Tout sur Vaël.")
+
+    def test_le_head_de_la_page(self):
+        html = self.client.get(self.vael.url).content.decode()
+        self.assertIn("<title>Vaël · Déité majeure | Tales Omnibus</title>", html)
+        self.assertIn('<meta name="description" content="Elle tisse le brouillard et décide qui s&#x27;y perd." />', html)
+        self.assertIn('<meta property="og:type" content="article" />', html)
+        self.assertIn('<link rel="canonical" href="http://localhost/encyclopedie/vael/" />', html)
+
+    def test_l_accueil_porte_le_nom_du_site(self):
+        self.assertContains(self.client.get(self.home.url), "<title>Tales Omnibus</title>", html=False)
