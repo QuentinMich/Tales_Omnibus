@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
@@ -689,6 +690,18 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         verbose_name="Lieu d'origine",
     )
 
+    # Le compte qui peut modifier CETTE fiche (le joueur). Les droits sont
+    # donnés à la publication : voir campagnes/joueurs.py.
+    compte_joueur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='fiches_heros',
+        verbose_name="Compte du joueur",
+        help_text="Le joueur pourra se connecter et modifier cette fiche (et seulement elle). "
+                  "Crée d'abord son compte dans Comptes > Utilisateurs. Prend effet à la publication.",
+    )
+
     # La fiche de stats : un ou plusieurs tableaux (Warhammer : profil +
     # compétences…). Un NOUVEAU héros arrive avec le tableau D&D prérempli ;
     # vide (on supprime le tableau) = rien sur le site.
@@ -720,6 +733,9 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         FieldPanel("lieu_origine"),
         FieldPanel("categorie"),
         FieldPanel("epinglee"),
+        # permission="superuser" : le champ n'existe même pas dans le
+        # formulaire d'un joueur (il ne peut pas se donner la fiche d'un autre)
+        FieldPanel("compte_joueur", permission="superuser"),
     ]
 
     @property

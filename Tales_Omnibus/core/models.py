@@ -68,6 +68,13 @@ class NavigationSettings(ClusterableModel, BaseGenericSetting):
         InlinePanel('social_links', label="Réseaux Sociaux"),
     ]
 
+    class Meta:
+        # Le nom affiché dans l'admin (menu, titre de la page). Le nom de la
+        # CLASSE reste NavigationSettings : le changer obligerait à renommer
+        # la table et toutes les références dans les templates.
+        verbose_name = "Paramètres du site"
+        verbose_name_plural = "Paramètres du site"
+
 # --- CATÉGORIES : l'arborescence du SITE (ce que cherche le visiteur) -------
 #
 # Deux arbres différents dans Tales Omnibus :

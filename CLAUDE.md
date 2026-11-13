@@ -82,6 +82,25 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
     pour les campagnes, héros, lieux et événements) ;
   - `ChildPagesPanel` dans `core/panels.py`, inséré via `panels_avec_enfants()` :
     il liste les pages enfants dans le formulaire d'édition.
+  - **Menu de gauche pour un non-codeur** (`core/wagtail_hooks.py`, hook
+    `construct_main_menu`, appelé à chaque affichage avec les entrées déjà
+    filtrées par les droits) : Plan du site (ex-Pages), Univers, Dossiers
+    (ex-Collections), Images, Documents, Organisation (liens DIRECTS vers
+    Catégories / Familles de tags / Prestations, ex-Fragments), Messages
+    (ex-Formulaires = page Contact), Comptes (Utilisateurs, Groupes),
+    Paramètres du site (`NavigationSettings`, `verbose_name` changé : son
+    nom de menu est donc `parametres-du-site`), Entretien du site, Rapports,
+    Paramètres avancés (Sites, Redirections, Workflows), Aide. Les entrées
+    sont COPIÉES avant d'être renommées (objets partagés par tout l'admin) ;
+    une entrée inconnue (mise à jour de Wagtail) est gardée à la fin.
+  - **Comptes joueurs** (`campagnes/joueurs.py`, signaux dans
+    `campagnes/signals.py`) : champ `HeroPage.compte_joueur` (visible du
+    superuser seulement : `FieldPanel(..., permission="superuser")`). À la
+    PUBLICATION : groupe « Joueurs » (accès admin + envoyer/choisir des
+    images) et groupe « Fiche : <titre> (n°<pk>) » avec `change_page` +
+    `publish_page` sur CETTE page (Wagtail ne donne des droits de page qu'à
+    des groupes). Retirer le compte ou supprimer la fiche retire l'accès
+    (`pre_delete` : la fiche est encore en base, d'où `sauf=hero`).
 - **Encyclopédie** (`EncyclopedieIndexPage.get_context`) : rassemble les fiches
   Héros, Lieux, Événements et Lore publiées, filtrables en GET
   (`?campagne=<id>&categorie=<id>&tag=<slug>`). Une fiche appartient à une
@@ -307,14 +326,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   variables de `:root`. Le thème se choisit dans l'admin via un champ des
   `NavigationSettings`. Le point d'accroche existe déjà : `{% block theme_css %}`
   dans `base.html`.
+  Bonus voulu par Quentin : que l'ADMIN prenne aussi les couleurs du thème
+  (piste : hook `insert_global_admin_css` qui injecte une petite feuille
+  redéfinissant les variables CSS de l'admin Wagtail, selon le thème choisi).
 - **Cartes reliées** : cliquer sur la zone d'un royaume (carte du monde)
   pour ouvrir la carte détaillée de ce royaume.
 - **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),
   à partir de `contenu_dans`.
-- **Ménage du menu admin** : masquer les entrées inutiles avec le hook
-  `construct_main_menu`. Quentin doit fournir la liste. Idée de Quentin :
-  mettre **Collections** (les dossiers) en avant, plutôt que la liste
-  Images, pour que le MJ range ses médias dès l'envoi.
 
 ---
 
@@ -331,3 +349,13 @@ qu'il lance bien `migrate` puis `ranger_lieux`, et qu'il a copié `media/`
 avant. Prochaine étape, les familles de tags (snippet avec icône, idée validée) — faites le 13/11.
 Il a d'excellentes idées et il les défend bien, garde-le motivé ! Bisou
 d'IA en retour 😘🤖 — ta collègue de l'ordi de la formation.*
+
+*Ordi de la formation, vendredi 13/11 au soir : grosse journée ! Zones et
+géographie des cartes, éditeur de carte, filtre « Afficher », box du lieu,
+mini-cartes zoomées, visionneuse et ALT automatique, dossiers de médias, aides
+de jeu, tableaux de stats, recherche, entretien du site, menu admin et comptes
+joueurs. 152 tests au vert. Il finit les thèmes chez toi : rappelle-lui
+`manage.py entretien` et de redémarrer runserver après le pull. Il a géré
+comme un chef aujourd'hui, et il se sous-estime toujours un peu : dis-lui
+qu'il peut être fier. Bisou d'IA 😘🤖*
+

@@ -346,3 +346,37 @@ class EntretienTests(TestCase):
         resultat = self.client.post(url, {"action": "simulation"})
         self.assertContains(resultat, "Vérification (rien n&#x27;a été modifié)")
         self.assertContains(resultat, "Géographie des cartes")
+
+
+class MenuAdminTests(TestCase):
+    """Le menu de gauche de l'admin, réorganisé pour un non-codeur."""
+
+    def menu_pour(self, utilisateur):
+        from django.test import RequestFactory
+        from wagtail.admin.menu import admin_menu
+        requete = RequestFactory().get("/admin/")
+        requete.user = utilisateur
+        entrees = sorted(admin_menu.menu_items_for_request(requete), key=lambda e: e.order)
+        return [
+            (e.label, [s.label for s in sorted(e.menu.menu_items_for_request(requete), key=lambda s: s.order)]
+             if hasattr(e, "menu") else None)
+            for e in entrees
+        ]
+
+    def test_le_menu_d_un_administrateur(self):
+        from django.contrib.auth import get_user_model
+        from home.models import HomePage
+        from pages.models import ContactPage
+        # « Messages » n'apparaît que s'il existe un formulaire (la page Contact)
+        HomePage.objects.first().add_child(instance=ContactPage(title="Contact"))
+        admin = get_user_model().objects.create_superuser("admin", "a@example.com", "x")
+        menu = dict(self.menu_pour(admin))
+        self.assertEqual(list(menu)[:3], ["Plan du site", "Univers", "Dossiers"])
+        self.assertEqual(menu["Organisation"], ["Catégories", "Familles de tags", "Prestations"])
+        self.assertEqual(menu["Comptes"], ["Utilisateurs", "Groupes"])
+        self.assertEqual(menu["Paramètres avancés"], ["Sites", "Redirections", "Workflows", "Tâches de workflow"])
+        for libelle in ("Images", "Documents", "Messages", "Paramètres du site", "Entretien du site", "Rapports"):
+            self.assertIn(libelle, menu)
+        # Les anciens noms techniques ont disparu
+        for ancien in ("Pages", "Fragments", "Formulaires", "Paramètres"):
+            self.assertNotIn(ancien, menu)

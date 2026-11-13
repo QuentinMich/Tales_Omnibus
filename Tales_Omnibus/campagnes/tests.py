@@ -536,3 +536,60 @@ class CaracteristiquesTests(CampagneTreeMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, "Caractéristiques")
         self.assertContains(response, "Charisme")  # le modèle D&D, prêt à remplir
+
+
+class ComptesJoueursTests(CampagneTreeMixin, TestCase):
+    """Un joueur peut modifier SA fiche Héros, et rien d'autre."""
+
+    def setUp(self):
+        super().setUp()
+        from django.contrib.auth import get_user_model
+        Utilisateur = get_user_model()
+        self.zoe = Utilisateur.objects.create_user("zoe", "zoe@example.com", "x")
+        self.mj = Utilisateur.objects.create_superuser("mj", "mj@example.com", "x")
+        self.brann = self.campagne.add_child(instance=HeroPage(title="Brann", joueur_nom="Zoé"))
+        self.ysolde = self.campagne.add_child(instance=HeroPage(title="Ysolde", joueur_nom="MJ"))
+
+    def donner_a(self, hero, compte):
+        hero.compte_joueur = compte
+        hero.save_revision().publish()  # c'est la publication qui donne les droits
+
+    def test_le_joueur_peut_modifier_et_publier_sa_fiche_seulement(self):
+        self.donner_a(self.brann, self.zoe)
+        droits = self.brann.permissions_for_user(self.zoe)
+        self.assertTrue(droits.can_edit())
+        self.assertTrue(droits.can_publish())
+        self.assertFalse(self.ysolde.permissions_for_user(self.zoe).can_edit())
+        self.assertTrue(self.zoe.has_perm("wagtailadmin.access_admin"))  # peut se connecter
+
+    def test_dans_l_admin(self):
+        from django.urls import reverse
+        self.donner_a(self.brann, self.zoe)
+        self.client.force_login(self.zoe)
+        sa_fiche = self.client.get(reverse("wagtailadmin_pages:edit", args=[self.brann.pk]))
+        self.assertEqual(sa_fiche.status_code, 200)
+        # Le champ « Compte du joueur » n'est pas dans SON formulaire
+        self.assertNotContains(sa_fiche, 'name="compte_joueur"')
+        autre = self.client.get(reverse("wagtailadmin_pages:edit", args=[self.ysolde.pk]))
+        self.assertEqual(autre.status_code, 302)  # Wagtail renvoie au tableau de bord
+
+        self.client.force_login(self.mj)
+        self.assertContains(self.client.get(reverse("wagtailadmin_pages:edit", args=[self.brann.pk])),
+                            'name="compte_joueur"')
+
+    def test_retirer_le_compte_retire_l_acces(self):
+        self.donner_a(self.brann, self.zoe)
+        self.donner_a(self.brann, None)
+        self.zoe = type(self.zoe).objects.get(pk=self.zoe.pk)  # oublie le cache des permissions
+        self.assertFalse(self.brann.permissions_for_user(self.zoe).can_edit())
+        self.assertFalse(self.zoe.has_perm("wagtailadmin.access_admin"))
+
+    def test_le_groupe_suit_le_titre_et_disparait_avec_la_fiche(self):
+        from django.contrib.auth.models import Group
+        self.donner_a(self.brann, self.zoe)
+        self.brann.title = "Brann le Rouquin"
+        self.donner_a(self.brann, self.zoe)
+        self.assertTrue(Group.objects.filter(name=f"Fiche : Brann le Rouquin (n°{self.brann.pk})").exists())
+        self.brann.delete()
+        self.assertFalse(Group.objects.filter(name__startswith="Fiche : Brann").exists())
+        self.assertFalse(type(self.zoe).objects.get(pk=self.zoe.pk).has_perm("wagtailadmin.access_admin"))
