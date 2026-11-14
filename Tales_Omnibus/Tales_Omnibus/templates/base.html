@@ -75,7 +75,14 @@
                 {% else %}
                     <span class="site-logo site-logo--placeholder" aria-hidden="true"></span>
                 {% endif %}
-                <span class="site-name">{{ settings.core.NavigationSettings.site_name }}</span>
+                {# SEO : une page = un seul <h1>. Sur l'ACCUEIL, le sujet de la page, #}
+                {# c'est le site lui-même : son nom devient le <h1>. Ailleurs, c'est  #}
+                {# un simple <span> (le <h1> est le titre de la fiche, de la carte…). #}
+                {% if page.pk == current_site.root_page.pk %}
+                    <h1 class="site-name">{{ settings.core.NavigationSettings.site_name }}</h1>
+                {% else %}
+                    <span class="site-name">{{ settings.core.NavigationSettings.site_name }}</span>
+                {% endif %}
             </a>
 
             {# Menu à libellés fixes : voir core/templatetags/navigation_tags.py #}

@@ -204,6 +204,18 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # voir core/middleware.py pour la protection.
 WAGTAILIMAGES_EXTENSIONS = ["avif", "gif", "jpg", "jpeg", "png", "webp", "svg"]
 
+# Poids des pages (SEO : la vitesse compte dans le classement) : les VIGNETTES
+# que Wagtail fabrique ({% image … fill-… %}) sont enregistrées en WebP, 25 à
+# 35 % plus léger que le JPG à qualité égale, transparence gardée (icônes PNG).
+# L'original envoyé par le client n'est pas touché. Pas le GIF (il peut être
+# animé), et un SVG reste un SVG : il n'est jamais converti.
+WAGTAILIMAGES_FORMAT_CONVERSIONS = {
+    "jpeg": "webp",
+    "png": "webp",
+    "bmp": "webp",
+    "avif": "webp",  # l'AVIF n'est pas encore lu partout
+}
+
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 # Maximum upload size for documents in bytes.

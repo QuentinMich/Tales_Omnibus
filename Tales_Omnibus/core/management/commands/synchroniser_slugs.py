@@ -13,7 +13,7 @@ tout est déjà à jour.
 from django.core.management.base import BaseCommand
 from wagtail.models import Page
 
-from core.slugs import SlugAutomatiqueMixin
+from core.slugs import SlugAutomatiqueMixin, reparer_le_chemin
 
 
 class Command(BaseCommand):
@@ -38,5 +38,13 @@ class Command(BaseCommand):
             if page.slug != ancien:
                 changements += 1
                 self.stdout.write(self.style.SUCCESS(f"{page.title} : {ancien} -> {page.slug}"))
+            # Slug bon mais chemin complet resté ancien (page déplacée puis
+            # renommée) : les liens vers la page donnaient une 404.
+            ancienne_adresse = reparer_le_chemin(page)
+            if ancienne_adresse:
+                changements += 1
+                self.stdout.write(self.style.SUCCESS(
+                    f"{page.title} : adresse réparée ({ancienne_adresse} -> {page.url_path}), redirection créée"
+                ))
         if not changements:
             self.stdout.write("Tous les slugs sont déjà à jour.")

@@ -70,6 +70,27 @@ class SlugAutomatiqueTests(TestCase):
         self.index = self.home.add_child(instance=CampagnesIndexPage(title="Tales", slug="tales"))
         self.campagne = self.index.add_child(instance=CampagnePage(title="Saison 1"))
 
+    def test_un_chemin_en_retard_sur_le_slug_est_repare(self):
+        # Le bug de « Caer-Fiodh » : slug à jour, url_path resté ancien (page
+        # déplacée puis renommée). Les liens menaient alors à une 404.
+        from io import StringIO
+        from django.core.management import call_command
+        from wagtail.contrib.redirects.models import Redirect
+        from wagtail.models import Page
+        self.campagne.save_revision().publish()
+        Page.objects.filter(pk=self.campagne.pk).update(url_path="/home/campagnes/ancien-nom/")
+        self.campagne.refresh_from_db()
+        self.assertEqual(self.client.get(self.campagne.url).status_code, 404)
+
+        sortie = StringIO()
+        call_command("synchroniser_slugs", stdout=sortie)
+        self.assertIn("adresse réparée", sortie.getvalue())
+        self.campagne.refresh_from_db()
+        self.assertEqual(self.campagne.url_path, "/home/campagnes/saison-1/")
+        self.assertEqual(self.client.get(self.campagne.url).status_code, 200)
+        # L'ancienne adresse redirige (301) vers la page
+        self.assertTrue(Redirect.objects.filter(old_path="/campagnes/ancien-nom", redirect_page=self.campagne).exists())
+
     def test_page_unique_slug_fixe(self):
         # Peu importe le titre (ou le slug saisi), l'index s'appelle "campagnes"
         self.assertEqual(self.index.slug, "campagnes")
@@ -148,9 +169,15 @@ class CreerDemoTests(TestCase):
         port = Apparition.objects.get(carte__title="Carte d'Ardenn", lieu__title="Port-Lanterne")
         self.assertEqual([l.title for l in port.chemin()], ["Ardenn", "Royaume du Val Gris"])
         self.assertIn(port.lieu_id, ids_situes_dans(val_gris.lieu_detaille_id))
-        # Toutes les pages de la démo s'affichent
-        for page in Page.objects.live().specific().filter(depth__gt=2):
-            self.assertEqual(self.client.get(page.url).status_code, 200, page.title)
+        # Toutes les pages de la démo s'affichent, avec UN seul <h1> (SEO),
+        # et aucune image sans attribut alt (vide = décorative, mais présent)
+        import re
+        for page in Page.objects.live().specific().filter(depth__gt=1):
+            reponse = self.client.get(page.url)
+            self.assertEqual(reponse.status_code, 200, page.title)
+            html = reponse.content.decode()
+            self.assertEqual(html.count("<h1"), 1, page.title)
+            self.assertFalse([img for img in re.findall(r"<img\b[^>]*>", html) if " alt=" not in img], page.title)
 
         call_command('creer_demo', '--supprimer', stdout=StringIO())
         self.assertEqual(Page.objects.count(), avant)
@@ -666,3 +693,14 @@ class PolicesDesThemesTests(TestCase):
             self.assertContains(self.client.get(page.url), "fournies par Google Fonts")
         with mock.patch("pages.models.theme_utilise_google_fonts", return_value=False):
             self.assertNotContains(self.client.get(page.url), "Google Fonts")
+
+
+class PoidsDesImagesTests(TestCase):
+    """SEO / vitesse : les vignettes fabriquées par Wagtail sont en WebP."""
+
+    def test_une_image_png_donne_des_vignettes_webp(self):
+        from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+        image = Image.objects.create(title="Test", file=get_test_image_file())  # un PNG
+        self.assertTrue(image.file.name.endswith(".png"))  # l'original n'est pas touché
+        self.assertTrue(image.get_rendition("fill-100x100").file.name.endswith(".webp"))

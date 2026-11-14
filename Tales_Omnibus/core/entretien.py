@@ -150,7 +150,7 @@ def ranger_les_lieux(simulation=False):
 
 
 def synchroniser_les_slugs(simulation=False):
-    from core.slugs import SlugAutomatiqueMixin
+    from core.slugs import SlugAutomatiqueMixin, chemin_attendu
     etape = Etape("Adresses des pages (slugs)")
     if not simulation:
         lignes = lancer_commande("synchroniser_slugs")
@@ -167,6 +167,8 @@ def synchroniser_les_slugs(simulation=False):
                 continue
             if page.slug != ancien:
                 a_changer.append(f"{page.title} ({ancien} -> {page.slug})")
+            elif page.url_path != chemin_attendu(page):
+                a_changer.append(f"{page.title} (adresse à réparer : {page.url})")
     return etape.dire(f"À renommer : {resumer(a_changer)}" if a_changer else "Tous les slugs sont déjà à jour.")
 
 

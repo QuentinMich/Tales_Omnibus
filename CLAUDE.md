@@ -352,6 +352,18 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   seule. FAIT le 14/11 : les 5 thèmes sont hébergés (48 fichiers, ~1,1 Mo),
   plus aucun appel à Google. Un NOUVEAU thème : y mettre l'`@import` Google,
   puis `manage.py heberger_polices --theme <clé>`.
+- **SEO, vérifications du brief** : chaque page a UN seul `<h1>` (sur
+  l'accueil, c'est le NOM DU SITE dans le header, `:where(h1).site-name`
+  pour ne pas hériter du style des titres) ; le test de la démo vérifie
+  « 1 h1 et aucune image sans alt » sur TOUTES les pages. Vignettes en WebP
+  (`WAGTAILIMAGES_FORMAT_CONVERSIONS`, l'original n'est pas touché, le SVG
+  et le GIF non plus) ; après ce réglage, purger les anciennes vignettes :
+  `manage.py wagtail_update_image_renditions --purge-only`.
+- **Chemin de page en retard sur son slug** (vu sur « Caer-Fiodh », déplacée
+  puis renommée) : `url_path` restait l'ancien, et TOUS les liens vers la
+  page (menu, sitemap) donnaient une 404. `synchroniser_slugs` (donc
+  `entretien`) le répare désormais (`core/slugs.reparer_le_chemin`) et crée
+  une redirection 301 depuis l'ancienne adresse.
 - **Liens dans les panneaux sombres des thèmes** : écrire les deux formes,
   `.panel--strong .richtext a` (texte DANS le panneau) ET
   `.panel--strong.richtext a` (le panneau EST le texte : mentions légales),

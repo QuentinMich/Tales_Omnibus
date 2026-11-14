@@ -252,6 +252,16 @@ figure {
     text-transform: uppercase;
 }
 
+/* Sur l'accueil, le nom du site est le <h1> : il ne doit pas hériter du
+   style des titres (marge, graisse). :where() ne compte pas dans la
+   spécificité : les règles .site-name des thèmes gardent la main. */
+:where(h1).site-name {
+    margin: 0;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+}
+
 .site-nav ul {
     display: flex;
     flex-wrap: wrap;
