@@ -279,10 +279,23 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   Piège des thèmes : une règle `.richtext a { color }` est plus spécifique
   que `.btn` et repeint le texte des boutons posés dans un texte (bouton
   « Télécharger ») : prévoir `.richtext a.btn`.
+  `tenebres.css` = « Ténèbres » (dark fantasy) : fer rivé (`--rivets`),
+  suie, sang, titres en Pirata One (gothique lisible, TITRES seulement),
+  texte en Alegreya ; coulures de sang sous les titres, crânes autour des
+  titres de section, chaîne en séparateur, ronces en marge d'enluminure,
+  flamme de chandelle pour le statut. Le rouge sang du TEXTE est
+  `--sang-lisible` (le sang sombre ne se lit pas sur du fer). Contrastes
+  vérifiés (formule WCAG) : tous ≥ 4,5.
 - **Page Carte** : l'accroche est AVANT la carte (sans titre « Accroche »,
   mot de l'admin). La carte tient dans l'écran : image limitée en hauteur
   (`max-height: min(78vh, 56rem)`) et cadre `.carte-map` en `fit-content`
   pour qu'il épouse l'image (les marqueurs sont en % du CADRE).
+- **Plein écran de la carte** (`campagnes/js/plein_ecran_carte.js`) : l'API
+  Fullscreen sur le CADRE `.carte-plein-ecran` (image + zones + marqueurs),
+  pas sur l'image seule. Bouton caché sans JS et si
+  `document.fullscreenEnabled` est faux (iPhone). Les liens SVG des zones
+  ont `outline: none` (tabindex -1 : le focus clavier passe par le NOM de
+  la zone) : au clic, un rectangle de focus apparaissait.
 - **`--color-highlight-text`** : texte posé SUR le surlignage (badge
   « Épinglée », bouton d'un panneau accent). À définir dans chaque thème :
   un thème sombre a un texte courant clair, illisible sur du jaune.
@@ -370,8 +383,10 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 ## Feuille de route (pas des bugs !)
 
-- **Thèmes (suite)** : d'autres thèmes (Dark Fantasy, Steampunk…) sur le
-  modèle de `grimoire.css` / `cyberpunk.css`. Bonus voulu par Quentin : que l'ADMIN prenne aussi
+- **Thèmes (suite)** : Quentin en veut deux autres, même règles (identité
+  forte + accessibilité) : « Enquête » (Cthulhu, années 20, noir /
+  investigation : dossier, machine à écrire) et « Survivant » (zombies,
+  survival horror : journal / dossier du survivant). Bonus voulu par Quentin : que l'ADMIN prenne aussi
   les couleurs du thème (piste : hook `insert_global_admin_css`).
 - **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
   site (RGPD) ou à signaler dans les mentions légales.

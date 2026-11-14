@@ -53,6 +53,7 @@ THEMES = [
     ("", "Aucun : structure du wireframe (gris et ocre)"),
     ("grimoire", "Grimoire : médiéval fantastique"),
     ("cyberpunk", "Néon : cyberpunk"),
+    ("tenebres", "Ténèbres : dark fantasy"),
 ]
 
 

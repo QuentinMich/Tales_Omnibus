@@ -1,0 +1,720 @@
+/* ==========================================================================
+   THÈME « TÉNÈBRES » : dark fantasy
+   --------------------------------------------------------------------------
+   Un monde qui brûle depuis trop longtemps : fer noirci et rivé, sang séché,
+   suie, cire de chandelle. Les titres sont gravés en lettres gothiques,
+   les séparateurs sont des chaînes, les marges sont envahies de ronces, et
+   un crâne veille sur chaque section.
+
+   Mêmes règles que les autres thèmes : AUCUNE mise en page modifiée,
+   seulement couleurs, polices, textures et formes.
+
+   Accessibilité dans le noir :
+   - texte courant couleur d'os (#DDD3C4) sur fond de suie : contraste élevé ;
+   - le gothique (Pirata One) ne sert qu'aux TITRES, en grand ; le texte est
+     en Alegreya, une police de livre très lisible, et le menu en petites
+     capitales (Alegreya SC) ;
+   - l'accent qui porte du texte clair est un rouge sang SOMBRE (#7E1414) ;
+   - la braise qui rougeoie s'éteint si l'on a demandé moins d'animations.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Pirata+One&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap");
+
+
+/* ==========================================================================
+   1. VARIABLES
+   ========================================================================== */
+:root {
+    /* Nuancier du thème */
+    --suie: #0E0C0B;
+    --charbon: #18140F;
+    --fer: #241D18;
+    --fer-clair: #3A2F27;
+    --rouille: #6E4A2E;
+    --os: #DDD3C4;
+    --os-pale: #A89B8B;
+    --sang: #7E1414;
+    --sang-vif: #A51C1C;
+    /* Rouge sang pour du TEXTE : le sang sombre sur du fer ne se lit pas
+       (contraste ~2,5). Celui-ci dépasse 4,5 sur les fonds du thème. */
+    --sang-lisible: #E3695A;
+    /* Laiton assez clair pour se lire aussi sur le rouge sang (contraste ~5,5) */
+    --laiton: #D4B46C;
+    --font-sc: "Alegreya SC", "Alegreya", Georgia, serif;
+
+    /* Variables de structure.css */
+    --color-bg: var(--suie);
+    --color-text: var(--os);
+    --color-text-muted: var(--os-pale);
+    --color-chrome: #080706;
+    --color-chrome-text: var(--os);
+    --color-surface: var(--charbon);
+    --color-surface-strong: var(--fer);
+    --color-surface-strong-text: var(--os);
+    --color-border: #4A3A2C;
+
+    --color-accent: var(--sang);
+    --color-accent-text: #F2E9DC;
+    --color-highlight: var(--laiton);
+    --color-highlight-text: var(--suie);
+    --color-title: #CDB894;
+
+    /* Types de fiches : sang, acier froid, pourriture, sortilège */
+    --color-type-heros: #9B2C2C;
+    --color-type-lieux: #3F6577;
+    --color-type-evenements: #5E6E2E;
+    --color-type-lore: #634478;
+    --color-type-text: #F2E9DC;
+
+    --color-map-label: rgb(14 12 11 / 0.82);
+    --color-map-label-hover: rgb(14 12 11 / 0.96);
+    --color-map-label-text: var(--os);
+    --color-visionneuse-fond: rgb(8 7 6 / 0.95);
+
+    --font-body: "Alegreya", Georgia, serif;
+    --font-title: "Pirata One", "Alegreya SC", serif;
+    --font-size-base: 1.1rem;
+    --line-height: 1.7;
+
+    /* Formes : pans coupés au burin, pas d'arrondi */
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-pill: 0;
+    --shadow: 0 12px 30px -12px rgb(0 0 0 / 0.9);
+    --hover-brightness: 1.25;
+    --pans-coupes: polygon(0.5rem 0, calc(100% - 0.5rem) 0, 100% 0.5rem, 100% calc(100% - 0.5rem),
+                           calc(100% - 0.5rem) 100%, 0.5rem 100%, 0 calc(100% - 0.5rem), 0 0.5rem);
+
+    /* --- Décors (SVG dessinés à la main) --- */
+
+    /* Suie : un grain sombre et irrégulier */
+    --texture-suie: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .3 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+
+    /* Rivets aux 4 coins d'une plaque de fer */
+    --rivets:
+        radial-gradient(circle, #9C8B74 0 1.5px, #3A2F27 2.5px, transparent 3.5px) top 7px left 7px / 9px 9px no-repeat,
+        radial-gradient(circle, #9C8B74 0 1.5px, #3A2F27 2.5px, transparent 3.5px) top 7px right 7px / 9px 9px no-repeat,
+        radial-gradient(circle, #9C8B74 0 1.5px, #3A2F27 2.5px, transparent 3.5px) bottom 7px left 7px / 9px 9px no-repeat,
+        radial-gradient(circle, #9C8B74 0 1.5px, #3A2F27 2.5px, transparent 3.5px) bottom 7px right 7px / 9px 9px no-repeat;
+
+    /* Une rangée de rivets, pour le bord du header et du footer */
+    --rangee-de-rivets: radial-gradient(circle, #8A7A66 0 1.5px, #2A221C 2.5px, transparent 3.5px) 0 50% / 26px 9px repeat-x;
+
+    /* Coulures de sang sous les grands titres */
+    --coulures: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 26'%3E%3Cpath d='M0 0h240v4H0z' fill='%237E1414'/%3E%3Cg fill='%237E1414'%3E%3Cpath d='M18 3v9a3 3 0 0 0 6 0V3z'/%3E%3Cpath d='M52 3v4a2 2 0 0 0 4 0V3z'/%3E%3Cpath d='M88 3v15a3.5 3.5 0 0 0 7 0V3z'/%3E%3Cpath d='M131 3v6a2.5 2.5 0 0 0 5 0V3z'/%3E%3Cpath d='M170 3v11a3 3 0 0 0 6 0V3z'/%3E%3Cpath d='M214 3v5a2 2 0 0 0 4 0V3z'/%3E%3C/g%3E%3Ccircle cx='91.5' cy='23' r='1.6' fill='%237E1414'/%3E%3C/svg%3E");
+
+    /* Le crâne qui veille sur les sections */
+    --crane: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C7 2 4 5.5 4 10c0 2.6 1.2 4.4 3 5.5V19a1 1 0 0 0 1 1h1v-2h2v2h2v-2h2v2h1a1 1 0 0 0 1-1v-3.5c1.8-1.1 3-2.9 3-5.5 0-4.5-3-8-8-8z' fill='%23CDB894'/%3E%3Ccircle cx='9' cy='11' r='2.2' fill='%230E0C0B'/%3E%3Ccircle cx='15' cy='11' r='2.2' fill='%230E0C0B'/%3E%3Cpath d='M12 13.2l-1.2 2.3h2.4z' fill='%230E0C0B'/%3E%3C/svg%3E");
+
+    /* Chaîne : un maillon couché, un maillon de face, à répéter */
+    --chaine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cg fill='none' stroke='%237A6A58' stroke-width='2.2'%3E%3Crect x='1.5' y='3' width='14' height='8' rx='4'/%3E%3Cpath d='M14 7h13'/%3E%3C/g%3E%3Cg fill='none' stroke='%23B5A48C' stroke-width='.8' opacity='.6'%3E%3Cpath d='M5 4.5h7'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* Dague en guise de curseur (pointe en haut à gauche) */
+    --curseur-dague: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M2 2l13 5-8 8z' fill='%23C9C2B8' stroke='%230E0C0B' stroke-width='1'/%3E%3Cpath d='M12 16l4-4 3 3-4 4z' fill='%23C2A05A' stroke='%230E0C0B' stroke-width='1'/%3E%3Cpath d='M16 18l3-3 9 9-3 3z' fill='%234A2E1E' stroke='%230E0C0B' stroke-width='1'/%3E%3C/svg%3E") 2 2, auto;
+}
+
+
+/* ==========================================================================
+   2. LA PAGE : une salle de pierre, éclairée d'en haut par une seule torche
+   ========================================================================== */
+html {
+    scrollbar-color: var(--fer-clair) var(--suie);
+}
+
+body {
+    background:
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(190 110 50 / 0.13), transparent 70%) fixed,
+        radial-gradient(ellipse at center, transparent 50%, rgb(0 0 0 / 0.6) 100%) fixed,
+        var(--texture-suie),
+        var(--suie);
+    cursor: var(--curseur-dague);
+    font-size: var(--font-size-base);
+}
+
+a, button, summary, label, select, [role="button"] {
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--sang);
+    color: #F2E9DC;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-title);
+    font-weight: 400;  /* Pirata One n'a qu'une graisse : pas de faux gras */
+    letter-spacing: 0.02em;
+}
+
+h3, h4 {
+    font-family: var(--font-sc);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.richtext a,
+.fiche-card p a {
+    color: var(--laiton);
+    text-decoration-color: var(--sang-vif);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+/* …sauf les boutons posés dans un texte (bouton « Télécharger ») */
+.richtext a.btn,
+.fiche-card p a.btn {
+    color: var(--os);
+    text-decoration: none;
+}
+
+:focus-visible {
+    outline: 3px solid var(--laiton);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   3. HEADER & FOOTER : des plaques de fer rivées
+   ========================================================================== */
+.site-header,
+.site-footer {
+    background:
+        var(--rangee-de-rivets),
+        var(--texture-suie),
+        linear-gradient(#1C1714, #080706);
+    background-position: 0 4px, 0 0, 0 0;
+}
+
+.site-header {
+    border-bottom: 3px solid #2A211B;
+    box-shadow: 0 1px 0 var(--rouille), 0 8px 18px -6px rgb(0 0 0 / 0.9);
+}
+
+.site-footer {
+    border-top: 3px solid #2A211B;
+    box-shadow: 0 -1px 0 var(--rouille);
+    background-position: 0 calc(100% - 4px), 0 0, 0 0;
+}
+
+.site-footer a {
+    color: var(--laiton);
+}
+
+.site-footer .copyright::before {
+    content: "† Ici s'achève la chronique — ";
+    color: var(--sang-lisible);
+    font-family: var(--font-sc);
+}
+
+.site-brand,
+.site-nav ul {
+    background: transparent;
+}
+
+/* Le nom du site : lettres gothiques forgées dans un métal terni, avec une
+   braise qui couve dessous (lueur rouge qui respire lentement) */
+.site-name {
+    background: linear-gradient(180deg, #E8DCC4 0%, #B9A27C 45%, #6F5B3E 55%, #CDB894 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-family: var(--font-title);
+    font-size: 1.9rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 8px rgb(165 28 28 / 0.55));
+    animation: braise 5s ease-in-out infinite;
+}
+
+@keyframes braise {
+    50% { filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgb(200 60 20 / 0.75)); }
+}
+
+/* Logo « doré » = ici forgé dans le même métal terni */
+.site-logo--dore {
+    --logo-fill: linear-gradient(180deg, #E8DCC4, #B9A27C 45%, #6F5B3E 55%, #CDB894);
+}
+
+.site-logo-pochoir,
+.site-logo:not(.site-logo--dore) {
+    filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 6px rgb(165 28 28 / 0.45));
+}
+
+.site-nav a {
+    color: var(--os);
+    font-family: var(--font-sc);
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+}
+
+.site-nav a:hover {
+    color: var(--laiton);
+}
+
+/* Rubrique active : une croix sanglante devant, pas de soulignement */
+.site-nav a.is-active {
+    color: var(--laiton);
+    text-decoration: none;
+}
+
+.site-nav a.is-active::before {
+    content: "† ";
+    color: var(--sang-lisible);
+}
+
+
+/* ==========================================================================
+   4. TITRES : gravés, sanglants, surveillés
+   ========================================================================== */
+.page-title {
+    color: var(--os);
+    font-size: clamp(2.6rem, 7vw, 5.5rem);
+    text-transform: none;
+    text-shadow: 0 3px 0 #000, 0 0 30px rgb(126 20 20 / 0.45);
+}
+
+/* Le sang coule sous chaque grand titre */
+.page-title::after {
+    content: "";
+    display: block;
+    width: min(20rem, 70%);
+    height: 1.6rem;
+    margin: var(--space-xs) auto 0;
+    background: var(--coulures) center top / 100% 100% no-repeat;
+}
+
+.page-title--left {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+}
+
+.page-title--left::after {
+    margin-left: 0;
+}
+
+.page-subtitle {
+    color: var(--color-title);
+    font-family: var(--font-body);
+    font-style: italic;
+}
+
+/* Titre de section : un crâne entre deux lames de fer */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding-top: 0;
+    border-top: 0;
+    color: var(--color-title);
+}
+
+.section-title::before,
+.section-title::after {
+    content: "";
+    flex: 1;
+    height: 1.5rem;
+    background:
+        var(--crane) right center / 1.5rem no-repeat,
+        linear-gradient(transparent 46%, var(--fer-clair) 46% 54%, transparent 54%) left center / calc(100% - 2rem) 100% no-repeat;
+}
+
+.section-title::after {
+    background:
+        var(--crane) left center / 1.5rem no-repeat,
+        linear-gradient(transparent 46%, var(--fer-clair) 46% 54%, transparent 54%) right center / calc(100% - 2rem) 100% no-repeat;
+}
+
+.section-title--left::before {
+    display: none;
+}
+
+.panel-title,
+.article-section-titre {
+    color: var(--color-title);
+    font-family: var(--font-title);
+    font-size: 1.9rem;
+}
+
+/* Séparateur : une chaîne tendue d'un bord à l'autre */
+.separateur {
+    height: 14px;
+    border: 0;
+    background: var(--chaine) center / auto 14px repeat-x;
+    opacity: 0.9;
+}
+
+/* Lettrine de la description : une capitale gothique rouge sang, sur une
+   plaque de fer cerclée de laiton */
+.fiche-description > p:first-child::first-letter,
+.univers-accroche > p:first-child::first-letter {
+    float: left;
+    margin: 0.08em 0.16em 0 0;
+    padding: 0.08em 0.16em 0.02em;
+    border: 2px solid var(--laiton);
+    background: var(--fer);
+    color: var(--sang-vif);
+    font-family: var(--font-title);
+    font-size: 3.5em;
+    line-height: 0.85;
+    text-shadow: 0 2px 0 #000;
+    box-shadow: inset 0 0 10px #000;
+}
+
+
+/* ==========================================================================
+   4 bis. ENLUMINURES, version damnée
+   ========================================================================== */
+.enluminure .richtext > p:first-child::first-letter {
+    margin: 0.06em 0.2em 0 0;
+    padding: 0.08em 0.18em 0.02em;
+    border: 3px double var(--laiton);
+    background:
+        radial-gradient(circle at 50% 120%, rgb(165 28 28 / 0.55), transparent 70%),
+        var(--fer);
+    color: #EFE3CF;
+    font-family: var(--font-title);
+    font-size: 4.2em;
+    line-height: 0.82;
+    text-shadow: 0 0 10px var(--sang-vif), 0 2px 0 #000;
+    box-shadow: 0 0 0 3px var(--suie), 0 0 0 4px var(--rouille), inset 0 0 12px #000;
+}
+
+/* Les « rinceaux » sont ici des RONCES : une tige noire, des épines,
+   et une goutte de sang de temps en temps */
+.enluminure--marge {
+    padding-left: 2.6rem;
+    border-left: 0;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='70' viewBox='0 0 28 70'%3E%3Cpath d='M14 0C6 12 22 24 14 35S6 58 14 70' fill='none' stroke='%233A2F27' stroke-width='3'/%3E%3Cg fill='%233A2F27'%3E%3Cpath d='M15 8l7-3-5 6z'/%3E%3Cpath d='M12 22l-8-1 6-4z'/%3E%3Cpath d='M17 40l8 1-6 4z'/%3E%3Cpath d='M11 55l-7 3 5-6z'/%3E%3C/g%3E%3Cpath d='M22 6c0 2.5 1.6 4 1.6 5.5a1.6 1.6 0 0 1-3.2 0C20.4 10 22 8.5 22 6z' fill='%23A51C1C'/%3E%3C/svg%3E")
+        left top / 1.75rem auto repeat-y;
+}
+
+/* Page encadrée : une plaque de fer rivée */
+.enluminure--cadre {
+    border: 2px solid var(--fer-clair);
+    background: var(--rivets), var(--texture-suie), var(--charbon);
+    box-shadow: inset 0 0 0 1px #000, inset 0 0 30px rgb(0 0 0 / 0.7), var(--shadow);
+    clip-path: var(--pans-coupes);
+}
+
+
+/* ==========================================================================
+   5. PANNEAUX : des plaques de fer noirci
+   ========================================================================== */
+.panel,
+.fiche-card {
+    border: 1px solid var(--color-border);
+    background: var(--rivets), var(--texture-suie), linear-gradient(170deg, #1E1915, var(--charbon));
+    box-shadow: inset 0 0 0 1px #000, inset 0 0 40px rgb(0 0 0 / 0.65), var(--shadow);
+}
+
+/* Panneau d'action : imbibé de sang */
+.panel--accent {
+    border-color: #4A1010;
+    background:
+        var(--rivets),
+        radial-gradient(ellipse at 20% 0%, rgb(165 28 28 / 0.35), transparent 60%),
+        var(--texture-suie),
+        linear-gradient(170deg, #3A0E0E, #1A0808);
+}
+
+.panel--strong {
+    background: var(--rivets), var(--texture-suie), linear-gradient(170deg, var(--fer), #120E0C);
+}
+
+.panel--accent .richtext a,
+.panel--strong .richtext a {
+    color: var(--laiton);
+}
+
+.flash {
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--sang-vif);
+    background: var(--charbon);
+}
+
+
+/* ==========================================================================
+   6. BOUTONS, BADGES, TAGS
+   ========================================================================== */
+
+/* Bouton : une plaque de fer aux pans coupés, qui saigne au survol */
+.btn {
+    border: 1px solid #000;
+    background: linear-gradient(#4A3C31, var(--fer) 55%, #15110E);
+    color: var(--os);
+    font-family: var(--font-sc);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    clip-path: var(--pans-coupes);
+    box-shadow: inset 0 1px 0 rgb(255 240 220 / 0.15), inset 0 -2px 0 rgb(0 0 0 / 0.5);
+    transition: background var(--transition), filter var(--transition);
+}
+
+.btn:hover {
+    background: linear-gradient(#8E1E1E, var(--sang) 55%, #3A0A0A);
+    filter: none;
+}
+
+.panel--accent .btn,
+.panel--strong .btn {
+    background: linear-gradient(#D8BC7C, var(--laiton) 55%, #7E6532);
+    color: var(--suie);
+}
+
+/* Tags : des bandes de parchemin brûlé, clouées par une tête de clou */
+.tag {
+    border: 1px solid #000;
+    background: linear-gradient(#3A2F27, #2A221C);
+    color: var(--os);
+    font-family: var(--font-sc);
+}
+
+.tag::before {
+    content: "";
+    width: 0.45em;
+    height: 0.45em;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #B5A48C, #5A4A3A 70%);
+    box-shadow: 0 1px 1px #000;
+}
+
+.badge,
+.status-badge {
+    border: 1px solid var(--color-border);
+    background: var(--fer);
+    color: var(--os);
+    font-family: var(--font-sc);
+}
+
+.badge--categorie {
+    background: var(--fer);
+}
+
+.status-badge strong {
+    color: var(--laiton);
+}
+
+/* Le statut : une flamme de chandelle qui tremble */
+.status-badge::before {
+    content: "";
+    width: 0.55em;
+    height: 0.9em;
+    flex-shrink: 0;
+    border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+    background: radial-gradient(ellipse at 50% 75%, #FFF1C4 0 20%, #F2A33A 45%, #A51C1C 85%);
+    box-shadow: 0 0 8px rgb(242 163 58 / 0.7);
+    animation: flamme 2.2s ease-in-out infinite;
+}
+
+@keyframes flamme {
+    25% { transform: scaleY(1.12) skewX(3deg); }
+    50% { transform: scaleY(0.94) skewX(-2deg); opacity: 0.85; }
+    75% { transform: scaleY(1.06) skewX(1deg); }
+}
+
+.btn-link,
+.btn-back {
+    color: var(--laiton);
+    font-family: var(--font-sc);
+}
+
+.social-link {
+    border: 2px solid var(--fer-clair);
+    background: var(--fer);
+    color: var(--os);
+    box-shadow: inset 0 0 8px #000;
+}
+
+.link-tile {
+    border-left: 4px solid var(--sang-vif);
+    background: linear-gradient(90deg, var(--fer), var(--charbon));
+    color: var(--os);
+    font-family: var(--font-sc);
+}
+
+
+/* ==========================================================================
+   7. CARTES : tomes maudits et portraits de condamnés
+   ========================================================================== */
+.campagne-card {
+    border: 1px solid #000;
+    background: var(--rivets), var(--texture-suie), var(--charbon);
+    box-shadow: inset 0 0 30px rgb(0 0 0 / 0.7), var(--shadow);
+}
+
+.campagne-card h2 {
+    font-size: 1.9rem;
+}
+
+/* Héros : portrait dans un cadre de fer, ombres qui mangent les coins */
+.hero-card .card-link {
+    border: 3px solid #2A211B;
+    background: #000;
+    box-shadow: 0 0 0 1px var(--rouille), var(--shadow);
+    outline: 1px solid rgb(126 20 20 / 0.7);
+    outline-offset: -7px;
+}
+
+.hero-card .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.65) 100%);
+    pointer-events: none;
+}
+
+.hero-card-body {
+    z-index: 1;
+    background: linear-gradient(transparent, rgb(8 7 6 / 0.95) 55%);
+    color: #F2E9DC;
+    text-align: center;
+}
+
+.hero-card-title {
+    font-family: var(--font-title);
+    font-size: 1.8rem;
+}
+
+.hero-card-player {
+    color: var(--laiton);
+    font-style: italic;
+}
+
+.fiche-media img,
+.timeline-img,
+.carte-preview-img {
+    border: 3px solid #2A211B;
+    box-shadow: 0 0 0 1px var(--rouille), var(--shadow);
+}
+
+/* Image manquante : une plaque noire où veille un crâne */
+.img-placeholder,
+.placeholder-img {
+    background:
+        var(--crane) center / min(28%, 5rem) no-repeat,
+        radial-gradient(circle, rgb(126 20 20 / 0.25), transparent 60%),
+        var(--texture-suie),
+        #120F0D;
+}
+
+.timeline-card {
+    border: 1px solid #000;
+    border-left: 4px solid var(--sang);
+    background: var(--texture-suie), linear-gradient(170deg, var(--fer), #120E0C);
+}
+
+.timeline-date {
+    color: var(--sang-lisible);
+    font-family: var(--font-sc);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.timeline-title a {
+    color: var(--os);
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+}
+
+.mini-card {
+    border: 1px solid #000;
+    background: var(--charbon);
+}
+
+
+/* ==========================================================================
+   8. CARACTÉRISTIQUES : des plaques de fer rivées
+   ========================================================================== */
+.stat {
+    border: 1px solid #000;
+    background: var(--rivets), linear-gradient(#2E251F, #16120F);
+    color: var(--os);
+    clip-path: var(--pans-coupes);
+    box-shadow: inset 0 0 0 1px var(--fer-clair), inset 0 0 14px #000;
+}
+
+.stat-libelle {
+    color: var(--laiton);
+    font-family: var(--font-sc);
+}
+
+.stat-valeur {
+    color: #F2E9DC;
+    font-family: var(--font-title);
+    font-weight: 400;
+    text-shadow: 0 2px 0 #000;
+}
+
+.stat-complement {
+    color: var(--sang-lisible);
+    font-weight: 700;
+}
+
+.tableau-stats-titre {
+    color: var(--color-title);
+    font-family: var(--font-title);
+}
+
+
+/* ==========================================================================
+   9. FORMULAIRES
+   ========================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+textarea,
+select {
+    border: 1px solid #4A3A2C;
+    border-radius: 0;
+    background: #0A0807;
+    color: var(--os);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    box-shadow: inset 0 2px 6px #000;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--laiton);
+}
+
+::placeholder {
+    color: var(--os-pale);
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   10. CARTES DU MONDE
+   ========================================================================== */
+.carte-map {
+    border: 4px solid #2A211B;
+    box-shadow: 0 0 0 1px var(--rouille), 0 20px 40px -15px #000;
+}
+
+.map-zone-nom,
+.map-marker-label,
+.lieu-chip {
+    font-family: var(--font-sc);
+    letter-spacing: 0.04em;
+}
+
+
+/* ==========================================================================
+   11. ACCESSIBILITÉ
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .site-name,
+    .status-badge::before {
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .site-name {
+        background: none;
+        color: CanvasText;
+        filter: none;
+    }
+}

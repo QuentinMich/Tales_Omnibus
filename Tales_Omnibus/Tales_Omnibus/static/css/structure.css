@@ -1380,6 +1380,35 @@ figure {
     width: 100%;
 }
 
+/* Plein écran : le bouton au-dessus de la carte, à droite */
+.carte-plein-ecran {
+    position: relative;
+    display: grid;
+    justify-items: center;
+}
+
+.carte-plein-ecran-bouton {
+    justify-self: end;
+}
+
+/* En plein écran, le cadre occupe tout l'écran et la carte s'y centre, à la
+   plus grande taille qui tient (le cadre .carte-map épouse toujours l'image :
+   les marqueurs restent justes). Le fond reprend celui du thème. */
+.carte-plein-ecran:fullscreen {
+    align-content: center;
+    padding: var(--space-md);
+    background: var(--color-bg);
+    overflow: auto;
+}
+
+.carte-plein-ecran:fullscreen .carte-map {
+    margin-block: var(--space-sm) 0;
+}
+
+.carte-plein-ecran:fullscreen .carte-map-img {
+    max-height: calc(100vh - 6rem);
+}
+
 /* L'accroche, sous le titre : une introduction, comme un chapeau d'article */
 .carte-intro {
     max-width: 48rem;
@@ -1432,6 +1461,15 @@ span.carte-map-img {
        serait plus épais dans un sens que dans l'autre. */
     vector-effect: non-scaling-stroke;
     transition: fill-opacity var(--transition);
+}
+
+/* Les liens des zones ne sont pas atteignables au clavier (tabindex -1 :
+   on y accède par le NOM de la zone, qui a son propre focus). Au clic, le
+   navigateur dessinait pourtant un rectangle de focus autour du polygone :
+   inutile, et ça cassait l'immersion. */
+.carte-zones a {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .carte-zones a:hover .carte-zone,

@@ -5,6 +5,7 @@
 
 {% block extra_js %}
     <script src="{% static 'campagnes/js/filtre_carte.js' %}" defer></script>
+    <script src="{% static 'campagnes/js/plein_ecran_carte.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -38,6 +39,13 @@
     {# --- CARTE + MARQUEURS --- #}
     {# width-1400 et pas fill-... : l'image ne doit PAS être recadrée, #}
     {# sinon les coordonnées en % des lieux ne tombent plus au bon endroit. #}
+    {# Le cadre qui passe en PLEIN ÉCRAN : la carte AVEC ses zones et marqueurs #}
+    {# (mettre l'image seule en plein écran les perdrait). Le bouton est caché  #}
+    {# sans JavaScript et sur les navigateurs sans plein écran (iPhone).        #}
+    <div class="carte-plein-ecran" data-plein-ecran>
+    <button type="button" class="btn carte-plein-ecran-bouton" data-plein-ecran-bouton aria-pressed="false" hidden>
+        Plein écran
+    </button>
     <div class="carte-map">
         {% if page.main_image %}
             {% image page.main_image width-1400 alt=page.title class="carte-map-img" %}
@@ -88,6 +96,7 @@
                 {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=True %}
             {% endif %}
         {% endfor %}
+    </div>
     </div>
 
     {% if page.body %}
