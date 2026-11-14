@@ -1,0 +1,802 @@
+/* ==========================================================================
+   THÈME « SURVIVANT » : zombies et survival horror
+   --------------------------------------------------------------------------
+   Le carnet d'un survivant, tenu à la lampe torche dans un abri en béton :
+   les jours comptés à la craie sur le mur, les polaroïds scotchés au
+   chatterton, les notes au feutre, les pochoirs de l'armée et les bandes
+   de danger jaunes et noires de la zone de quarantaine. Un peu de sang,
+   des barbelés, des avis de disparition.
+
+   Mêmes règles : AUCUNE mise en page modifiée, seulement couleurs, polices,
+   textures et formes. Accessibilité :
+   - texte clair (#E4E1D6) sur béton sombre, contraste > 12 ;
+   - le pochoir (Black Ops One) et le feutre (Permanent Marker) ne servent
+     qu'aux TITRES et aux petites notes ; le texte est en Barlow, une police
+     sans empattement très lisible ;
+   - le jaune « danger » porte toujours du texte NOIR ;
+   - le cœur qui bat (statut) s'arrête si l'on a demandé moins d'animations.
+   ========================================================================== */
+
+/* Black Ops One : le pochoir militaire (titres) ; Barlow : le texte ;
+   Barlow Condensed : les étiquettes ; Permanent Marker : le feutre */
+@import url("https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@600;700&family=Permanent+Marker&display=swap");
+
+
+/* ==========================================================================
+   1. VARIABLES
+   ========================================================================== */
+:root {
+    /* Nuancier */
+    --beton: #191B18;
+    --beton-2: #22251F;
+    --kaki: #2C3127;
+    --kaki-clair: #3D4335;
+    --texte: #E4E1D6;
+    --texte-pale: #A9A797;
+    --danger: #F2C230;          /* le jaune des bandes de danger */
+    --sang: #8E1F1A;
+    --sang-lisible: #E8665C;    /* le sang, quand c'est du TEXTE sur du sombre */
+    --vie: #5BD16A;             /* un signe de vie (statut « en cours ») */
+    --scotch: rgb(205 200 185 / 0.78);
+    --font-pochoir: "Black Ops One", "Barlow Condensed", sans-serif;
+    --font-etiquette: "Barlow Condensed", "Barlow", sans-serif;
+    --font-feutre: "Permanent Marker", "Barlow", cursive;
+
+    /* Variables de structure.css */
+    --color-bg: var(--beton);
+    --color-text: var(--texte);
+    --color-text-muted: var(--texte-pale);
+    --color-chrome: #0F100E;
+    --color-chrome-text: var(--texte);
+    --color-surface: var(--beton-2);
+    --color-surface-strong: var(--kaki);
+    --color-surface-strong-text: var(--texte);
+    --color-border: #474B3E;
+
+    --color-accent: var(--sang);
+    --color-accent-text: #F4F1E8;
+    --color-highlight: var(--danger);
+    --color-highlight-text: var(--beton);
+    --color-title: var(--texte);
+
+    /* Types de fiches : couleurs de marquage, texte clair dessus */
+    --color-type-heros: #9E2A22;
+    --color-type-lieux: #3D5A73;
+    --color-type-evenements: #6B5A1E;
+    --color-type-lore: #4E4A6B;
+    --color-type-text: #F4F1E8;
+
+    --color-map-label: rgb(15 16 14 / 0.85);
+    --color-map-label-hover: rgb(15 16 14 / 0.97);
+    --color-map-label-text: var(--texte);
+    --color-visionneuse-fond: rgb(10 11 9 / 0.95);
+
+    --font-body: "Barlow", "Segoe UI", sans-serif;
+    --font-title: var(--font-pochoir);
+    --font-size-base: 1.0625rem;
+    --line-height: 1.7;
+
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 4px;
+    --radius-pill: 3px;
+    --shadow: 0 10px 24px -10px rgb(0 0 0 / 0.85);
+    --hover-brightness: 1.15;
+
+    /* --- Décors --- */
+
+    /* Béton : grain + taches d'humidité */
+    --texture-beton: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .57 0 0 0 0 .5 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");
+
+    /* Bande de danger jaune et noire */
+    --bande-danger: repeating-linear-gradient(-45deg, var(--danger) 0 14px, #111 14px 28px);
+
+    /* Morceau de chatterton (ruban adhésif gris, bords déchirés) */
+    --chatterton: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='26' viewBox='0 0 90 26'%3E%3Cpath d='M2 3l4 1 3-2 4 2 5-1 4 1 5-2 6 2 5-1 4 1 6-2 5 2 4-1 6 1 5-2 4 2 5-1 3 1 2 0v20l-3 1-4-2-5 2-4-1-6 2-4-2-5 1-6-1-4 2-5-2-4 1-6-1-4 2-5-1-4 1-3-2-4 2-3-1z' fill='%23CDC8B9' fill-opacity='.82'/%3E%3Cpath d='M6 9h78M6 15h78' stroke='%23FFFFFF' stroke-opacity='.18'/%3E%3C/svg%3E");
+
+    /* Les jours comptés à la craie sur le mur */
+    --encoches: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='70' viewBox='0 0 170 70'%3E%3Cg stroke='%23E4E1D6' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M8 10l-1 46M18 12l1 44M28 9v47M38 11l1 45M2 40l44-18'/%3E%3Cpath d='M62 10l-1 46M72 12l1 44M82 9v47M92 11l1 45M56 40l44-18'/%3E%3Cpath d='M116 10l-1 46M126 12l1 44M136 9v47'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* Barbelés (le long du texte d'une enluminure) */
+    --barbeles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='56' viewBox='0 0 26 56'%3E%3Cg fill='none' stroke='%23878B7A' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M11 0C15 14 9 28 13 42S11 52 13 56'/%3E%3Cpath d='M15 0C11 14 17 28 13 42'/%3E%3Cpath d='M6 12l14 6M20 12L6 18M7 38l13 5M20 38L7 43'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* Taches de sang (projections) */
+    --projections: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='120' viewBox='0 0 160 120'%3E%3Cg fill='%238E1F1A'%3E%3Ccircle cx='120' cy='80' r='18' opacity='.55'/%3E%3Ccircle cx='96' cy='70' r='5' opacity='.5'/%3E%3Ccircle cx='140' cy='52' r='4' opacity='.5'/%3E%3Ccircle cx='86' cy='96' r='3' opacity='.5'/%3E%3Ccircle cx='150' cy='104' r='6' opacity='.45'/%3E%3Ccircle cx='108' cy='108' r='2.5' opacity='.5'/%3E%3Cpath d='M118 97c2 8 1 14-1 20 2-6 5-11 4-20z' opacity='.5'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* Le feutre, en guise de curseur (pointe en bas à gauche) */
+    --curseur-feutre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M3 27l3-8 16-16 5 5-16 16z' fill='%231C1C1C' stroke='%23E4E1D6' stroke-width='1'/%3E%3Cpath d='M6 19l5 5' stroke='%23F2C230' stroke-width='2'/%3E%3Cpath d='M3 27l3-8 5 5z' fill='%23D33'/%3E%3C/svg%3E") 3 27, auto;
+}
+
+
+/* ==========================================================================
+   2. LA PAGE : un mur de béton, une lampe torche, des jours comptés
+   ========================================================================== */
+html {
+    scrollbar-color: var(--kaki-clair) var(--beton);
+}
+
+body {
+    background:
+        /* le faisceau de la lampe torche */
+        radial-gradient(ellipse 55% 40% at 50% 8%, rgb(240 230 190 / 0.09), transparent 75%) fixed,
+        radial-gradient(ellipse at center, transparent 45%, rgb(0 0 0 / 0.55) 100%) fixed,
+        var(--texture-beton),
+        var(--beton);
+    cursor: var(--curseur-feutre);
+}
+
+/* Les jours comptés à la craie, dans le coin du mur. Décoratif : derrière
+   tout, et on clique à travers. */
+body::before {
+    content: "";
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: -1;
+    width: 170px;
+    height: 70px;
+    background: var(--encoches) center / contain no-repeat;
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+a, button, summary, label, select, [role="button"] {
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--danger);
+    color: var(--beton);
+}
+
+h1, h2 {
+    font-family: var(--font-pochoir);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+}
+
+h3, h4 {
+    font-family: var(--font-etiquette);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.richtext a:not(.btn),
+.fiche-card p a:not(.btn) {
+    color: var(--danger);
+    text-decoration-color: var(--sang-lisible);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+    outline: 3px solid var(--danger);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   3. HEADER & FOOTER : la zone de quarantaine
+   ========================================================================== */
+.site-header,
+.site-footer {
+    background: var(--texture-beton), linear-gradient(#1B1D19, #0F100E);
+}
+
+/* La bande de danger, au pied du bandeau */
+.site-header {
+    border-bottom: 10px solid transparent;
+    border-image: var(--bande-danger) 10;
+    box-shadow: 0 10px 20px -8px #000;
+}
+
+.site-footer {
+    border-top: 10px solid transparent;
+    border-image: var(--bande-danger) 10;
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.04em;
+}
+
+.site-footer a {
+    color: var(--danger);
+}
+
+/* Le dernier mot du carnet */
+.site-footer .copyright::before {
+    content: "Si vous lisez ceci, il est encore temps. — ";
+    color: var(--danger);
+    font-family: var(--font-feutre);
+    letter-spacing: 0;
+}
+
+.site-brand,
+.site-nav ul {
+    background: transparent;
+}
+
+/* Le nom du site : peint à la bombe à travers un pochoir */
+.site-name {
+    color: var(--texte);
+    font-family: var(--font-pochoir);
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* le léger halo d'une peinture en bombe */
+    text-shadow: 0 0 2px rgb(228 225 214 / 0.6), 0 0 9px rgb(228 225 214 / 0.18);
+}
+
+.site-logo--dore {
+    --logo-fill: var(--danger);
+}
+
+.site-logo-pochoir,
+.site-logo:not(.site-logo--dore) {
+    filter: drop-shadow(0 0 2px rgb(228 225 214 / 0.35));
+}
+
+.site-nav a {
+    color: var(--texte);
+    font-family: var(--font-etiquette);
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.site-nav a:hover {
+    color: var(--danger);
+}
+
+/* Rubrique active : entourée au feutre jaune, comme sur une carte */
+.site-nav a.is-active {
+    color: var(--danger);
+    text-decoration: none;
+    padding: 0.05em 0.35em;
+    border: 2px solid var(--danger);
+    border-radius: 45% 55% 50% 45% / 55% 45% 55% 45%;
+}
+
+
+/* ==========================================================================
+   4. TITRES : à la bombe, au pochoir, au feutre
+   ========================================================================== */
+.page-title {
+    color: var(--danger);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-shadow: 0 0 3px rgb(242 194 48 / 0.5), 0 0 14px rgb(242 194 48 / 0.15);
+}
+
+/* La peinture a coulé sous le titre */
+.page-title::after {
+    content: "";
+    display: block;
+    width: min(16rem, 60%);
+    height: 1.4rem;
+    margin: var(--space-xs) auto 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 22' preserveAspectRatio='none'%3E%3Cg fill='%23F2C230'%3E%3Cpath d='M0 2c40-3 80 2 120-1s60 2 80 0v4c-30 2-70-1-100 1S30 3 0 6z'/%3E%3Cpath d='M30 5v9a2 2 0 0 0 4 0V5zM88 4v14a2.4 2.4 0 0 0 5 0V4zM140 4v6a2 2 0 0 0 4 0V4zM172 3v10a2 2 0 0 0 4 0V3z'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.page-title--left {
+    font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+}
+
+.page-title--left::after {
+    margin-left: 0;
+}
+
+.page-subtitle {
+    color: var(--texte-pale);
+    font-family: var(--font-feutre);
+    font-weight: 400;
+}
+
+/* Titre de section : au pochoir, sur un morceau de bande de danger */
+.section-title {
+    padding-top: 0;
+    border-top: 0;
+    color: var(--texte);
+    text-transform: uppercase;
+}
+
+.section-title::after {
+    content: "";
+    display: block;
+    width: 6rem;
+    height: 8px;
+    margin: var(--space-xs) auto 0;
+    background: var(--bande-danger);
+}
+
+.section-title--left::after {
+    margin-left: 0;
+}
+
+.panel-title,
+.article-section-titre {
+    color: var(--danger);
+    font-family: var(--font-pochoir);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+}
+
+/* Séparateur : un bout de bande de danger, tendu en travers */
+.separateur {
+    height: 10px;
+    border: 0;
+    background: var(--bande-danger);
+    opacity: 0.85;
+}
+
+/* Lettrine de la description : une lettre bombée au pochoir, en jaune */
+.fiche-description > p:first-child::first-letter,
+.univers-accroche > p:first-child::first-letter {
+    float: left;
+    margin: 0.04em 0.12em 0 0;
+    color: var(--danger);
+    font-family: var(--font-pochoir);
+    font-size: 3.6em;
+    line-height: 0.85;
+    text-shadow: 0 0 3px rgb(242 194 48 / 0.55);
+}
+
+
+/* ==========================================================================
+   4 bis. ENLUMINURES : le feutre, les barbelés, l'avis de quarantaine
+   ========================================================================== */
+
+/* Lettrine : tracée au feutre rouge, entourée d'un cercle griffonné */
+.enluminure .richtext > p:first-child::first-letter {
+    margin: 0.04em 0.18em 0 0;
+    padding: 0.1em 0.2em 0.02em;
+    border: 3px solid var(--sang-lisible);
+    border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%;
+    color: var(--sang-lisible);
+    font-family: var(--font-feutre);
+    font-size: 3.6em;
+    line-height: 0.9;
+}
+
+/* Les rinceaux deviennent des BARBELÉS */
+.enluminure--marge {
+    padding-left: 2.5rem;
+    border-left: 0;
+    background: var(--barbeles) left top / 1.6rem auto repeat-y;
+}
+
+/* La page encadrée devient un AVIS DE QUARANTAINE placardé */
+.enluminure--cadre {
+    position: relative;
+    padding-top: 3.2rem;
+    border: 0;
+    background:
+        linear-gradient(var(--beton-2), var(--beton-2)) padding-box,
+        var(--bande-danger) border-box;
+    border: 8px solid transparent;
+    box-shadow: var(--shadow);
+}
+
+.enluminure--cadre::before {
+    content: "☣ AVIS DE QUARANTAINE";
+    position: absolute;
+    top: 0.8rem;
+    left: 1rem;
+    color: var(--danger);
+    font-family: var(--font-pochoir);
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+}
+
+
+/* ==========================================================================
+   5. PANNEAUX : des caisses de l'armée, scotchées au mur
+   ========================================================================== */
+.panel,
+.fiche-card {
+    position: relative;
+    border: 2px solid var(--kaki-clair);
+    background: var(--texture-beton), linear-gradient(170deg, #2A2E25, var(--beton-2));
+    box-shadow: inset 0 0 30px rgb(0 0 0 / 0.5), var(--shadow);
+}
+
+/* Un morceau de chatterton à chaque coin du haut */
+.panel::before,
+.fiche-card::before,
+.panel::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    width: 76px;
+    height: 22px;
+    background: var(--chatterton) center / 100% 100% no-repeat;
+    pointer-events: none;
+}
+
+.panel::before,
+.fiche-card::before {
+    left: -14px;
+    transform: rotate(-32deg);
+}
+
+.panel::after {
+    right: -14px;
+    transform: rotate(28deg);
+}
+
+/* La fiche a pris des éclaboussures de sang dans un coin */
+.fiche-card {
+    background:
+        var(--projections) right bottom / 160px 120px no-repeat,
+        var(--texture-beton),
+        linear-gradient(170deg, #2A2E25, var(--beton-2));
+}
+
+/* Panneau d'action : la caisse de l'infirmerie, marquée « contaminé » */
+.panel--accent {
+    border-color: #5A1A16;
+    background:
+        var(--texture-beton),
+        linear-gradient(170deg, #4A1512, #2A0F0D);
+}
+
+.panel--accent .panel-title {
+    color: var(--danger);
+}
+
+.panel--strong {
+    background: var(--texture-beton), linear-gradient(170deg, var(--kaki), #1E211B);
+}
+
+.panel--accent .richtext a:not(.btn),
+.panel--strong .richtext a:not(.btn) {
+    color: var(--danger);
+}
+
+.flash {
+    border: 0;
+    border-left: 6px solid var(--danger);
+    background: var(--beton-2);
+    font-family: var(--font-etiquette);
+}
+
+
+/* ==========================================================================
+   6. BOUTONS, STATUTS, ÉTIQUETTES
+   ========================================================================== */
+
+/* Bouton : peint en jaune danger, au pochoir, texte NOIR */
+.btn {
+    border: 0;
+    background: var(--danger);
+    color: #111;
+    font-family: var(--font-pochoir);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 0.6em, 100% 100%, 0.6em 100%, 0 calc(100% - 0.6em));
+    transition: background var(--transition);
+}
+
+/* Au survol, les rayures de la bande de danger apparaissent */
+.btn:hover {
+    background:
+        repeating-linear-gradient(-45deg, transparent 0 10px, rgb(0 0 0 / 0.12) 10px 20px),
+        var(--danger);
+    filter: none;
+}
+
+.panel--accent .btn,
+.panel--strong .btn {
+    background: var(--danger);
+    color: #111;
+}
+
+/* Tags : des bouts de chatterton annotés au feutre */
+.tag {
+    border: 0;
+    background: var(--scotch);
+    color: #1B1B1B;
+    font-family: var(--font-feutre);
+    clip-path: polygon(0 8%, 6% 0, 14% 6%, 26% 0, 40% 5%, 55% 0, 70% 6%, 84% 0, 100% 5%, 97% 50%, 100% 95%, 86% 100%, 70% 94%, 54% 100%, 38% 95%, 22% 100%, 8% 94%, 0 100%, 3% 50%);
+}
+
+.badge,
+.status-badge {
+    border: 1px solid var(--color-border);
+    background: rgb(15 16 14 / 0.9);
+    color: var(--texte);
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.badge--categorie {
+    background: rgb(15 16 14 / 0.9);
+}
+
+.status-badge strong {
+    color: var(--danger);
+}
+
+/* En cours : un signe de vie, un cœur qui bat (électrocardiogramme) */
+.status-badge::before {
+    content: "";
+    width: 1.4em;
+    height: 0.8em;
+    flex-shrink: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 16'%3E%3Cpath d='M0 9h7l2-5 3 10 3-12 2 7h11' fill='none' stroke='%235BD16A' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    filter: drop-shadow(0 0 3px var(--vie));
+    animation: battement 1.1s ease-in-out infinite;
+}
+
+@keyframes battement {
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+}
+
+/* À venir : pas encore de signal, juste du grésillement radio */
+.status-badge.status-a_venir::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 16'%3E%3Cpath d='M0 8h4l1-2 1 4 1-3 1 2 1-1h4l1-3 1 6 1-4 1 2h3l1-1 1 2 1-1h4' fill='none' stroke='%23F2C230' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    filter: none;
+    animation: none;
+}
+
+/* Terminé : la ligne est plate. Plus personne. */
+.status-badge.status-termine::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 16'%3E%3Cpath d='M0 8h28' fill='none' stroke='%23E8665C' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+    filter: none;
+    animation: none;
+}
+
+.btn-link,
+.btn-back {
+    color: var(--danger);
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.social-link {
+    border: 2px solid var(--danger);
+    background: var(--beton);
+    color: var(--danger);
+    font-family: var(--font-etiquette);
+}
+
+.link-tile {
+    border-left: 6px solid var(--danger);
+    background: linear-gradient(90deg, var(--kaki), var(--beton-2));
+    color: var(--texte);
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   7. CARTES : polaroïds au mur, avis de disparition, pages du carnet
+   ========================================================================== */
+.campagne-card {
+    border: 2px solid var(--kaki-clair);
+    background: var(--texture-beton), var(--beton-2);
+    box-shadow: var(--shadow);
+}
+
+.campagne-card h2 {
+    color: var(--danger);
+    font-size: 1.5rem;
+}
+
+/* Héros : des polaroïds scotchés au mur (le scotch déborde du cadre) */
+.hero-card {
+    position: relative;
+}
+
+.hero-card::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    z-index: 2;
+    width: 84px;
+    height: 24px;
+    background: var(--chatterton) center / 100% 100% no-repeat;
+    transform: translateX(-50%) rotate(-4deg);
+    pointer-events: none;
+}
+
+.hero-card .card-link {
+    border: 8px solid #E9E6DC;
+    border-bottom-width: 8px;
+    background: #111;
+    box-shadow: var(--shadow);
+}
+
+.hero-card-body {
+    background: linear-gradient(transparent, rgb(12 12 10 / 0.92) 55%);
+    color: #F4F1E8;
+}
+
+.hero-card-title {
+    font-family: var(--font-feutre);
+    font-size: 1.45rem;
+}
+
+.hero-card-player {
+    color: var(--danger);
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Portrait de la fiche : une photo scotchée par deux bouts de chatterton */
+.fiche-media {
+    position: relative;
+}
+
+.fiche-media img {
+    border: 8px solid #E9E6DC;
+    box-shadow: var(--shadow);
+}
+
+.fiche-media::before,
+.fiche-media::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    z-index: 2;
+    width: 80px;
+    height: 22px;
+    background: var(--chatterton) center / 100% 100% no-repeat;
+    pointer-events: none;
+}
+
+.fiche-media::before { left: -16px;  transform: rotate(-30deg); }
+.fiche-media::after  { right: -16px; transform: rotate(30deg); }
+
+.timeline-img,
+.carte-preview-img {
+    border: 6px solid #E9E6DC;
+    box-shadow: var(--shadow);
+}
+
+/* Image manquante : un avis de disparition */
+.img-placeholder,
+.placeholder-img {
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 110'%3E%3Ctext x='100' y='42' text-anchor='middle' font-family='Impact,Arial Black,sans-serif' font-size='26' textLength='150' lengthAdjust='spacingAndGlyphs' fill='%23E8665C'%3EPORTÉ DISPARU%3C/text%3E%3Ccircle cx='100' cy='72' r='16' fill='none' stroke='%23A9A797' stroke-width='2'/%3E%3Ctext x='100' y='80' text-anchor='middle' font-family='Arial,sans-serif' font-size='22' font-weight='bold' fill='%23A9A797'%3E%3F%3C/text%3E%3C/svg%3E") center / min(80%, 15rem) no-repeat,
+        var(--texture-beton),
+        #262921;
+}
+
+/* Chronologie : des pages arrachées au carnet (bord du bas en dentelle de
+   perforations), écrites au feutre. Papier CLAIR : texte foncé. */
+.timeline-card {
+    border: 0;
+    background:
+        repeating-linear-gradient(transparent 0 1.6rem, rgb(61 90 115 / 0.3) 1.6rem calc(1.6rem + 1px)),
+        #E6E2D4;
+    color: #1E1E1A;
+    -webkit-mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat,
+        radial-gradient(circle 5px at 50% 100%, transparent 96%, #000) bottom / 12px 7px repeat-x;
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat,
+        radial-gradient(circle 5px at 50% 100%, transparent 96%, #000) bottom / 12px 7px repeat-x;
+}
+
+.timeline-date {
+    color: #9E2A22;
+    font-family: var(--font-feutre);
+    letter-spacing: 0.02em;
+}
+
+.timeline-title a {
+    color: #1E1E1A;
+    font-family: var(--font-pochoir);
+}
+
+.timeline-summary {
+    color: #2E2E28;
+}
+
+.mini-card {
+    border: 2px solid var(--kaki-clair);
+    background: var(--beton-2);
+}
+
+
+/* ==========================================================================
+   8. CARACTÉRISTIQUES : des plaques d'identité militaires
+   ========================================================================== */
+.stat {
+    border: 1px solid #6E7266;
+    border-radius: 40% 40% 12px 12px / 22% 22% 12px 12px;
+    background:
+        radial-gradient(circle at 50% 9px, var(--beton) 0 3px, #555 3.5px, transparent 4.5px),
+        linear-gradient(160deg, #D6D8D0, #8E918A 60%, #B9BBB3);
+    padding-top: 1rem;
+    color: #151513;
+    box-shadow: inset 0 1px 0 #FFF, 0 3px 6px rgb(0 0 0 / 0.5);
+}
+
+.stat-libelle {
+    color: #2E2E2A;
+    font-family: var(--font-etiquette);
+    font-weight: 700;
+}
+
+.stat-valeur {
+    color: #111;
+    font-family: var(--font-pochoir);
+    font-weight: 400;
+}
+
+.stat-complement {
+    color: #6A1612;
+    font-family: var(--font-etiquette);
+    font-weight: 700;
+}
+
+.tableau-stats-titre {
+    color: var(--danger);
+    font-family: var(--font-pochoir);
+}
+
+
+/* ==========================================================================
+   9. FORMULAIRES
+   ========================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+textarea,
+select {
+    border: 2px solid #474B3E;
+    border-radius: 2px;
+    background: #121410;
+    color: var(--texte);
+    font-family: var(--font-body);
+    font-size: 1rem;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--danger);
+}
+
+::placeholder {
+    color: var(--texte-pale);
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   10. CARTES DU MONDE : scotchées au mur de l'abri
+   ========================================================================== */
+.carte-map {
+    border: 6px solid #E9E6DC;
+    box-shadow: var(--shadow);
+}
+
+.map-zone-nom,
+.map-marker-label,
+.lieu-chip {
+    font-family: var(--font-etiquette);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   11. ACCESSIBILITÉ
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .status-badge::before {
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    body::before {
+        display: none;
+    }
+}

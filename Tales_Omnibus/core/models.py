@@ -55,6 +55,7 @@ THEMES = [
     ("cyberpunk", "Néon : cyberpunk"),
     ("tenebres", "Ténèbres : dark fantasy"),
     ("enquete", "Enquête : années 20, noir et investigation"),
+    ("survivant", "Survivant : zombies et survival horror"),
 ]
 
 

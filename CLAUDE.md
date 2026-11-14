@@ -299,6 +299,18 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   déco. Le panneau d'action y est une chemise CLAIRE : ce que la structure
   y écrit en `--color-highlight` (or pâle, prévu pour du sombre) est repassé
   à l'encre dans le thème.
+  `survivant.css` = « Survivant » (zombies) : béton sombre et lampe torche,
+  bande de danger en `border-image` sous le header, chatterton (SVG) aux
+  coins des panneaux et sur les polaroïds, encoches à la craie
+  (`body::before`, fixe, `z-index: -1`), plaques d'identité pour les stats,
+  pages de carnet à bord perforé (`mask` à cercles) pour la chronologie,
+  barbelés et avis de quarantaine pour les enluminures, « PORTÉ DISPARU »
+  pour les images manquantes, statut en électrocardiogramme (battement /
+  grésillement / ligne plate). Pochoir (Black Ops One) et feutre (Permanent
+  Marker) pour les titres et notes seulement ; texte en Barlow. Contrastes
+  vérifiés : tous ≥ 4,5.
+- **Six thèmes** dans `THEMES` : aucun (wireframe), Grimoire, Néon,
+  Ténèbres, Enquête, Survivant.
 - **Statuts de campagne** (`en_cours` / `a_venir` / `termine`) : la classe
   `status-…` est sur le badge ET sur la carte. Chaque thème a son voyant
   (Grimoire : sceau coulé / empreinte vide / sceau noir brisé ; Néon : LED
@@ -407,10 +419,19 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 ## Feuille de route (pas des bugs !)
 
-- **Thème « Survivant »** (à faire, voulu par Quentin) : zombies, survival
-  horror, journal / dossier du survivant. Mêmes règles que les autres. Bonus voulu par Quentin : que l'ADMIN prenne aussi
-  les couleurs du thème (piste : hook `insert_global_admin_css`).
-- **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
+- **Page « Bien démarrer » dans l'admin** (prochaine étape, voulue par
+  Quentin) : un bouton qui crée la structure fixe en un clic (index des
+  campagnes, encyclopédie, Univers, Contact, Mentions légales, sous
+  l'accueil, sans doublon grâce aux `max_count` / slugs fixes) ; boutons
+  « Ajouter la démo » / « Retirer la démo » (logique de `creer_demo`).
+- **robots.txt et plan du site (sitemap.xml)** (prochaine étape) : à
+  régénérer aussi depuis la page « Entretien du site » (bouton qui publie et
+  vérifie). Piste : `wagtail.contrib.sitemaps` (sitemap dynamique) + une vue
+  robots.txt qui pointe vers le sitemap.
+- **Admin aux couleurs du thème** (bonus voulu par Quentin) : piste, le
+  hook `insert_global_admin_css`, qui injecterait une petite feuille
+  redéfinissant les variables CSS de l'admin Wagtail selon le thème choisi.
+- **Polices des thèmes** : chargées depuis Google Fonts ; à héberger sur le
   site (RGPD) ou à signaler dans les mentions légales.
 - **Packs de SVG** (idée de Quentin) : un « addon » qui remplace d'un coup
   les icônes du site (catégories : village, ville, donjon…) par un autre
