@@ -334,6 +334,26 @@ figure {
     text-underline-offset: 0.3em;
 }
 
+/* Grand écran : le menu est centré sur la PAGE, pas seulement entre le titre
+   et la recherche (qui n'ont pas la même largeur : en flex, le menu glissait
+   d'une cinquantaine de pixels). Trois colonnes : les deux colonnes de côté
+   sont égales (1fr), celle du milieu prend la largeur du menu. Si le titre
+   est très long, sa colonne s'élargit d'elle-même : rien ne déborde. */
+@media (min-width: 64rem) {
+    .site-header {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+    }
+
+    .site-brand {
+        justify-self: start;
+    }
+
+    .site-search {
+        justify-self: end;
+    }
+}
+
 .site-footer {
     display: flex;
     flex-wrap: wrap;
