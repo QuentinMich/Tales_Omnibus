@@ -270,6 +270,17 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   `grimoire.css` = médiéval fantastique (parchemin, reliure de cuir, titre du
   site doré à chaud : `background-clip: text` + `drop-shadow`, car un
   `text-shadow` se verrait à travers les lettres transparentes).
+  `cyberpunk.css` = « Néon » : nuit, néons magenta/cyan, jaune pour l'action,
+  lignes de balayage (`body::after`, `pointer-events: none`), panneaux de HUD
+  aux coins coupés (`--coins-coupes`), stats en hexagones (le contour est un
+  `drop-shadow` sur la GRILLE : le `clip-path` coupe les bordures), glitch
+  sur le nom du site. L'accent qui porte du texte blanc est un magenta
+  PROFOND ; le néon vif ne sert qu'à la lumière.
+  Piège des thèmes : une règle `.richtext a { color }` est plus spécifique
+  que `.btn` et repeint le texte des boutons posés dans un texte (bouton
+  « Télécharger ») : prévoir `.richtext a.btn`.
+- **Header** : sur grand écran (≥ 64rem), grille `1fr auto 1fr` : le menu est
+  centré sur la PAGE (en flex, il glissait selon la largeur du titre).
 - **Logo** : `{% image logo max-320x96 %}` (jamais `fill-`, jamais rond : il
   garde sa forme). SVG accepté dans la médiathèque
   (`WAGTAILIMAGES_EXTENSIONS` + `svg`) ; un SVG reste un SVG tant qu'on
@@ -352,8 +363,8 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 ## Feuille de route (pas des bugs !)
 
-- **Thèmes (suite)** : d'autres thèmes (Dark Fantasy, Cyberpunk…) sur le
-  modèle de `grimoire.css`. Bonus voulu par Quentin : que l'ADMIN prenne aussi
+- **Thèmes (suite)** : d'autres thèmes (Dark Fantasy, Steampunk…) sur le
+  modèle de `grimoire.css` / `cyberpunk.css`. Bonus voulu par Quentin : que l'ADMIN prenne aussi
   les couleurs du thème (piste : hook `insert_global_admin_css`).
 - **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
   site (RGPD) ou à signaler dans les mentions légales.

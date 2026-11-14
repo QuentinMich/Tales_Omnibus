@@ -1,0 +1,821 @@
+/* ==========================================================================
+   THÈME « NÉON » : cyberpunk
+   --------------------------------------------------------------------------
+   La nuit d'une mégapole : fond d'encre bleu-noir, néons magenta et cyan,
+   jaune « danger » pour l'action, lignes de balayage d'un vieil écran. Le site
+   devient une interface de hacker : panneaux de HUD aux coins coupés, titres
+   en Orbitron, données en police de terminal.
+
+   Mêmes règles que le Grimoire : AUCUNE mise en page modifiée (grilles,
+   colonnes, ordre), seulement couleurs, polices, textures et formes.
+
+   Accessibilité, malgré le néon :
+   - le TEXTE n'est jamais en néon fin sur fond sombre trop saturé : le corps
+     est gris très clair (#E6E4F2), les néons vont aux titres et aux décors ;
+   - l'accent qui porte du texte blanc est un magenta PROFOND (#B0128F) :
+     le néon vif (#FF2BD6) ne sert qu'à la lumière ;
+   - toutes les animations (glitch, voyants) s'arrêtent si l'on a demandé de
+     réduire les animations ; le mode contrastes élevés reste lisible.
+   ========================================================================== */
+
+/* Orbitron (titres, très « HUD »), Chakra Petch (texte : technique mais
+   lisible), Share Tech Mono (données, étiquettes : le terminal) */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap");
+
+
+/* ==========================================================================
+   1. VARIABLES
+   ========================================================================== */
+:root {
+    /* Nuancier du thème */
+    --nuit: #0A0918;
+    --nuit-2: #121029;
+    --nuit-3: #1C1840;
+    --neon-magenta: #FF2BD6;
+    --neon-cyan: #00F0FF;
+    --neon-jaune: #F5FF3B;
+    --magenta-profond: #B0128F;
+    --texte: #E6E4F2;
+    --texte-pale: #A6A3C4;
+    --font-mono: "Share Tech Mono", "Consolas", monospace;
+
+    /* Variables de structure.css */
+    --color-bg: var(--nuit);
+    --color-text: var(--texte);
+    --color-text-muted: var(--texte-pale);
+    --color-chrome: #05040C;
+    --color-chrome-text: var(--texte);
+    --color-surface: var(--nuit-2);
+    --color-surface-strong: var(--nuit-3);
+    --color-surface-strong-text: var(--texte);
+    --color-border: #3D3878;
+
+    --color-accent: var(--magenta-profond);
+    --color-accent-text: #FFFFFF;
+    --color-highlight: var(--neon-jaune);
+    --color-title: var(--neon-cyan);
+
+    /* Types de fiches : des néons, avec du texte SOMBRE dessus (contraste) */
+    --color-type-heros: #FF4D7E;
+    --color-type-lieux: #00C8FF;
+    --color-type-evenements: #3DFF8F;
+    --color-type-lore: #C084FF;
+    --color-type-text: var(--nuit);
+
+    --color-map-label: rgb(10 9 24 / 0.8);
+    --color-map-label-hover: rgb(10 9 24 / 0.95);
+    --color-map-label-text: var(--neon-cyan);
+    --color-visionneuse-fond: rgb(5 4 12 / 0.94);
+    --map-icon-shadow: drop-shadow(0 0 3px var(--neon-cyan)) drop-shadow(0 0 1px #000);
+
+    --font-body: "Chakra Petch", "Segoe UI", sans-serif;
+    --font-title: "Orbitron", "Chakra Petch", sans-serif;
+    --font-size-base: 1.0625rem;
+    --line-height: 1.65;
+
+    /* Formes : rien n'est rond dans une ville de béton */
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-pill: 0;
+    --shadow: 0 0 0 1px rgb(0 240 255 / 0.15), 0 10px 30px -10px rgb(0 0 0 / 0.8);
+    --hover-brightness: 1.2;
+
+    /* La découpe des coins des panneaux de HUD */
+    --coupe: 0.9rem;
+    --coins-coupes: polygon(var(--coupe) 0, 100% 0, 100% calc(100% - var(--coupe)),
+                            calc(100% - var(--coupe)) 100%, 0 100%, 0 var(--coupe));
+
+    /* Équerres de visée aux 4 coins (comme les coins dorés du Grimoire) */
+    --equerres:
+        linear-gradient(var(--neon-cyan), var(--neon-cyan)) top 5px right 5px / 1.1rem 2px no-repeat,
+        linear-gradient(var(--neon-cyan), var(--neon-cyan)) top 5px right 5px / 2px 1.1rem no-repeat,
+        linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom 5px left 5px / 1.1rem 2px no-repeat,
+        linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom 5px left 5px / 2px 1.1rem no-repeat;
+
+    /* Hologramme : le dégradé du logo « doré » (ici : holographique) */
+    --hologramme: linear-gradient(100deg, var(--neon-cyan), #8A7DFF 35%, var(--neon-magenta) 65%, var(--neon-cyan));
+    --logo-fill: var(--hologramme);
+
+    /* Lignes de balayage d'un écran cathodique */
+    --balayage: repeating-linear-gradient(to bottom,
+        rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px);
+
+    /* Image manquante : la neige d'un écran sans signal */
+    --neige: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .6 0 0 0 0 .62 0 0 0 0 .8 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+    /* Réticule de visée en guise de curseur (point chaud au centre) */
+    --curseur-viseur: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='none' stroke='%2300F0FF' stroke-width='1.6'%3E%3Ccircle cx='14' cy='14' r='7'/%3E%3Cpath d='M14 1v6M14 21v6M1 14h6M21 14h6'/%3E%3C/g%3E%3Ccircle cx='14' cy='14' r='1.6' fill='%23FF2BD6'/%3E%3C/svg%3E") 14 14, crosshair;
+}
+
+
+/* ==========================================================================
+   2. LA PAGE : la ville la nuit, vue à travers un écran
+   ========================================================================== */
+html {
+    scrollbar-color: var(--magenta-profond) var(--nuit);
+}
+
+body {
+    background:
+        /* deux halos de néon qui débordent sur la nuit */
+        radial-gradient(ellipse 60% 40% at 0% 0%, rgb(255 43 214 / 0.16), transparent 70%) fixed,
+        radial-gradient(ellipse 50% 40% at 100% 100%, rgb(0 240 255 / 0.12), transparent 70%) fixed,
+        /* le quadrillage d'une carte de la ville */
+        linear-gradient(rgb(0 240 255 / 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+        linear-gradient(90deg, rgb(0 240 255 / 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+        var(--nuit);
+    cursor: var(--curseur-viseur);
+    font-size: var(--font-size-base);
+}
+
+/* Les lignes de balayage, posées par-dessus TOUT l'écran. pointer-events:
+   none : on clique à travers ; très légères pour ne pas gêner la lecture. */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: var(--balayage);
+    pointer-events: none;
+}
+
+a, button, summary, label, select, [role="button"] {
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--neon-magenta);
+    color: var(--nuit);
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-title);
+    letter-spacing: 0.04em;
+}
+
+h3, h4 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Liens du texte : cyan, soulignés d'un trait magenta qui s'allume au survol */
+.richtext a,
+.fiche-card p a {
+    color: var(--neon-cyan);
+    text-decoration-color: var(--neon-magenta);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    transition: text-shadow var(--transition);
+}
+
+.richtext a:hover,
+.fiche-card p a:hover {
+    text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+/* …sauf les BOUTONS posés dans un texte (« Télécharger » d'une aide de jeu) :
+   la règle ci-dessus est plus spécifique que .btn et repeignait leur texte */
+.richtext a.btn,
+.fiche-card p a.btn {
+    color: var(--nuit);
+    text-decoration: none;
+    text-shadow: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--neon-jaune);
+    outline-offset: 3px;
+}
+
+
+/* ==========================================================================
+   3. HEADER & FOOTER : le bandeau d'un terminal
+   ========================================================================== */
+.site-header,
+.site-footer {
+    background: var(--balayage), linear-gradient(#0B0920, #05040C);
+}
+
+.site-header {
+    border-bottom: 1px solid var(--neon-magenta);
+    box-shadow: 0 1px 0 rgb(255 43 214 / 0.4), 0 0 24px -4px rgb(255 43 214 / 0.55);
+}
+
+.site-footer {
+    border-top: 1px solid var(--neon-cyan);
+    box-shadow: 0 -1px 0 rgb(0 240 255 / 0.4), 0 0 24px -4px rgb(0 240 255 / 0.45);
+    font-family: var(--font-mono);
+}
+
+.site-footer a {
+    color: var(--neon-cyan);
+}
+
+/* Fin de transmission */
+.site-footer .copyright::before {
+    content: "// FIN DE TRANSMISSION — ";
+    color: var(--neon-magenta);
+}
+
+.site-brand,
+.site-nav ul {
+    background: transparent;
+}
+
+/* Le nom du site : enseigne au néon, avec l'aberration chromatique d'un
+   écran mal réglé (une ombre cyan à gauche, une magenta à droite) et un
+   « glitch » bref toutes les 7 secondes */
+.site-name {
+    color: #FFFFFF;
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    white-space: nowrap;  /* Orbitron est très large : le nom tient sur une ligne */
+    text-shadow:
+        -2px 0 var(--neon-cyan),
+        2px 0 var(--neon-magenta),
+        0 0 14px rgb(255 43 214 / 0.6);
+    animation: glitch 7s steps(1) infinite;
+}
+
+@keyframes glitch {
+    0%, 92%, 100% {
+        transform: none;
+        text-shadow: -2px 0 var(--neon-cyan), 2px 0 var(--neon-magenta), 0 0 14px rgb(255 43 214 / 0.6);
+    }
+    93% {
+        transform: translateX(2px) skewX(-8deg);
+        text-shadow: -5px 0 var(--neon-cyan), 5px 0 var(--neon-magenta), 0 0 20px rgb(0 240 255 / 0.8);
+    }
+    95% {
+        transform: translateX(-3px);
+        text-shadow: 4px 0 var(--neon-cyan), -4px 0 var(--neon-magenta), 0 0 14px rgb(255 43 214 / 0.6);
+    }
+    97% {
+        transform: none;
+        text-shadow: -1px 0 var(--neon-cyan), 1px 0 var(--neon-magenta), 0 0 30px rgb(255 43 214 / 0.9);
+    }
+}
+
+/* Logo « doré » = ici HOLOGRAPHIQUE, avec un halo */
+.site-logo--dore {
+    background-size: 300% 100%;
+    animation: hologramme 5s linear infinite;
+}
+
+.site-logo-pochoir,
+.site-logo:not(.site-logo--dore) {
+    filter: drop-shadow(0 0 6px rgb(0 240 255 / 0.55));
+}
+
+@keyframes hologramme {
+    from { background-position: 0% 0; }
+    to   { background-position: 300% 0; }
+}
+
+.site-nav a {
+    color: var(--texte);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.site-nav a:hover {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+/* Rubrique active : entre crochets, en jaune, comme une option sélectionnée */
+.site-nav a.is-active {
+    color: var(--neon-jaune);
+    text-decoration: none;
+}
+
+.site-nav a.is-active::before { content: "[ "; color: var(--neon-magenta); }
+.site-nav a.is-active::after  { content: " ]"; color: var(--neon-magenta); }
+
+.site-search input {
+    font-family: var(--font-mono);
+    caret-color: var(--neon-magenta);
+}
+
+
+/* ==========================================================================
+   4. TITRES : enseignes et codes
+   ========================================================================== */
+
+/* Grand titre : dégradé cyan > magenta dans les lettres, halo de néon.
+   Le halo est un drop-shadow (comme pour la dorure du Grimoire : un
+   text-shadow se verrait à travers les lettres transparentes). */
+.page-title {
+    background: linear-gradient(90deg, var(--neon-cyan), #A08CFF 50%, var(--neon-magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    filter: drop-shadow(0 0 12px rgb(255 43 214 / 0.35));
+}
+
+/* Sous chaque grand titre : un code-barres d'étiquette d'inventaire */
+.page-title::after {
+    content: "";
+    display: block;
+    width: min(16rem, 60%);
+    height: 0.9rem;
+    margin: var(--space-sm) auto 0;
+    background: repeating-linear-gradient(90deg,
+        var(--neon-cyan) 0 2px, transparent 2px 4px,
+        var(--neon-cyan) 4px 5px, transparent 5px 9px,
+        var(--neon-magenta) 9px 12px, transparent 12px 14px);
+    opacity: 0.85;
+}
+
+.page-title--left {
+    font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+}
+
+.page-title--left::after {
+    margin-left: 0;
+}
+
+.page-subtitle {
+    color: var(--neon-magenta);
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+}
+
+/* Titres de section : précédés d'un commentaire de code */
+.section-title {
+    padding-top: 0;
+    border-top: 0;
+    color: var(--texte);
+    text-transform: uppercase;
+}
+
+.section-title::before {
+    content: "// ";
+    color: var(--neon-magenta);
+    font-family: var(--font-mono);
+}
+
+.section-title::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin-top: var(--space-xs);
+    background: linear-gradient(90deg, transparent, var(--neon-cyan) 20%, var(--neon-magenta) 80%, transparent);
+    box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.panel-title,
+.article-section-titre {
+    color: var(--neon-cyan);
+    font-family: var(--font-title);
+    font-size: 1.35rem;
+    text-transform: uppercase;
+}
+
+.article-section-titre::before {
+    content: "▸ ";
+    color: var(--neon-magenta);
+}
+
+/* Séparateur : un trait de néon avec une coupure au milieu */
+.separateur {
+    height: 2px;
+    border: 0;
+    background: linear-gradient(90deg,
+        transparent, var(--neon-magenta) 15%, var(--neon-magenta) 46%,
+        transparent 46% 54%, var(--neon-cyan) 54%, var(--neon-cyan) 85%, transparent);
+    box-shadow: 0 0 10px rgb(255 43 214 / 0.5);
+}
+
+/* La description d'une fiche commence comme une ligne de commande */
+.fiche-description > p:first-child::before {
+    content: "> ";
+    color: var(--neon-magenta);
+    font-family: var(--font-mono);
+}
+
+
+/* ==========================================================================
+   4 bis. ENLUMINURES, version terminal
+   ========================================================================== */
+
+/* La lettrine : un caractère géant, cerné de néon, avec un curseur de
+   terminal qui clignote à côté */
+.enluminure .richtext > p:first-child::first-letter {
+    margin: 0.06em 0.2em 0 0;
+    padding: 0.1em 0.18em 0.05em;
+    border: 2px solid var(--neon-magenta);
+    background: rgb(255 43 214 / 0.12);
+    color: var(--neon-cyan);
+    font-family: var(--font-title);
+    font-size: 3.6em;
+    font-weight: 900;
+    line-height: 0.85;
+    text-shadow: 0 0 12px var(--neon-cyan);
+    box-shadow: 0 0 14px rgb(255 43 214 / 0.55), inset 0 0 10px rgb(255 43 214 / 0.35);
+}
+
+/* Rinceaux… version flux de données : une colonne de code hexadécimal
+   qui défile dans la marge */
+.enluminure--marge {
+    padding-left: 3rem;
+    border-left: 0;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='120' viewBox='0 0 34 120'%3E%3Cg font-family='monospace' font-size='10'%3E%3Ctext x='2' y='12' fill='%2300F0FF'%3E0x1F%3C/text%3E%3Ctext x='2' y='28' fill='%23FF2BD6'%3E A3%3C/text%3E%3Ctext x='2' y='44' fill='%2300F0FF' opacity='.6'%3E7E%3C/text%3E%3Ctext x='2' y='60' fill='%2300F0FF'%3E0x00%3C/text%3E%3Ctext x='2' y='76' fill='%23FF2BD6' opacity='.7'%3E C4%3C/text%3E%3Ctext x='2' y='92' fill='%2300F0FF' opacity='.5'%3E 9B%3C/text%3E%3Ctext x='2' y='108' fill='%2300F0FF'%3EFF%3C/text%3E%3C/g%3E%3Cpath d='M32 0v120' stroke='%23FF2BD6' stroke-width='1' opacity='.6'/%3E%3C/svg%3E")
+        left top / 2.1rem auto repeat-y;
+    animation: flux-de-donnees 12s linear infinite;
+}
+
+@keyframes flux-de-donnees {
+    from { background-position: left 0; }
+    to   { background-position: left 120px; }
+}
+
+/* Page encadrée : un écran de HUD, coins coupés et équerres de visée */
+.enluminure--cadre {
+    border: 0;
+    background: var(--equerres), var(--balayage), rgb(0 240 255 / 0.06);
+    box-shadow: inset 0 0 0 1px rgb(0 240 255 / 0.45), inset 0 0 30px rgb(0 240 255 / 0.12);
+    clip-path: var(--coins-coupes);
+}
+
+
+/* ==========================================================================
+   5. PANNEAUX : des écrans de HUD
+   ========================================================================== */
+.panel,
+.fiche-card {
+    border: 0;
+    background: var(--equerres), var(--balayage), rgb(18 16 41 / 0.88);
+    box-shadow: inset 0 0 0 1px var(--color-border), inset 0 1px 0 rgb(0 240 255 / 0.35);
+    clip-path: var(--coins-coupes);
+    backdrop-filter: blur(3px);
+}
+
+/* Panneau d'action (formulaire de contact…) : alerte magenta */
+.panel--accent {
+    background: var(--equerres), var(--balayage),
+        linear-gradient(135deg, rgb(176 18 143 / 0.45), rgb(28 24 64 / 0.92));
+    box-shadow: inset 0 0 0 1px var(--neon-magenta), inset 0 0 40px rgb(255 43 214 / 0.18);
+}
+
+.panel--strong {
+    background: var(--equerres), var(--balayage), rgb(28 24 64 / 0.92);
+    box-shadow: inset 0 0 0 1px rgb(0 240 255 / 0.4);
+}
+
+.flash {
+    border: 0;
+    border-left: 3px solid var(--neon-jaune);
+    background: rgb(245 255 59 / 0.08);
+    font-family: var(--font-mono);
+}
+
+.flash::before {
+    content: "[OK] ";
+    color: var(--neon-jaune);
+}
+
+
+/* ==========================================================================
+   6. BOUTONS, BADGES, TAGS
+   ========================================================================== */
+
+/* Bouton : bande jaune « danger », coins coupés, texte en terminal */
+.btn {
+    background: var(--neon-jaune);
+    color: var(--nuit);
+    font-family: var(--font-mono);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    clip-path: polygon(0.6em 0, 100% 0, 100% calc(100% - 0.6em), calc(100% - 0.6em) 100%, 0 100%, 0 0.6em);
+    transition: filter var(--transition), transform var(--transition);
+}
+
+.btn:hover {
+    filter: brightness(1.1) drop-shadow(0 0 8px var(--neon-jaune));
+    transform: translateX(2px);
+}
+
+.panel--accent .btn,
+.panel--strong .btn {
+    background: var(--neon-cyan);
+    color: var(--nuit);
+}
+
+/* Tags : des étiquettes de code, en #hashtag */
+.tag {
+    border: 1px solid var(--neon-magenta);
+    background: rgb(255 43 214 / 0.1);
+    color: var(--texte);
+    font-family: var(--font-mono);
+}
+
+.tag::before {
+    content: "#";
+    color: var(--neon-magenta);
+}
+
+.badge,
+.status-badge {
+    border: 1px solid var(--color-border);
+    background: rgb(10 9 24 / 0.85);
+    color: var(--texte);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.badge--categorie {
+    background: rgb(10 9 24 / 0.85);
+}
+
+.status-badge strong {
+    color: var(--neon-jaune);
+}
+
+/* Le statut : un voyant qui pulse, comme un « LIVE » */
+.status-badge::before {
+    content: "";
+    width: 0.6em;
+    height: 0.6em;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 6px var(--neon-cyan), 0 0 12px var(--neon-cyan);
+    animation: voyant 1.6s ease-in-out infinite;
+}
+
+@keyframes voyant {
+    50% { opacity: 0.35; box-shadow: 0 0 2px var(--neon-cyan); }
+}
+
+.btn-link,
+.btn-back {
+    color: var(--neon-cyan);
+    font-family: var(--font-mono);
+}
+
+.social-link {
+    border: 1px solid var(--neon-cyan);
+    background: rgb(0 240 255 / 0.08);
+    color: var(--neon-cyan);
+    font-family: var(--font-mono);
+    box-shadow: 0 0 10px rgb(0 240 255 / 0.4);
+}
+
+.link-tile {
+    border-left: 3px solid var(--neon-cyan);
+    background: linear-gradient(90deg, rgb(0 240 255 / 0.12), transparent);
+    color: var(--texte);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+}
+
+.link-tile::before {
+    content: "▸ ";
+    color: var(--neon-magenta);
+}
+
+.link-tile:hover {
+    color: var(--neon-cyan);
+}
+
+
+/* ==========================================================================
+   7. CARTES : cartouches de données et cartes holographiques
+   ========================================================================== */
+
+/* Campagnes : des cartouches de données, coins coupés */
+.campagne-card {
+    background: var(--equerres), rgb(18 16 41 / 0.9);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+    clip-path: var(--coins-coupes);
+    transition: box-shadow var(--transition);
+}
+
+.campagne-card:hover {
+    box-shadow: inset 0 0 0 1px var(--neon-cyan), inset 0 0 30px rgb(0 240 255 / 0.15);
+}
+
+.campagne-card h2 {
+    color: var(--neon-cyan);
+}
+
+/* Héros : des cartes holographiques. Les lignes de balayage passent
+   sur le portrait (::after), le cadre est un néon dégradé. */
+.hero-card .card-link {
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--nuit), var(--nuit)) padding-box,
+        var(--hologramme) border-box;
+    box-shadow: 0 0 18px -4px rgb(255 43 214 / 0.6);
+    clip-path: var(--coins-coupes);
+}
+
+.hero-card .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--balayage);
+    pointer-events: none;
+}
+
+.hero-card-body {
+    background: linear-gradient(transparent, rgb(10 9 24 / 0.95) 55%);
+    color: #FFFFFF;
+}
+
+.hero-card-title {
+    font-family: var(--font-title);
+    letter-spacing: 0.06em;
+    text-shadow: -1px 0 var(--neon-cyan), 1px 0 var(--neon-magenta);
+}
+
+.hero-card-player {
+    color: var(--neon-jaune);
+    font-family: var(--font-mono);
+}
+
+/* Portraits et illustrations : écran cerclé de néon, coins coupés */
+.fiche-media img,
+.timeline-img,
+.carte-preview-img {
+    clip-path: var(--coins-coupes);
+    filter: drop-shadow(0 0 1px var(--neon-cyan));
+}
+
+.fiche-media {
+    filter: drop-shadow(0 0 10px rgb(0 240 255 / 0.35));
+}
+
+/* Image manquante : « PAS DE SIGNAL » sur la neige d'un écran */
+.img-placeholder,
+.placeholder-img {
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Crect x='20' y='18' width='160' height='24' fill='%230A0918' stroke='%23FF2BD6'/%3E%3Ctext x='100' y='35' text-anchor='middle' font-family='monospace' font-size='12' letter-spacing='3' fill='%2300F0FF'%3EPAS DE SIGNAL%3C/text%3E%3C/svg%3E") center / min(80%, 16rem) no-repeat,
+        var(--balayage),
+        var(--neige),
+        var(--nuit-2);
+}
+
+/* Chronologie : un journal de bord horodaté */
+.timeline-card {
+    background: var(--balayage), rgb(28 24 64 / 0.92);
+    box-shadow: inset 3px 0 0 var(--neon-magenta), inset 0 0 0 1px var(--color-border);
+    clip-path: var(--coins-coupes);
+}
+
+.timeline-date {
+    color: var(--neon-jaune);
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+}
+
+.timeline-date::before {
+    content: "[";
+    color: var(--neon-magenta);
+}
+
+.timeline-date::after {
+    content: "]";
+    color: var(--neon-magenta);
+}
+
+.timeline-title a {
+    color: var(--neon-cyan);
+}
+
+.mini-card {
+    background: rgb(18 16 41 / 0.9);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+    clip-path: var(--coins-coupes);
+}
+
+.event-snippet {
+    clip-path: var(--coins-coupes);
+}
+
+
+/* ==========================================================================
+   8. CARACTÉRISTIQUES : des hexagones
+   ========================================================================== */
+
+/* La forme hexagonale coupe les bordures ; le contour lumineux est donc
+   posé sur la GRILLE (drop-shadow), qui suit la silhouette des cases. */
+.tableau-stats-grille {
+    filter: drop-shadow(0 0 1px var(--neon-cyan)) drop-shadow(0 0 6px rgb(0 240 255 / 0.45));
+}
+
+.stat {
+    border: 0;
+    padding-inline: 0.6em;
+    background: linear-gradient(160deg, var(--nuit-3), var(--nuit));
+    /* Hexagone aplati (pointes à 12 %) : un long libellé tient dans le haut */
+    clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+    color: var(--texte);
+}
+
+.stat-libelle {
+    color: var(--neon-magenta);
+    font-family: var(--font-mono);
+}
+
+.stat-valeur {
+    color: var(--neon-cyan);
+    font-family: var(--font-title);
+}
+
+.stat-complement {
+    color: var(--neon-jaune);
+    font-family: var(--font-mono);
+}
+
+.tableau-stats-titre {
+    color: var(--neon-cyan);
+    font-family: var(--font-title);
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   9. FORMULAIRES : saisie dans un terminal
+   ========================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+textarea,
+select {
+    border: 0;
+    border-bottom: 2px solid var(--neon-cyan);
+    border-radius: 0;
+    background: rgb(5 4 12 / 0.75);
+    color: var(--texte);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    caret-color: var(--neon-magenta);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-bottom-color: var(--neon-magenta);
+    box-shadow: 0 6px 14px -8px var(--neon-magenta);
+}
+
+::placeholder {
+    color: var(--texte-pale);
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   10. CARTES DU MONDE : un relevé satellite
+   ========================================================================== */
+.carte-map {
+    box-shadow: 0 0 0 1px var(--neon-cyan), 0 0 24px -4px rgb(0 240 255 / 0.5);
+}
+
+.map-zone-nom,
+.map-marker-label,
+.lieu-chip {
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   11. ACCESSIBILITÉ
+   ========================================================================== */
+
+/* On a demandé moins d'animations : plus de glitch, de voyant ni de flux */
+@media (prefers-reduced-motion: reduce) {
+    .site-name,
+    .site-logo--dore,
+    .status-badge::before,
+    .enluminure--marge {
+        animation: none;
+    }
+}
+
+/* Contrastes élevés (Windows) : les fonds disparaissent, donc les lettres
+   « peintes » par un dégradé deviendraient invisibles. Et pas de balayage. */
+@media (forced-colors: active) {
+    .page-title {
+        background: none;
+        color: CanvasText;
+        filter: none;
+    }
+
+    body::after {
+        display: none;
+    }
+}
