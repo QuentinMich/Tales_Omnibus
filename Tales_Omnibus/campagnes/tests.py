@@ -604,3 +604,35 @@ class PageCarteTests(CampagneTreeMixin, TestCase):
         self.assertLess(html.index("carte-intro"), html.index('class="carte-map"'))
         # « Accroche » est un mot de l'admin : il n'est plus affiché au visiteur
         self.assertNotIn(">Accroche<", html)
+
+
+class GroupeDeHerosTests(CampagneTreeMixin, TestCase):
+    """Page Campagne : héros des joueurs (une ligne), compagnons du MJ, anciens membres."""
+
+    def setUp(self):
+        super().setUp()
+        for titre, joueur, joue_par, parti in [
+            ("Maëlis", "A", 'joueur', False), ("Brann", "B", 'joueur', False), ("Pip", "C", 'joueur', False),
+            ("Ysolde", "", 'mj', False), ("Gaspard", "D", 'joueur', True),
+        ]:
+            self.campagne.add_child(instance=HeroPage(
+                title=titre, joueur_nom=joueur, joue_par=joue_par, a_quitte_le_groupe=parti))
+
+    def test_trois_groupes_sur_la_page_campagne(self):
+        contexte = self.campagne.get_context(self.client.get("/").wsgi_request)
+        self.assertEqual([h.title for h in contexte['heros']], ["Maëlis", "Brann", "Pip"])
+        self.assertEqual([h.title for h in contexte['compagnons']], ["Ysolde"])
+        self.assertEqual([h.title for h in contexte['anciens_membres']], ["Gaspard"])
+
+    def test_la_rangee_du_groupe_connait_son_nombre_de_colonnes(self):
+        html = self.client.get(self.campagne.url).content.decode()
+        self.assertIn('style="--colonnes: 3"', html)
+        self.assertIn("Compagnons de route", html)
+        self.assertIn("Joué par le MJ", html)
+        self.assertIn("Ont quitté le groupe", html)
+
+    def test_un_heros_de_joueur_doit_avoir_un_nom_de_joueur(self):
+        from django.core.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            HeroPage(title="Sans joueur", joue_par='joueur', joueur_nom="").clean()
+        HeroPage(title="PNJ", joue_par='mj', joueur_nom="").clean()  # pas d'erreur

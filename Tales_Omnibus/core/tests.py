@@ -371,7 +371,8 @@ class MenuAdminTests(TestCase):
         HomePage.objects.first().add_child(instance=ContactPage(title="Contact"))
         admin = get_user_model().objects.create_superuser("admin", "a@example.com", "x")
         menu = dict(self.menu_pour(admin))
-        self.assertEqual(list(menu)[:3], ["Plan du site", "Univers", "Dossiers"])
+        # « Bien démarrer » en tête : la première chose à faire sur un site neuf
+        self.assertEqual(list(menu)[:4], ["Bien démarrer", "Plan du site", "Univers", "Dossiers"])
         self.assertEqual(menu["Organisation"], ["Catégories", "Familles de tags", "Prestations"])
         self.assertEqual(menu["Comptes"], ["Utilisateurs", "Groupes"])
         self.assertEqual(menu["Paramètres avancés"], ["Sites", "Redirections", "Workflows", "Tâches de workflow"])
@@ -380,6 +381,13 @@ class MenuAdminTests(TestCase):
         # Les anciens noms techniques ont disparu
         for ancien in ("Pages", "Fragments", "Formulaires", "Paramètres"):
             self.assertNotIn(ancien, menu)
+
+    def test_bien_demarrer_cache_aux_redacteurs(self):
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Permission
+        redacteur = get_user_model().objects.create_user("redac", "r@example.com", "x")
+        redacteur.user_permissions.add(Permission.objects.get(codename="access_admin"))
+        self.assertNotIn("Bien démarrer", dict(self.menu_pour(redacteur)))
 
 
 class EntretienMigrationsEnAttenteTests(TestCase):
@@ -451,3 +459,85 @@ class EnluminureBlockTests(TestCase):
         self.assertIn('class="enluminure enluminure--marge"', html)
         # La lettrine est faite en CSS : le mot reste entier dans le HTML
         self.assertIn("Il était une fois", html)
+
+
+class BienDemarrerTests(TestCase):
+    """La page « Bien démarrer » : structure du site en un clic, démo à ajouter / retirer."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        self.admin = get_user_model().objects.create_superuser("mj", "mj@example.com", "mdp")
+        self.client.force_login(self.admin)
+
+    def url(self):
+        from django.urls import reverse
+        return reverse("bien_demarrer")
+
+    def test_cree_la_structure_sans_doublon(self):
+        from campagnes.models import CampagnesIndexPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        from pages.models import ContactPage, MentionsLegalesPage, UniversPage
+        self.client.post(self.url(), {"action": "structure"})
+        self.client.post(self.url(), {"action": "structure"})  # 2e clic : rien de plus
+        for modele in (CampagnesIndexPage, EncyclopedieIndexPage, UniversPage, ContactPage, MentionsLegalesPage):
+            self.assertEqual(modele.objects.count(), 1, modele.__name__)
+        # Les mentions légales attendent leurs vraies informations : brouillon
+        self.assertFalse(MentionsLegalesPage.objects.get().live)
+        self.assertTrue(UniversPage.objects.get().live)
+        # Le formulaire de contact a ses champs, et l'accueil pointe vers lui (menu)
+        contact = ContactPage.objects.get()
+        self.assertEqual(contact.form_fields.count(), 3)
+        self.assertEqual(HomePage.objects.first().page_contact_id, contact.pk)
+        self.assertContains(self.client.get(self.url()), "La structure est complète")
+
+    def test_ajoute_puis_retire_la_demo_avec_ses_images(self):
+        from wagtail.images.models import Image
+        from core.demo import CAMPAGNE, TAG_IMAGES
+        from core.models import Categorie
+        from campagnes.models import CampagnePage
+        self.client.post(self.url(), {"action": "structure"})
+        self.client.post(self.url(), {"action": "demo_ajouter"})
+        self.assertTrue(CampagnePage.objects.filter(title=CAMPAGNE).exists())
+        # Les 3 icônes SVG livrées avec la démo : importées, rangées, posées sur les catégories
+        icone = Image.objects.get(title="Ville", tags__name=TAG_IMAGES)
+        self.assertEqual(icone.collection.name, "Icône")
+        self.assertEqual(icone.collection.get_parent().name, "Site")
+        self.assertEqual(Categorie.objects.get(nom="Ville").icone, icone)
+
+        self.client.post(self.url(), {"action": "demo_retirer"})
+        self.assertFalse(CampagnePage.objects.filter(title=CAMPAGNE).exists())
+        self.assertFalse(Image.objects.filter(tags__name=TAG_IMAGES).exists())
+        self.assertIsNone(Categorie.objects.get(nom="Ville").icone)  # la catégorie reste, sans icône
+
+    def test_demo_impossible_sans_structure(self):
+        response = self.client.post(self.url(), {"action": "demo_ajouter"}, follow=True)
+        self.assertContains(response, "Il faut d&#x27;abord les pages")
+
+    def test_reservee_aux_administrateurs(self):
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Permission
+        redacteur = get_user_model().objects.create_user("redac", "r@example.com", "mdp")
+        redacteur.user_permissions.add(Permission.objects.get(codename="access_admin"))
+        self.client.force_login(redacteur)
+        # Wagtail transforme le refus (PermissionDenied) en retour au tableau de bord
+        self.assertRedirects(self.client.get(self.url()), "/admin/", fetch_redirect_response=False)
+        # … et le bouton n'a rien créé
+        self.client.post(self.url(), {"action": "structure"})
+        from campagnes.models import CampagnesIndexPage
+        self.assertFalse(CampagnesIndexPage.objects.exists())
+
+
+class ReferencementTests(TestCase):
+    def test_robots_txt_indique_le_plan_du_site(self):
+        response = self.client.get("/robots.txt")
+        self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
+        texte = response.content.decode()
+        self.assertIn("Disallow: /admin/", texte)
+        self.assertIn("Sitemap: http://testserver/sitemap.xml", texte)
+
+    def test_le_plan_du_site_suit_les_publications(self):
+        from campagnes.models import CampagnesIndexPage
+        index = HomePage.objects.first().add_child(instance=CampagnesIndexPage(title="Campagnes"))
+        self.assertContains(self.client.get("/sitemap.xml"), "/campagnes/")
+        index.unpublish()
+        self.assertNotContains(self.client.get("/sitemap.xml"), "/campagnes/")

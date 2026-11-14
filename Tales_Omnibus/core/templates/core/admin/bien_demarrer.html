@@ -1,0 +1,106 @@
+{% extends "wagtailadmin/base.html" %}
+{# Page « Bien démarrer » (core/admin_views.py) : structure du site et démo. #}
+
+{% block titletag %}Bien démarrer{% endblock %}
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title="Bien démarrer" icon="circle-check" %}
+
+    <div class="nice-padding demarrer">
+        <p class="demarrer-intro">
+            Bienvenue ! Deux étapes pour avoir un site prêt à remplir : créer les pages fixes
+            du site, puis (si tu veux) installer une campagne de démonstration pour voir
+            toutes les fonctionnalités en action.
+        </p>
+
+        {# --- 1. LA STRUCTURE --- #}
+        <section class="demarrer-etape">
+            <h2>1. La structure du site</h2>
+            <p>Les cinq pages fixes, une seule de chaque, rangées sous l'accueil. Le menu les retrouve tout seul.</p>
+            <ul class="demarrer-liste">
+                {% for fixe, page in pages_fixes %}
+                    <li class="{% if page %}est-faite{% else %}manque{% endif %}">
+                        <span class="demarrer-pastille" aria-hidden="true">{% if page %}✓{% else %}○{% endif %}</span>
+                        {% if page %}
+                            <a href="{% url 'wagtailadmin_pages:edit' page.pk %}"><strong>{{ page.title }}</strong></a>
+                            {% if not page.live %}<em>(brouillon, à publier)</em>{% endif %}
+                        {% else %}
+                            <strong>{{ fixe.titre }}</strong> <em>(à créer)</em>
+                        {% endif %}
+                        — {{ fixe.role }}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if structure_complete %}
+                <p class="demarrer-ok">La structure est complète. Il ne reste qu'à remplir les pages.</p>
+            {% else %}
+                {# POST + jeton CSRF : un bouton qui crée des pages n'est jamais un simple lien #}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="structure" class="button">
+                        Créer la structure du site
+                    </button>
+                </form>
+                <p class="help">Seules les pages manquantes sont créées : rien n'est jamais remplacé.</p>
+            {% endif %}
+        </section>
+
+        {# --- 2. LA DÉMO --- #}
+        <section class="demarrer-etape">
+            <h2>2. La démo « {{ nom_de_la_demo }} »</h2>
+            <p>
+                Une campagne complète : cartes avec zones et lieux, chronologie, héros avec leurs
+                caractéristiques, fiches de l'encyclopédie, catégories, familles de tags, aide de jeu…
+                Ses images sont rangées dans leurs dossiers, comme un exemple à suivre.
+                <strong>{{ images_presentes }} / {{ images_attendues }}</strong> images de démo disponibles
+                (les autres sont remplacées par les images déjà présentes sur le site).
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                {% if demo_installee %}
+                    <p class="demarrer-ok">La démo est installée.</p>
+                    {# Confirmation : retirer supprime des pages, on ne le fait pas par mégarde #}
+                    <button type="submit" name="action" value="demo_retirer" class="button button-secondary no"
+                            onclick="return confirm('Retirer la démo ? Ses pages, ses images et ses tags seront supprimés. Tes propres pages ne sont pas touchées.');">
+                        Retirer la démo
+                    </button>
+                {% else %}
+                    <button type="submit" name="action" value="demo_ajouter" class="button"
+                            {% if not structure_complete %}disabled{% endif %}>
+                        Ajouter la démo
+                    </button>
+                    {% if not structure_complete %}
+                        <p class="help">Crée d'abord la structure du site : la démo s'y range.</p>
+                    {% endif %}
+                {% endif %}
+            </form>
+            <p class="help">
+                Retirer la démo ne touche qu'à ce qu'elle a créé : tes campagnes, tes fiches et
+                tes images restent. Les catégories et les dossiers sont gardés, pour servir de base.
+            </p>
+        </section>
+
+        {# --- 3. ET ENSUITE --- #}
+        <section class="demarrer-etape">
+            <h2>3. Et ensuite ?</h2>
+            <ul class="demarrer-liste">
+                <li>Choisis un <a href="{% url 'wagtailsettings:edit' 'core' 'navigationsettings' %}">thème, un logo et le nom du site</a>.</li>
+                <li>Présente-toi dans la page <strong>Univers</strong>, puis crée ta première campagne.</li>
+                <li>Après une grosse session d'ajouts, lance l'<a href="{% url 'entretien_du_site' %}">entretien du site</a>.</li>
+            </ul>
+        </section>
+    </div>
+
+    <style>
+        /* Quelques règles propres à cette page de l'admin (pas de fichier à part) */
+        .demarrer-intro { max-width: 50rem; font-size: 1.05rem; }
+        .demarrer-etape { margin: 1.5rem 0; padding: 1rem 1.25rem; border-left: 4px solid #8C782C; background: rgba(140, 120, 44, 0.06); }
+        .demarrer-etape h2 { margin-top: 0; }
+        .demarrer-liste { margin: 0.5rem 0 1rem; padding: 0; list-style: none; }
+        .demarrer-liste li { margin: 0.35rem 0; }
+        .demarrer-pastille { display: inline-block; width: 1.5em; font-weight: bold; }
+        .est-faite .demarrer-pastille { color: #2E7D32; }
+        .manque .demarrer-pastille { color: #B26A00; }
+        .demarrer-ok { color: #2E7D32; font-weight: 600; }
+    </style>
+{% endblock %}

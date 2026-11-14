@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Village : deux maisons au toit pointu et un puits (dessin d'une seule couleur) -->
+  <path fill="#1C1A17" fill-rule="evenodd" d="M4 58V34L19 20l15 14v24z M15 58V46h8v12z M30 58V40l13-11 13 11v18z M39 58V49h7v9z M9 36h5v5H9z"/>
+  <path fill="#1C1A17" d="M52 18h8v3h-8z M53 21h2v8h-2z M57 21h2v8h-2z M51 29h10v6H51z"/>
+</svg>

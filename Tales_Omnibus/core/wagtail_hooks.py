@@ -14,12 +14,15 @@ from django.urls import path, reverse
 from wagtail import hooks
 from wagtail.admin.menu import Menu, MenuItem, SubmenuMenuItem, settings_menu
 
-from core.admin_views import entretien_du_site
+from core.admin_views import bien_demarrer, entretien_du_site
 
 
 @hooks.register("register_admin_urls")
 def urls_entretien():
-    return [path("entretien/", entretien_du_site, name="entretien_du_site")]
+    return [
+        path("entretien/", entretien_du_site, name="entretien_du_site"),
+        path("bien-demarrer/", bien_demarrer, name="bien_demarrer"),
+    ]
 
 
 class MenuReserveAuxAdministrateurs(MenuItem):
@@ -27,6 +30,14 @@ class MenuReserveAuxAdministrateurs(MenuItem):
 
     def is_shown(self, request):
         return request.user.is_superuser
+
+
+@hooks.register("register_admin_menu_item")
+def menu_bien_demarrer():
+    # Tout en haut du menu : c'est la première chose à faire sur un site neuf
+    return MenuReserveAuxAdministrateurs(
+        "Bien démarrer", reverse("bien_demarrer"), name="bien-demarrer", icon_name="circle-check", order=1,
+    )
 
 
 @hooks.register("register_settings_menu_item")
@@ -89,6 +100,7 @@ def organiser_le_menu(request, menu_items):
         return renomme(entree, libelle, ordre, icone) if entree else None
 
     nouveau = [
+        principal.get("bien-demarrer"),                            # réservé aux administrateurs
         depuis(principal, "explorer", "Plan du site", 100, "site"),
         principal.get("univers"),                                  # Campagnes, Héros, Lieux, Événements
         depuis(reglages, "collections", "Dossiers", 200, "folder-open-1"),
@@ -118,7 +130,7 @@ def organiser_le_menu(request, menu_items):
     # Une entrée qu'on ne connaît pas (ajoutée par une mise à jour de Wagtail
     # ou une nouvelle app) n'est pas perdue : elle se range avant la fin.
     # « snippets » et « settings » sont remplacés par Organisation, Comptes…
-    connues = {"explorer", "univers", "images", "documents", "forms", "reports", "help", "snippets", "settings"}
+    connues = {"bien-demarrer", "explorer", "univers", "images", "documents", "forms", "reports", "help", "snippets", "settings"}
     inconnues = [entree for nom, entree in principal.items() if nom not in connues]
 
     # On remplace le contenu de la liste reçue (Wagtail lit CETTE liste).

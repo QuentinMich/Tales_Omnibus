@@ -76,6 +76,8 @@
     --space-lg: 2rem;
     --space-xl: 4rem;
     --container-width: 72rem;
+    --hero-card-max: 16rem;           /* largeur max d'une carte de héros (rangée du groupe) */
+    --compagnon-card-max: 11rem;      /* … et d'un compagnon de route */
     --shadow: none;                   /* un thème peut ajouter des ombres */
     --transition: 150ms ease;
     --hover-brightness: 1.1;          /* éclaircissement au survol (boutons, pastilles) */
@@ -1045,6 +1047,46 @@ figure {
 .hero-card-player {
     color: var(--color-highlight);
     font-size: 0.9rem;
+}
+
+/* La rangée du GROUPE : toujours une seule ligne. Le template donne le nombre
+   de héros joueurs (--colonnes) ; chaque carte prend une part égale, sans
+   dépasser --hero-card-max (à 2 joueurs, des cartes géantes seraient laides).
+   Au-delà de 4, titre et espacements rétrécissent avec la carte. */
+.heros-grid--groupe {
+    --facteur: min(1, calc(4 / var(--colonnes, 4)));
+    grid-template-columns: repeat(var(--colonnes, 4), minmax(0, var(--hero-card-max)));
+    justify-content: center;
+    gap: calc(var(--space-lg) * var(--facteur));
+}
+
+.heros-grid--groupe .hero-card-title {
+    font-size: max(1rem, calc(1.5rem * var(--facteur)));
+}
+
+.heros-grid--groupe .hero-card-body {
+    padding-inline: calc(var(--space-md) * var(--facteur));
+}
+
+/* Compagnons de route (héros joués par le MJ) : plus petits, au second plan */
+.heros-grid--compagnons {
+    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), var(--compagnon-card-max)));
+    justify-content: center;
+}
+
+.heros-grid--compagnons .hero-card-title {
+    font-size: 1.1rem;
+}
+
+/* Anciens membres : une ligne discrète, les noms restent des liens */
+.anciens-membres {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.anciens-membres-titre {
+    font-weight: 600;
 }
 
 /* --- Duo Événements récents / Carte --- */
@@ -2262,6 +2304,14 @@ html:has(.template-home) {
 @media (max-width: 48rem) {
     .site-header {
         justify-content: center;
+    }
+
+    /* Rangée du groupe sur téléphone : 6 cartes sur une ligne seraient
+       minuscules. On laisse les cartes passer à la ligne (2 par ligne sur un
+       téléphone), centrées ; le facteur de taille revient à 1. */
+    .heros-grid--groupe {
+        --facteur: 1;
+        grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), var(--hero-card-max)));
     }
 
     /* Tableau de stats : sur un téléphone, 10 colonnes ne tiennent pas.

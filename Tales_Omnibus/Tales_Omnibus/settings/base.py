@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "search",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.sitemaps",  # plan du site (sitemap.xml), toujours à jour
     "wagtail.contrib.settings",
     "wagtail.embeds",
     "wagtail.sites",
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",   # le gabarit XML utilisé par le plan du site
 ]
 
 MIDDLEWARE = [

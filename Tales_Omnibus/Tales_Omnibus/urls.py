@@ -6,6 +6,9 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+from wagtail.contrib.sitemaps.views import sitemap
+
+from core.views import robots_txt
 from search import views as search_views
 
 urlpatterns = [
@@ -13,6 +16,9 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
+    # Pour les moteurs de recherche : le plan du site et les règles d'exploration
+    path("sitemap.xml", sitemap, name="plan_du_site"),
+    path("robots.txt", robots_txt, name="robots_txt"),
 ]
 
 

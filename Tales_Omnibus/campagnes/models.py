@@ -153,7 +153,13 @@ class CampagnePage(SlugAutomatiqueMixin, Page):
             if chronologie else []
         )
 
-        context['heros'] = HeroPage.objects.child_of(self).live()
+        # Trois groupes : les héros des joueurs (la rangée principale, toujours
+        # sur UNE ligne : le template donne leur nombre au CSS), les compagnons
+        # joués par le MJ, et les anciens membres. Une seule requête, triée en Python.
+        heros = list(HeroPage.objects.child_of(self).live().select_related('main_image'))
+        context['heros'] = [h for h in heros if h.joue_par == 'joueur' and not h.a_quitte_le_groupe]
+        context['compagnons'] = [h for h in heros if h.joue_par == 'mj' and not h.a_quitte_le_groupe]
+        context['anciens_membres'] = [h for h in heros if h.a_quitte_le_groupe]
         return context
 
 # 2. CARTE (Conteneur de lieux)
@@ -672,7 +678,24 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
     type_fiche = 'heros'
     subpage_types = []  # Page feuille
     parent_page_types = ['campagnes.CampagnePage']
-    joueur_nom = models.CharField(max_length=100, verbose_name="Nom / Pseudo du joueur")
+    # Qui incarne ce héros ? Un PNJ récurrent joué par le MJ (le compagnon qui
+    # suit le groupe) est aussi une fiche Héros, mais la page Campagne le range
+    # à part : la rangée « Nos Héros » ne montre que les personnages des joueurs.
+    JOUE_PAR = [('joueur', "Un joueur"), ('mj', "Le MJ (PNJ récurrent, compagnon du groupe)")]
+    joue_par = models.CharField(
+        max_length=10, choices=JOUE_PAR, default='joueur', verbose_name="Joué par",
+    )
+    # Personnage mort, joueur parti… : il sort de la rangée de la campagne,
+    # mais sa fiche reste en ligne (encyclopédie, liens, chronologie).
+    a_quitte_le_groupe = models.BooleanField(
+        default=False, verbose_name="A quitté le groupe",
+        help_text="Le héros n'apparaît plus avec le groupe sur la page de la campagne "
+                  "(il est cité parmi les anciens membres). Sa fiche reste en ligne.",
+    )
+    joueur_nom = models.CharField(
+        max_length=100, blank=True, verbose_name="Nom / Pseudo du joueur",
+        help_text="Obligatoire pour un héros joué par un joueur.",
+    )
     joueur_bio = RichTextField(blank=True, verbose_name="Présentation du joueur", features=['h2', 'h3', 'bold', 'italic', 'link', 'ol', 'ul', 'blockquote'])
     joueur_email = models.EmailField(blank=True, verbose_name="Email du joueur (réception des messages)")                           
     
@@ -723,6 +746,10 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         # Entre la description du personnage et celle du joueur, comme sur la page
         FieldPanel('caracteristiques'),
         MultiFieldPanel([
+            FieldPanel('joue_par'),
+            FieldPanel('a_quitte_le_groupe'),
+        ], heading="Dans le groupe"),
+        MultiFieldPanel([
         FieldPanel('joueur_nom'),
         FieldPanel('joueur_email'),
         FieldPanel("joueur_bio"),
@@ -737,6 +764,16 @@ class HeroPage(FicheEncyclopedieMixin, BaseFichePage):
         # formulaire d'un joueur (il ne peut pas se donner la fiche d'un autre)
         FieldPanel("compte_joueur", permission="superuser"),
     ]
+
+    @property
+    def joue_par_le_mj(self):
+        return self.joue_par == 'mj'
+
+    def clean(self):
+        super().clean()
+        if self.joue_par == 'joueur' and not self.joueur_nom.strip():
+            raise ValidationError({'joueur_nom': "Indique le nom ou le pseudo du joueur "
+                                                 "(ou choisis « Joué par : le MJ »)."})
 
     @property
     def contact_actif(self):

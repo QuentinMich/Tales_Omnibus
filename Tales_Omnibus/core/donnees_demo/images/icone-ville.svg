@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Ville : une enceinte à créneaux, trois tours et une porte (dessin d'une seule couleur) -->
+  <path fill="#1C1A17" fill-rule="evenodd" d="M4 60V28h4v-5h4v5h3v-5h4v5h4V38h4V18l8-10 8 10v20h4V28h4v-5h3v5h4v-5h4v5h4v32z M28 60V48a4 4 0 0 1 8 0v12z M30 28h4v6h-4z"/>
+</svg>

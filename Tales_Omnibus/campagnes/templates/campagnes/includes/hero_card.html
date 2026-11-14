@@ -1,0 +1,19 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+{# Carte d'un héros (page Campagne) : rangée des joueurs ET compagnons de route #}
+<article class="hero-card">
+    <a href="{% pageurl hero %}" class="card-link">
+        {% if hero.main_image %}
+            {% image hero.main_image fill-400x640 alt="" class="hero-card-img" %}
+        {% else %}
+            <span class="img-placeholder hero-card-img" aria-hidden="true"></span>
+        {% endif %}
+        <span class="hero-card-body">
+            <span class="hero-card-title">{{ hero.title }}</span>
+            {% if hero.joue_par_le_mj %}
+                <span class="hero-card-player">Joué par le MJ</span>
+            {% elif hero.joueur_nom %}
+                <span class="hero-card-player">Joué par {{ hero.joueur_nom }}</span>
+            {% endif %}
+        </span>
+    </a>
+</article>

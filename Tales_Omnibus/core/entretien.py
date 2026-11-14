@@ -257,6 +257,38 @@ def reconstruire_les_index(simulation=False):
 TITRE_DE_FICHIER = re.compile(r"_|\d{3,}|^(img|dsc|image|designer|screenshot)", re.IGNORECASE)
 
 
+# --------------------------------------------------------------- plan du site
+def verifier_le_plan_du_site(simulation=False):
+    """
+    Le plan du site (sitemap.xml) et robots.txt se calculent à chaque visite :
+    rien à régénérer. On vérifie seulement ce qu'ils annoncent, et surtout
+    l'ADRESSE du site : c'est elle que le plan donne aux moteurs de recherche.
+    """
+    from django.urls import reverse
+    from wagtail.contrib.sitemaps.sitemap_generator import Sitemap
+    from wagtail.models import Site
+
+    etape = Etape("Référencement (sitemap.xml et robots.txt)")
+    site = Site.objects.filter(is_default_site=True).select_related("root_page").first()
+    if site is None:
+        etape.a_verifier = True
+        return etape.dire("Aucun site par défaut : Paramètres avancés > Sites.")
+
+    nombre = Sitemap().items().count()  # sans requête : le site par défaut
+    racine = site.root_url
+    etape.dire(f"{nombre} page(s) publique(s) dans sitemap.xml : {racine}{reverse('plan_du_site')}")
+    etape.dire(f"robots.txt ({racine}{reverse('robots_txt')}) : tout est ouvert aux moteurs "
+               "sauf l'admin et la recherche, et il indique l'adresse du plan.")
+    etape.dire("Toujours à jour : publier ou dépublier une page la retire ou l'ajoute tout de suite.")
+    if site.hostname in ("localhost", "127.0.0.1"):
+        # Pas bloquant pendant le développement, mais à ne pas oublier
+        etape.a_verifier = True
+        etape.dire(f"L'adresse du site est encore « {site.hostname} » : avant la mise en ligne, "
+                   "mettre le vrai nom de domaine dans Paramètres avancés > Sites, sinon le plan "
+                   "du site enverra les moteurs de recherche vers localhost.")
+    return etape
+
+
 def rapport_a_verifier():
     """Rien n'est modifié ici : la liste de ce que le MJ devrait regarder."""
     from campagnes.models import LieuPage
@@ -309,7 +341,7 @@ def lancer_entretien(simulation=False, migrer=True, sauvegarder=True, publier=Fa
         # le contenu publié
         etapes.append(publier_les_brouillons(simulation, utilisateur))
     for fonction in (ranger_les_lieux, synchroniser_les_slugs, recalculer_la_geographie,
-                     nettoyer_les_redirections, reconstruire_les_index):
+                     nettoyer_les_redirections, reconstruire_les_index, verifier_le_plan_du_site):
         etapes.append(fonction(simulation))
     etapes.append(rapport_a_verifier())
     return etapes

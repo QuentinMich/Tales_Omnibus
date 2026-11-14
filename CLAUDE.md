@@ -309,6 +309,40 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   grésillement / ligne plate). Pochoir (Black Ops One) et feutre (Permanent
   Marker) pour les titres et notes seulement ; texte en Barlow. Contrastes
   vérifiés : tous ≥ 4,5.
+- **Héros joueurs, compagnons, anciens** (migration campagnes 0025) :
+  `HeroPage.joue_par` (`joueur` / `mj` = PNJ récurrent qui suit le groupe) et
+  `a_quitte_le_groupe` ; `joueur_nom` n'est obligatoire que pour un héros
+  joué par un joueur (`HeroPage.clean`). Page Campagne : rangée « Nos Héros »
+  (joueurs seulement) TOUJOURS sur une ligne, `style="--colonnes: N"` posé
+  par le template, cartes plafonnées à `--hero-card-max`, titre et espaces
+  réduits au-delà de 4 (`--facteur`) ; sur téléphone, `auto-fit` (2 par
+  ligne). Puis « Compagnons de route » (cartes plus petites,
+  `--compagnon-card-max`) et une ligne « Ont quitté le groupe ». Carte
+  partagée : `campagnes/includes/hero_card.html`. Pas de champ « nombre de
+  héros » : le site les compte lui-même.
+- **Page « Bien démarrer »** (admin, tout en haut du menu, superuser
+  seulement ; `core/admin_views.bien_demarrer`, gabarit
+  `core/admin/bien_demarrer.html`) : coche les 5 pages fixes, bouton « Créer
+  la structure du site » (`core/structure_du_site.py` : jamais de doublon,
+  formulaire de contact avec Nom / Email / Message, accueil relié à la page
+  Contact sauf si l'accueil a un brouillon en cours ; mentions légales
+  créées en BROUILLON avec des « À compléter » : champs légaux obligatoires),
+  boutons « Ajouter / Retirer la démo ». Post/Redirect/Get + messages.
+- **Démo** : toute la logique est dans `core/demo.py` (`creer_demo()`,
+  `supprimer_demo()`, `DemoImpossible`), partagée par la commande
+  `creer_demo` et la page Bien démarrer. Images : dictionnaire `IMAGES`
+  (clé -> fichier sans extension, titre, dossier « Lieu/Ville », description) ;
+  les fichiers présents dans `core/donnees_demo/images/` sont importés, rangés
+  dans leurs collections (créées si besoin) et tagués `demo-tales-omnibus`
+  (retirés avec la démo). Fichier absent = repli sur les images du site.
+  3 icônes SVG de catégories (Ville, Village, Lieu-dit) livrées, posées sur
+  les catégories qui n'ont pas encore d'icône.
+- **Référencement** : `/sitemap.xml` (`wagtail.contrib.sitemaps`, calculé à
+  chaque visite : toujours à jour) et `/robots.txt` (`core/views.py` :
+  interdit `/admin/`, `/django-admin/`, `/search/`, indique le sitemap).
+  L'entretien a une étape « Référencement » qui compte les pages et ALERTE
+  si l'adresse du site (Paramètres avancés > Sites) est encore `localhost` :
+  le sitemap donne cette adresse aux moteurs de recherche.
 - **Six thèmes** dans `THEMES` : aucun (wireframe), Grimoire, Néon,
   Ténèbres, Enquête, Survivant.
 - **Statuts de campagne** (`en_cours` / `a_venir` / `termine`) : la classe
@@ -410,24 +444,29 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
-- **Démo** : `manage.py creer_demo` crée une campagne factice complète (26
-  pages, catégories, familles, apparitions, zones imbriquées, zone hachurée) ; `creer_demo --supprimer` la
-  retire (les catégories restent). Le contenu est déclaré dans la commande.
+- **Démo** : `manage.py creer_demo` (ou la page Bien démarrer) crée une
+  campagne factice complète (28 pages, 5 héros dont un compagnon et un ancien membre, catégories, familles, apparitions,
+  zones imbriquées, zone hachurée, images rangées) ; `creer_demo --supprimer`
+  la retire (catégories et dossiers restent). Le contenu est déclaré dans
+  `core/demo.py`. Recréer la démo change les identifiants de ses pages : les
+  « fiches à la une » de l'accueil qui pointaient vers elles sont ignorées
+  (pas d'erreur), il faut les rechoisir.
 - **Migration core 0004** (renommage de `CategorieLieu`) : elle dépend de
   `campagnes 0014`, sinon une base NEUVE (tests) plante, car les anciennes
   migrations de campagnes visent encore `core.categorielieu`.
 
 ## Feuille de route (pas des bugs !)
 
-- **Page « Bien démarrer » dans l'admin** (prochaine étape, voulue par
-  Quentin) : un bouton qui crée la structure fixe en un clic (index des
-  campagnes, encyclopédie, Univers, Contact, Mentions légales, sous
-  l'accueil, sans doublon grâce aux `max_count` / slugs fixes) ; boutons
-  « Ajouter la démo » / « Retirer la démo » (logique de `creer_demo`).
-- **robots.txt et plan du site (sitemap.xml)** (prochaine étape) : à
-  régénérer aussi depuis la page « Entretien du site » (bouton qui publie et
-  vérifie). Piste : `wagtail.contrib.sitemaps` (sitemap dynamique) + une vue
-  robots.txt qui pointe vers le sitemap.
+- **Images de la démo** : Quentin les génère d'après
+  `core/donnees_demo/images/LISEZMOI.md` (28 images en WebP, 2,5 Mo, toutes générées le 14/11 ; JPG d'origine dans `sauvegardes/` ; noms, formats, dossiers,
+  prompts) ; il suffit de déposer les fichiers dans ce dossier.
+- **Installeur « clé en main »** (idée de Quentin, à PRÉSENTER à la
+  certification, à faire après les cours de déploiement) : un assistant pour
+  un client qui ne code pas : nom du site, case « Créer la structure », case
+  « Installer la démo » (les deux facultatives). Briques déjà prêtes :
+  `creer_structure()` (core/structure_du_site.py) et `creer_demo()`
+  (core/demo.py), qu'il suffira d'appeler. Pistes : un exe (PyInstaller) qui
+  installe en local, ou plutôt un script de déploiement / une image Docker.
 - **Admin aux couleurs du thème** (bonus voulu par Quentin) : piste, le
   hook `insert_global_admin_css`, qui injecterait une petite feuille
   redéfinissant les variables CSS de l'admin Wagtail selon le thème choisi.

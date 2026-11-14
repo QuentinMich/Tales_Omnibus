@@ -4,6 +4,12 @@
 {% block body_class %}template-hero{% endblock %}
 {% block fiche_classe %}page-hero{% endblock %}
 
+{# Au-dessus du titre : qui le joue, et s'il a quitté le groupe #}
+{% block fiche_surtitre %}
+    {% if page.joue_par_le_mj %}<span class="badge">Compagnon de route · joué par le MJ</span>{% endif %}
+    {% if page.a_quitte_le_groupe %}<span class="badge">A quitté le groupe</span>{% endif %}
+{% endblock %}
+
 {% block fiche_details %}
     {# --- CARACTÉRISTIQUES : un panneau par tableau (vide = rien) --- #}
     {% include "core/includes/tableaux_de_stats.html" with tableaux=page.caracteristiques %}

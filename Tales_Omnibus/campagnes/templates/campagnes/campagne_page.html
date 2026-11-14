@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags l10n %}
 
 {% block body_class %}template-campagne{% endblock %}
 
@@ -20,30 +20,37 @@
         <span class="status-badge status-{{ page.status }}">Statut : <strong>{{ page.get_status_display }}</strong></span>
     </header>
 
-    {# --- NOS HÉROS --- #}
+    {# --- NOS HÉROS : les personnages des joueurs, toujours sur UNE ligne --- #}
+    {# --colonnes = leur nombre (2 à 6…) : le CSS adapte la taille des cartes #}
     {% if heros %}
         <section class="section section-heros">
             <h2 class="section-title">Nos Héros</h2>
-            <div class="heros-grid">
+            <div class="heros-grid heros-grid--groupe" style="--colonnes: {{ heros|length|unlocalize }}">
                 {% for hero in heros %}
-                    <article class="hero-card">
-                        <a href="{% pageurl hero %}" class="card-link">
-                            {% if hero.main_image %}
-                                {% image hero.main_image fill-400x640 alt="" class="hero-card-img" %}
-                            {% else %}
-                                <span class="img-placeholder hero-card-img" aria-hidden="true"></span>
-                            {% endif %}
-                            <span class="hero-card-body">
-                                <span class="hero-card-title">{{ hero.title }}</span>
-                                {% if hero.joueur_nom %}
-                                    <span class="hero-card-player">Joué par {{ hero.joueur_nom }}</span>
-                                {% endif %}
-                            </span>
-                        </a>
-                    </article>
+                    {% include "campagnes/includes/hero_card.html" %}
                 {% endfor %}
             </div>
         </section>
+    {% endif %}
+
+    {# --- COMPAGNONS DE ROUTE : les héros joués par le MJ (PNJ récurrents) --- #}
+    {% if compagnons %}
+        <section class="section section-compagnons">
+            <h2 class="section-title">Compagnons de route</h2>
+            <div class="heros-grid heros-grid--compagnons">
+                {% for hero in compagnons %}
+                    {% include "campagnes/includes/hero_card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {# --- ANCIENS MEMBRES : une simple liste, leur fiche reste en ligne --- #}
+    {% if anciens_membres %}
+        <p class="anciens-membres">
+            <span class="anciens-membres-titre">Ont quitté le groupe :</span>
+            {% for hero in anciens_membres %}<a href="{% pageurl hero %}">{{ hero.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        </p>
     {% endif %}
 
     {# --- ACCROCHE / SYNOPSIS --- #}
