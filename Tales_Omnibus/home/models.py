@@ -70,6 +70,13 @@ class HomePage(Page):
         context['campagnes'] = CampagnePage.objects.live().descendant_of(self)[:3]
         # Une seule page Univers par site (max_count = 1) : on la retrouve par son type
         context['univers'] = UniversPage.objects.live().descendant_of(self).first()
+        # Fiches à la une : on écarte une fiche SUPPRIMÉE depuis (le bloc garde
+        # son numéro mais pointe vers le vide : None) ou DÉPUBLIÉE (le lien
+        # mènerait à une 404). Sans ce tri, l'accueil entier plantait.
+        context['fiches_a_la_une'] = [
+            bloc.value for bloc in self.encyclopedie_a_la_une
+            if bloc.value is not None and bloc.value.live
+        ]
         # Les prestations (snippets) s'affichent dans la box Contact
         context['prestations'] = Prestation.objects.all()
         return context

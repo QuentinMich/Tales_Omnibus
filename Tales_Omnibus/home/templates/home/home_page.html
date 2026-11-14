@@ -55,8 +55,8 @@
         <section class="panel panel--rounded panel--strong home-encyclopedie">
             <h2 class="panel-title">Encyclopédie</h2>
             <ul class="link-tiles">
-                {% for block in page.encyclopedie_a_la_une %}
-                    <li><a href="{% pageurl block.value %}" class="link-tile">{{ block.value.title }}</a></li>
+                {% for fiche in fiches_a_la_une %}
+                    <li><a href="{% pageurl fiche %}" class="link-tile">{{ fiche.title }}</a></li>
                 {% empty %}
                     <li class="no-data">Aucune fiche mise en avant.</li>
                 {% endfor %}

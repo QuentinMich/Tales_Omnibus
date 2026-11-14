@@ -108,3 +108,24 @@ class UniversPageTests(WagtailPageTestCase):
     def test_une_seule_page_univers(self):
         from pages.models import UniversPage
         self.assertFalse(UniversPage.can_create_at(self.home))
+
+
+class FichesALaUneTests(WagtailPageTestCase):
+    """Une fiche à la une supprimée ou dépubliée ne doit pas faire planter l'accueil."""
+
+    def test_fiche_supprimee_ou_depubliee_ignoree(self):
+        from encyclopedie.models import EncyclopedieIndexPage, LorePage
+        home = HomePage.objects.first()
+        encyclo = home.add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        gardee, supprimee, depubliee = (
+            encyclo.add_child(instance=LorePage(title=titre))
+            for titre in ("Gardée", "Supprimée", "Dépubliée")
+        )
+        home.encyclopedie_a_la_une = [("fiche_lore", p) for p in (gardee, supprimee, depubliee)]
+        home.save_revision().publish()
+        supprimee.delete()
+        depubliee.unpublish()
+
+        response = self.client.get(HomePage.objects.get(pk=home.pk).url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([f.title for f in response.context["fiches_a_la_une"]], ["Gardée"])
