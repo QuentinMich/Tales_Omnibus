@@ -19,7 +19,8 @@
 
 /* Black Ops One : le pochoir militaire (titres) ; Barlow : le texte ;
    Barlow Condensed : les étiquettes ; Permanent Marker : le feutre */
-@import url("https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@600;700&family=Permanent+Marker&display=swap");
+/* Polices hébergées sur le site (RGPD) : manage.py heberger_polices */
+@import url("../../fonts/survivant/polices.css");
 
 
 /* ==========================================================================
@@ -447,8 +448,12 @@ h3, h4 {
     background: var(--texture-beton), linear-gradient(170deg, var(--kaki), #1E211B);
 }
 
+/* Les deux écritures : le texte DANS le panneau (descendant) ou le panneau
+   qui EST le texte (mentions légales : « panel--strong richtext »). */
 .panel--accent .richtext a:not(.btn),
-.panel--strong .richtext a:not(.btn) {
+.panel--strong .richtext a:not(.btn),
+.panel--accent.richtext a:not(.btn),
+.panel--strong.richtext a:not(.btn) {
     color: var(--danger);
 }
 

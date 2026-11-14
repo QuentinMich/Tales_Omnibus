@@ -320,6 +320,42 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   `--compagnon-card-max`) et une ligne « Ont quitté le groupe ». Carte
   partagée : `campagnes/includes/hero_card.html`. Pas de champ « nombre de
   héros » : le site les compte lui-même.
+- **Cartes reliées** (migration campagnes 0026) : `CartePage.lieu_detaille`
+  (« Carte détaillée de ») = le lieu que la carte montre en détail. Sur les
+  autres cartes, la ZONE de ce lieu (polygone + nom, avec une loupe) ouvre la
+  carte détaillée au lieu de la fiche (`cartes_detaillees_de()`, 1 requête,
+  celle de la même campagne gagne) ; la fiche reste dans « Lieux de cette
+  carte » (+ lien « carte détaillée »). La carte détaillée affiche « Vue
+  détaillée de X · revenir à … » (`CartePage.cartes_englobantes()`).
+  Démo : la carte du Val Gris détaille le royaume, posé en zone sur Ardenn
+  (le centre d'Ardenn est placé à la main pour que les noms ne se chevauchent pas).
+- **Filtre géographique** de l'encyclopédie (`?lieu=<id>`, menu « Par
+  lieu ») : toutes cartes confondues, `liens_geographiques()` (1 requête sur
+  `contenu_dans`), `ids_situes_dans()` (parcours en largeur, protégé contre
+  les boucles entre cartes contradictoires), `arbre_geographique()` (menu
+  indenté, seulement les lieux qui en contiennent d'autres). Garde : les
+  lieux dedans, les héros qui en sont ORIGINAIRES, les événements qui s'y
+  sont passés ; jamais le Lore (`filtrer_par_lieu`). La fiche d'une région
+  a un lien « Tout ce qui se trouve dans X ».
+- **Admin aux couleurs du thème** (`core/couleurs_admin.py`, hook
+  `insert_global_admin_css`) : Wagtail dérive toute son interface de deux
+  couleurs en teinte / saturation / luminosité (`--w-color-primary-*` = menu,
+  `--w-color-secondary-*` = boutons). Deux couleurs par thème dans
+  `COULEURS_ADMIN` ; contraste avec le blanc ≥ 4,5 vérifié par un test (un
+  thème ajouté à `THEMES` sans couleurs d'admin fait échouer le test).
+- **Polices et RGPD** (`core/polices.py`) : un thème qui charge ses polices
+  chez Google transmet l'IP du visiteur à Google. Les mentions légales le
+  disent AUTOMATIQUEMENT (`theme_utilise_google_fonts`). `manage.py
+  heberger_polices [--theme x]` télécharge les woff2 (alphabets latin et
+  latin-ext seulement) dans `static/fonts/<thème>/` avec un `polices.css`, et
+  remplace l'`@import` Google du thème : la mention disparaît alors toute
+  seule. FAIT le 14/11 : les 5 thèmes sont hébergés (48 fichiers, ~1,1 Mo),
+  plus aucun appel à Google. Un NOUVEAU thème : y mettre l'`@import` Google,
+  puis `manage.py heberger_polices --theme <clé>`.
+- **Liens dans les panneaux sombres des thèmes** : écrire les deux formes,
+  `.panel--strong .richtext a` (texte DANS le panneau) ET
+  `.panel--strong.richtext a` (le panneau EST le texte : mentions légales),
+  sinon les liens gardent la couleur prévue pour un fond clair.
 - **Page « Bien démarrer »** (admin, tout en haut du menu, superuser
   seulement ; `core/admin_views.bien_demarrer`, gabarit
   `core/admin/bien_demarrer.html`) : coche les 5 pages fixes, bouton « Créer
@@ -475,20 +511,11 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   `creer_structure()` (core/structure_du_site.py) et `creer_demo()`
   (core/demo.py), qu'il suffira d'appeler. Pistes : un exe (PyInstaller) qui
   installe en local, ou plutôt un script de déploiement / une image Docker.
-- **Admin aux couleurs du thème** (bonus voulu par Quentin) : piste, le
-  hook `insert_global_admin_css`, qui injecterait une petite feuille
-  redéfinissant les variables CSS de l'admin Wagtail selon le thème choisi.
-- **Polices des thèmes** : chargées depuis Google Fonts ; à héberger sur le
-  site (RGPD) ou à signaler dans les mentions légales.
 - **Packs de SVG** (idée de Quentin) : un « addon » qui remplace d'un coup
   les icônes du site (catégories : village, ville, donjon…) par un autre
   style. Brique déjà prête : le POCHOIR (`mask-image`) du logo doré, qui
   laisse le THÈME choisir la couleur d'une icône monochrome (or, néon…). À
   étendre aux icônes de catégories ; un pack = des SVG monochromes + un nom.
-- **Cartes reliées** : cliquer sur la zone d'un royaume (carte du monde)
-  pour ouvrir la carte détaillée de ce royaume.
-- **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),
-  à partir de `contenu_dans`.
 
 ---
 

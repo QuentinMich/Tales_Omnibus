@@ -664,3 +664,77 @@ class LieuPasEncorePlaceTests(CampagneTreeMixin, TestCase):
         # Les deux cartes sont dans sa campagne ; seule « Monde » a une position pour le lieu
         hero = self.campagne.add_child(instance=HeroPage(title="Ysolde", joue_par='mj', lieu_origine=self.fort))
         self.assertEqual(self.fort.apparition_vue_depuis(hero).carte_id, self.monde.pk)
+
+
+class CartesRelieesEtGeographieTests(CampagneTreeMixin, TestCase):
+    """
+    Carte « Monde » : la zone Ardenn, la zone Val (dans Ardenn).
+    Carte « Carte du Val » (vue détaillée du lieu Val) : le point Port (dans le Val).
+    Toutes cartes confondues : Ardenn > Val > Port.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from campagnes.models import Apparition, CartePage, LieuPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        self.encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.lieux = {nom: self.encyclopedie.add_child(instance=LieuPage(title=nom)) for nom in ("Ardenn", "Val", "Port")}
+        self.monde = self.campagne.add_child(instance=CartePage(title="Monde"))
+        Apparition.objects.create(carte=self.monde, lieu=self.lieux["Ardenn"],
+                                  forme=[[0, 0], [100, 0], [100, 100], [0, 100]])
+        Apparition.objects.create(carte=self.monde, lieu=self.lieux["Val"],
+                                  forme=[[40, 40], [60, 40], [60, 60], [40, 60]])
+        self.monde.save_revision().publish()
+        self.detail = self.campagne.add_child(instance=CartePage(title="Carte du Val", lieu_detaille=self.lieux["Val"]))
+        Apparition.objects.create(carte=self.detail, lieu=self.lieux["Val"],
+                                  forme=[[10, 10], [90, 10], [90, 90], [10, 90]])
+        Apparition.objects.create(carte=self.detail, lieu=self.lieux["Port"], coord_x=50, coord_y=50)
+        self.detail.save_revision().publish()
+
+    def test_la_zone_ouvre_la_carte_detaillee(self):
+        html = self.client.get(self.monde.url).content.decode()
+        self.assertIn(f'href="{self.detail.url}"', html)
+        self.assertIn("carte-zone-lien--detaillee", html)
+        self.assertIn("ouvrir la carte détaillée", html)
+        # Ardenn n'a pas de carte détaillée : sa zone mène à sa fiche
+        self.assertIn(f'href="{self.lieux["Ardenn"].url}"', html)
+
+    def test_la_carte_detaillee_propose_de_remonter(self):
+        reponse = self.client.get(self.detail.url)
+        self.assertEqual(reponse.context['cartes_englobantes'], [self.monde.specific])
+        self.assertContains(reponse, "Vue détaillée de")
+        # Sur sa propre carte, le Val ne renvoie pas vers elle-même
+        self.assertNotContains(reponse, "carte-zone-lien--detaillee")
+
+    def test_une_carte_ordinaire_ne_remonte_nulle_part(self):
+        self.assertEqual(self.monde.specific.cartes_englobantes(), [])
+
+    def test_ids_situes_dans_descend_toutes_les_cartes(self):
+        from campagnes.models import ids_situes_dans
+        self.assertEqual(ids_situes_dans(self.lieux["Ardenn"].pk), {self.lieux["Val"].pk, self.lieux["Port"].pk})
+        self.assertEqual(ids_situes_dans(self.lieux["Port"].pk), set())
+
+    def test_arbre_geographique_indente(self):
+        from campagnes.models import arbre_geographique
+        arbre = [(lieu.title, profondeur) for lieu, profondeur in arbre_geographique()]
+        # Port ne contient rien : ce n'est pas une « région »
+        self.assertEqual(arbre, [("Ardenn", 0), ("Val", 1)])
+
+    def test_une_boucle_entre_cartes_ne_bloque_pas(self):
+        from campagnes.models import arbre_geographique, ids_situes_dans
+        # Deux cartes qui se contredisent : A dans B, et B dans A
+        enfants = {1: {2}, 2: {1}}
+        self.assertEqual(ids_situes_dans(1, enfants), {2})
+        self.assertIsInstance(arbre_geographique(enfants), list)
+
+    def test_filtre_par_lieu_de_l_encyclopedie(self):
+        self.campagne.add_child(instance=HeroPage(title="Né au port", joueur_nom="A", lieu_origine=self.lieux["Port"]))
+        self.campagne.add_child(instance=HeroPage(title="Né ailleurs", joueur_nom="B"))
+        reponse = self.client.get(self.encyclopedie.url, {'lieu': self.lieux["Val"].pk})
+        self.assertEqual(sorted(f.title for f in reponse.context['fiches']), ["Né au port", "Port", "Val"])
+        self.assertEqual(reponse.context['lieu_choisi'], self.lieux["Val"])
+        # Valeur inconnue : ignorée, pas d'erreur
+        self.assertEqual(self.client.get(self.encyclopedie.url, {'lieu': 'abc'}).status_code, 200)
+
+    def test_la_fiche_d_une_region_mene_au_filtre(self):
+        self.assertContains(self.client.get(self.lieux["Val"].url), f"?lieu={self.lieux['Val'].pk}")

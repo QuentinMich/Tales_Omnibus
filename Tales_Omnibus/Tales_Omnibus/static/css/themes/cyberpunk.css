@@ -20,7 +20,8 @@
 
 /* Orbitron (titres, très « HUD »), Chakra Petch (texte : technique mais
    lisible), Share Tech Mono (données, étiquettes : le terminal) */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap");
+/* Polices hébergées sur le site (RGPD) : manage.py heberger_polices */
+@import url("../../fonts/cyberpunk/polices.css");
 
 
 /* ==========================================================================

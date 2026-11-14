@@ -117,13 +117,18 @@ APPARITIONS = [
                                              [14, 90], [13, 75]], ""),
     ("Carte d'Ardenn", "Terres Brûlées", [[58, 10], [78, 8], [98, 10], [98, 28], [85, 34], [70, 33], [57, 28],
                                           [55, 18]], "Un no man's land : ni l'Ordre ni la Guilde n'y mettent les pieds."),
+    # Le Val Gris, tache de brume autour du port : il a sa carte détaillée
+    # (CartePage.lieu_detaille), cliquer la zone l'ouvre. Port-Lanterne s'y range.
+    ("Carte d'Ardenn", "Royaume du Val Gris", [[30, 30], [42, 26], [52, 30], [54, 40], [50, 48], [40, 50],
+                                               [30, 50], [28, 40]],
+     "Une tache de brume sur les cartes du monde. Ceux qui y entrent en rapportent une autre carte."),
     ("Carte d'Ardenn", "Port-Lanterne", (33, 48), ""),  # le port, à l'embouchure du fleuve
     ("Carte d'Ardenn", "Fort-Sombre", (78, 52), "Encore debout, tenu par l'Ordre du Corbeau."),  # sur sa colline
     ("Carte d'Ardenn", "Hameau des Saules", (38, 70), ""),  # une clairière du Bois des Murmures
     # Calées sur carte-val-gris.jpg : la vallée, dans son anneau de montagnes
     ("Carte du Val Gris", "Royaume du Val Gris", [[20, 28], [47, 23], [67, 20], [84, 28], [89, 40], [80, 54],
                                                   [67, 65], [45, 67], [28, 63], [20, 47]],
-     "Caché par le brouillard : aucune carte du monde ne le montre."),
+     "Caché par le brouillard : seuls ceux qui en sont revenus ont pu le dessiner."),
     ("Carte du Val Gris", "Port-Lanterne", (57, 59), "Reconstruit après le Grand Brouillard."),  # les maisons au bord du torrent
     ("Carte du Val Gris", "Fort-Sombre", None, ""),  # ajouté à la carte mais pas encore placé
 ]
@@ -134,7 +139,11 @@ STYLES_DE_ZONES = {
     # brasier (exemple du bouton « Placer le centre » de l'éditeur de carte)
     ("Carte d'Ardenn", "Terres Brûlées"): {'motif': 'hachures', 'bordure': 'tirets',
                                            'centre_manuel': True, 'coord_x': 80, 'coord_y': 20},
+    # Le centre calculé d'Ardenn tombe sur le Val Gris : son nom irait se
+    # coller à celui du royaume. On le pose dans la plaine, entre fleuve et fort.
+    ("Carte d'Ardenn", "Ardenn"): {'centre_manuel': True, 'coord_x': 62, 'coord_y': 60},
     ("Carte du Val Gris", "Royaume du Val Gris"): {'bordure': 'tirets'},  # frontière floue, dans la brume
+    ("Carte d'Ardenn", "Royaume du Val Gris"): {'bordure': 'tirets'},
 }
 
 # --- Fiches Lore : titre -> (catégorie, intro, tags, épinglé) -----------------
@@ -542,7 +551,8 @@ def _creer(index, encyclopedie):
         "Carte d'Ardenn": CartePage(title="Carte d'Ardenn", is_main_map=True,
                                      main_image=illustration("carte-ardenn", carte_du_site),
                                      intro="<p>La carte du continent, telle qu'on la dessinait avant le Grand Brouillard.</p>"),
-        "Carte du Val Gris": CartePage(title="Carte du Val Gris",
+        # Carte RELIÉE : la vue détaillée du royaume (zone cliquable sur Ardenn)
+        "Carte du Val Gris": CartePage(title="Carte du Val Gris", lieu_detaille=lieux["Royaume du Val Gris"],
                                        # Sans le fichier carte-val-gris : image d'attente (placeholder)
                                        main_image=illustration("carte-val-gris", None),
                                        intro="<p>Le Val Gris, tel que l'ont dessiné ceux qui en sont revenus.</p>"),

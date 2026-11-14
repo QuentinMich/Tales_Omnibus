@@ -14,7 +14,8 @@
    (le Garamond des vieux livres, très lisible) pour le texte, UnifrakturCook
    (gothique) UNIQUEMENT pour les lettrines : une seule lettre, donc pas de
    souci de lisibilité. */
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=UnifrakturCook:wght@700&display=swap");
+/* Polices hébergées sur le site (RGPD) : manage.py heberger_polices */
+@import url("../../fonts/grimoire/polices.css");
 
 
 /* ==========================================================================
@@ -438,8 +439,12 @@ h1, h2, h3, h4 {
         linear-gradient(var(--cuir-clair), var(--cuir));
 }
 
+/* Les deux écritures : le texte DANS le panneau (descendant) ou le panneau
+   qui EST le texte (mentions légales : « panel--strong richtext »). */
 .panel--accent .richtext a:not(.btn),
-.panel--strong .richtext a:not(.btn) {
+.panel--strong .richtext a:not(.btn),
+.panel--accent.richtext a:not(.btn),
+.panel--strong.richtext a:not(.btn) {
     color: var(--or-clair);
 }
 

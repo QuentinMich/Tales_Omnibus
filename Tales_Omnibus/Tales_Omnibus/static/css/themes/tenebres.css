@@ -18,7 +18,8 @@
    - la braise qui rougeoie s'éteint si l'on a demandé moins d'animations.
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Pirata+One&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap");
+/* Polices hébergées sur le site (RGPD) : manage.py heberger_polices */
+@import url("../../fonts/tenebres/polices.css");
 
 
 /* ==========================================================================
@@ -416,8 +417,12 @@ h3, h4 {
     background: var(--rivets), var(--texture-suie), linear-gradient(170deg, var(--fer), #120E0C);
 }
 
+/* Les deux écritures : le texte DANS le panneau (descendant) ou le panneau
+   qui EST le texte (mentions légales : « panel--strong richtext »). */
 .panel--accent .richtext a:not(.btn),
-.panel--strong .richtext a:not(.btn) {
+.panel--strong .richtext a:not(.btn),
+.panel--accent.richtext a:not(.btn),
+.panel--strong.richtext a:not(.btn) {
     color: var(--laiton);
 }
 

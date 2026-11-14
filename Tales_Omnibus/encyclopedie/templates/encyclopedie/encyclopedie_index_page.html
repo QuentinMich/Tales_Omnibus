@@ -53,6 +53,20 @@
                     </select>
                 </div>
             {% endif %}
+            {# Filtre GÉOGRAPHIQUE : « tout ce qui est dans Ardenn » (lieux, héros #}
+            {# qui en sont originaires, événements qui s'y sont passés). Indenté   #}
+            {# comme un sommaire : Ardenn › Bois des Murmures.                     #}
+            {% if options_lieux %}
+                <div class="form-group">
+                    <label for="filtre-lieu">Par lieu</label>
+                    <select name="lieu" id="filtre-lieu">
+                        <option value="">Partout</option>
+                        {% for pk, libelle in options_lieux %}
+                            <option value="{{ pk }}"{% if pk == lieu_choisi.pk %} selected{% endif %}>{{ libelle }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
             {# Ancien filtre par type de page : gardé caché pour les liens existants #}
             {% if type_choisi %}<input type="hidden" name="type" value="{{ type_choisi }}">{% endif %}
 
@@ -92,7 +106,7 @@
 
             <div class="filtres-actions">
                 <button type="submit" class="btn">Filtrer</button>
-                {% if campagne_choisie or categorie_choisie or tag_choisi or type_choisi %}
+                {% if campagne_choisie or categorie_choisie or lieu_choisi or tag_choisi or type_choisi %}
                     <a href="{% pageurl page %}" class="btn-link">Effacer les filtres</a>
                 {% endif %}
             </div>

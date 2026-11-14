@@ -13,7 +13,10 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Orderable, Page
 from wagtail.snippets.models import register_snippet
 
-from campagnes.models import CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage
+from campagnes.models import (
+    CampagnePage, CartePage, EvenementPage, HeroPage, LieuPage, arbre_geographique, ids_situes_dans,
+    liens_geographiques,
+)
 from core.blocks import TableauDeStatsBlock
 from core.slugs import SlugAutomatiqueMixin
 from core.models import (
@@ -80,6 +83,13 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
         # ?type=lieux reste accepté (liens existants), mais le visiteur filtre
         # désormais par CATÉGORIE : c'est son vocabulaire, pas celui de l'admin.
         type_choisi = request.GET.get('type') if request.GET.get('type') in types else ''
+        # ?lieu=<id> : tout ce qui se trouve DANS ce lieu (filtre géographique)
+        enfants = liens_geographiques()
+        regions = arbre_geographique(enfants)
+        id_lieu = request.GET.get('lieu', '')
+        lieu = next((l for l, _ in regions if str(l.pk) == id_lieu), None)
+        # Le lieu lui-même + tout ce qu'il contient, à toutes les profondeurs
+        ids_du_lieu = ({lieu.pk} | ids_situes_dans(lieu.pk, enfants)) if lieu else set()
 
         # Choisir « Personnage » = la catégorie ET toute sa branche (Héros, PNJ, Déités…)
         branche = ids_de_la_branche(categorie, toutes_les_categories) if categorie else set()
@@ -96,6 +106,9 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
                 if defaut and defaut.pk in branche:
                     condition |= Q(categorie__isnull=True)
                 requete = requete.filter(condition)
+
+            if lieu:
+                requete = filtrer_par_lieu(requete, cle, ids_du_lieu)
 
             # Les tags proposés = ceux des fiches AVANT le filtre de tag,
             # sinon il ne resterait que le tag cliqué et on ne pourrait plus en changer.
@@ -123,6 +136,9 @@ class EncyclopedieIndexPage(SlugAutomatiqueMixin, Page):
             ],
             # Les pastilles, rangées par famille (snippet FamilleDeTags)
             'groupes_de_tags': ranger_par_famille(Tag.objects.filter(slug__in=slugs_disponibles)),
+            # Le menu « Par lieu » : seulement les lieux qui en contiennent d'autres
+            'options_lieux': [(l.pk, "   " * profondeur + l.title) for l, profondeur in regions],
+            'lieu_choisi': lieu,
             'campagne_choisie': campagne,
             'categorie_choisie': categorie,
             'type_choisi': type_choisi,
@@ -241,6 +257,23 @@ def requetes_de_fiches(accueil, campagne=None, type_choisi=''):
             yield cle, modele.objects.live().filter(apparitions__carte__in=cartes).distinct()
             continue
         yield cle, modele.objects.live().descendant_of(campagne or accueil)
+
+
+def filtrer_par_lieu(requete, cle, ids_du_lieu):
+    """
+    Ne garde que les fiches situées dans ces lieux :
+      - un lieu : s'il en fait partie ;
+      - un héros : s'il en est ORIGINAIRE ;
+      - un événement : s'il s'y est passé ;
+      - le Lore n'a pas de lieu : aucun (une déité n'est pas « dans » Ardenn).
+    """
+    if cle == 'lieux':
+        return requete.filter(pk__in=ids_du_lieu)
+    if cle == 'heros':
+        return requete.filter(lieu_origine_id__in=ids_du_lieu)
+    if cle == 'evenements':
+        return requete.filter(lieu_id__in=ids_du_lieu)
+    return requete.none()
 
 
 def etiqueter(requete, cle, toutes_les_categories=None):

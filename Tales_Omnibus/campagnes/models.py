@@ -178,6 +178,19 @@ class CartePage(BaseFichePage):
         verbose_name="Échelle (en km par carreau/grille)",
         help_text="Optionnel : pour donner l'échelle du territoire."
     )
+    # CARTES RELIÉES : la carte du Val Gris est la vue détaillée du lieu
+    # « Royaume du Val Gris ». Sur la carte d'Ardenn, cliquer la zone du Val
+    # Gris ouvre alors cette carte (au lieu de la fiche), et la carte du Val
+    # Gris propose de revenir à la carte d'Ardenn. Un zoom, en somme.
+    lieu_detaille = models.ForeignKey(
+        'campagnes.LieuPage',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,  # lieu supprimé = la carte reste, simplement plus reliée
+        related_name='cartes_detaillees',
+        verbose_name="Carte détaillée de",
+        help_text="Facultatif : le lieu que cette carte montre en détail (un royaume, une ville…). "
+                  "Sur les autres cartes, cliquer sur ce lieu ouvrira celle-ci.",
+    )
 
     # Les lieux ne sont plus rangés SOUS la carte : ce sont des fiches de
     # l'encyclopédie, posées sur une ou plusieurs cartes par des Apparitions.
@@ -187,6 +200,7 @@ class CartePage(BaseFichePage):
     content_panels = BaseFichePage.content_panels + [
         FieldPanel('is_main_map'),
         FieldPanel('echelle_km'),
+        FieldPanel('lieu_detaille'),
         # L'image de la carte, cliquable : sert aux boutons « Placer » / « Tracer »
         # de chaque lieu ci-dessous (voir campagnes/static/campagnes/js/editeur_carte.js)
         EditeurDeCartePanel(heading="Placer les lieux sur la carte"),
@@ -278,11 +292,49 @@ class CartePage(BaseFichePage):
         # dessiné en dernier passe AU-DESSUS. La ville reste cliquable sur le royaume.
         context['zones'] = sorted((a for a in apparitions if a.est_zone), key=lambda a: -a.aire)
 
-        parent_campagne = self.get_parent().specific
-        autres_cartes = parent_campagne.get_children().live().type(CartePage).not_page(self)
-        
+        # --- CARTES RELIÉES ---
+        # En descendant : les lieux de cette carte qui ont leur propre carte détaillée
+        campagne = self.get_parent()
+        detaillees = cartes_detaillees_de([a.lieu_id for a in apparitions], campagne, sauf=self)
+        for apparition in apparitions:
+            apparition.carte_detaillee = detaillees.get(apparition.lieu_id)
+        # En remontant : les cartes où figure le lieu que CETTE carte détaille
+        context['cartes_englobantes'] = self.cartes_englobantes(campagne)
+
+        autres_cartes = campagne.get_children().live().type(CartePage).not_page(self)
         context['autres_cartes'] = autres_cartes
         return context
+
+    def cartes_englobantes(self, campagne=None):
+        """
+        Les cartes publiées qui montrent le lieu que cette carte détaille :
+        pour la carte du Val Gris, la carte d'Ardenn. Celles de la même
+        campagne d'abord. Vide si la carte ne détaille aucun lieu.
+        """
+        if not self.lieu_detaille_id:
+            return []
+        campagne = campagne or self.get_parent()
+        cartes = list(CartePage.objects.live()
+                      .filter(apparitions__lieu_id=self.lieu_detaille_id)
+                      .exclude(pk=self.pk).distinct().order_by('path'))
+        return sorted(cartes, key=lambda c: not c.path.startswith(campagne.path))
+
+def cartes_detaillees_de(ids_lieux, campagne=None, sauf=None):
+    """
+    { id du lieu : sa carte détaillée } pour ces lieux, en UNE requête.
+    Si un lieu a plusieurs cartes détaillées (une par campagne), celle de
+    `campagne` gagne : le Val Gris de CETTE époque.
+    """
+    cartes = CartePage.objects.live().filter(lieu_detaille_id__in=ids_lieux).order_by('path')
+    if sauf is not None:
+        cartes = cartes.exclude(pk=sauf.pk)
+    resultat = {}
+    for carte in cartes:
+        meme_campagne = campagne is not None and carte.path.startswith(campagne.path)
+        if carte.lieu_detaille_id not in resultat or meme_campagne:
+            resultat[carte.lieu_detaille_id] = carte
+    return resultat
+
 
 class Apparition(Orderable):
     """
@@ -503,6 +555,67 @@ class Apparition(Orderable):
             if courant is None:
                 break
         return [lieu for lieu in chemin if lieu.live]
+
+
+# --- GÉOGRAPHIE : « qui est dans qui », toutes cartes confondues -------------
+# Chaque carte publiée range ses lieux (Apparition.contenu_dans). En mettant
+# toutes les cartes ensemble, on obtient l'arbre du MONDE : Port-Lanterne est
+# dans le Val Gris (carte du Val Gris), lui-même dans Ardenn (carte d'Ardenn).
+
+def liens_geographiques():
+    """{ id d'un lieu : ids des lieux situés directement dedans }, en UNE requête."""
+    enfants = {}
+    paires = (Apparition.objects.filter(carte__live=True, contenu_dans__isnull=False)
+              .values_list('contenu_dans_id', 'lieu_id'))
+    for parent, enfant in paires:
+        enfants.setdefault(parent, set()).add(enfant)
+    return enfants
+
+
+def ids_situes_dans(lieu_id, enfants=None):
+    """
+    Tous les lieux situés DANS ce lieu, à n'importe quelle profondeur :
+    pour Ardenn, le Bois des Murmures ET le Hameau des Saules qu'il contient.
+    Parcours en largeur ; `vus` protège d'une boucle (deux cartes qui se
+    contrediraient : A dans B sur l'une, B dans A sur l'autre).
+    """
+    enfants = liens_geographiques() if enfants is None else enfants
+    vus, a_visiter = {lieu_id}, [lieu_id]
+    while a_visiter:
+        for enfant in enfants.get(a_visiter.pop(), ()):
+            if enfant not in vus:
+                vus.add(enfant)
+                a_visiter.append(enfant)
+    return vus - {lieu_id}
+
+
+def arbre_geographique(enfants=None):
+    """
+    Les lieux qui en contiennent d'autres, rangés comme un sommaire :
+    [(Ardenn, 0), (Bois des Murmures, 1), (Royaume du Val Gris, 0)…].
+    Sert au menu « Par lieu » de l'encyclopédie (indenté comme les catégories).
+    """
+    enfants = liens_geographiques() if enfants is None else enfants
+    regions = {l.pk: l for l in LieuPage.objects.live().filter(pk__in=enfants.keys())}
+    contenus = set().union(*enfants.values()) if enfants else set()
+    racines = sorted((l for pk, l in regions.items() if pk not in contenus), key=lambda l: l.title.lower())
+    resultat, vus = [], set()
+
+    def descendre(lieu, profondeur):
+        if lieu.pk in vus:
+            return
+        vus.add(lieu.pk)
+        resultat.append((lieu, profondeur))
+        sous_regions = [regions[pk] for pk in enfants.get(lieu.pk, ()) if pk in regions]
+        for sous_region in sorted(sous_regions, key=lambda l: l.title.lower()):
+            descendre(sous_region, profondeur + 1)
+
+    for racine in racines:
+        descendre(racine, 0)
+    # Une région prise dans une boucle n'a pas de racine : on l'ajoute à la fin
+    for lieu in sorted(regions.values(), key=lambda l: l.title.lower()):
+        descendre(lieu, 0)
+    return resultat
 
 
 class LieuPageTag(TaggedItemBase):

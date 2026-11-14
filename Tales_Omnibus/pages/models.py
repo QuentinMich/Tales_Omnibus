@@ -7,6 +7,8 @@ from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
 from wagtail.snippets.models import register_snippet
 
 from core.blocks import BaseStreamBlock
+from core.models import NavigationSettings
+from core.polices import theme_utilise_google_fonts
 from core.slugs import SlugAutomatiqueMixin
 
 
@@ -101,6 +103,10 @@ class MentionsLegalesPage(SlugAutomatiqueMixin, Page):
         context['lecteur_live'] = next(
             (noms.get(bloc.value.get('plateforme'), "vidéo") for bloc in lecteurs), None
         )
+        # Un thème qui charge ses polices chez Google transmet l'adresse IP du
+        # visiteur à Google : on le dit. Après manage.py heberger_polices, le
+        # thème n'appelle plus Google et la phrase disparaît toute seule.
+        context['polices_google'] = theme_utilise_google_fonts(NavigationSettings.load(request_or_site=request).theme)
         return context
 
 

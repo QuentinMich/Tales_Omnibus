@@ -13,6 +13,15 @@
 
     <h1 class="page-title page-title--left">{{ page.title }}</h1>
 
+    {# --- CARTES RELIÉES, EN REMONTANT : « cette carte est un zoom de… » --- #}
+    {% if cartes_englobantes %}
+        <p class="carte-englobante">
+            Vue détaillée de {% include "campagnes/includes/lieu_chip.html" with lieu=page.lieu_detaille %}
+            · revenir à
+            {% for carte in cartes_englobantes %}<a href="{% pageurl carte %}" class="carte-englobante-lien">{{ carte.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        </p>
+    {% endif %}
+
     {# L'accroche AVANT la carte : on sait ce qu'on regarde avant de la voir. #}
     {# Pas de titre « Accroche » : c'est un mot de l'admin, pas du lecteur.   #}
     {% if page.intro %}
@@ -72,9 +81,11 @@
             <svg class="carte-zones" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 {% for apparition in zones %}
                     {# tabindex -1 : au clavier, on passe par le nom de la zone (plus bas) #}
-                    <a href="{% pageurl apparition.lieu %}" tabindex="-1" data-categories="{{ apparition.ids_categories }}">
+                    {# Carte reliée : la zone ouvre la carte DÉTAILLÉE du lieu (un zoom) #}
+                    <a href="{% if apparition.carte_detaillee %}{% pageurl apparition.carte_detaillee %}{% else %}{% pageurl apparition.lieu %}{% endif %}"
+                       tabindex="-1" data-categories="{{ apparition.ids_categories }}"{% if apparition.carte_detaillee %} class="carte-zone-lien--detaillee"{% endif %}>
                         <polygon class="{{ apparition.classes_zone }}" points="{{ apparition.points_svg }}"{% if apparition.categorie_affichee.couleur_effective %} style="--marker-color: {{ apparition.categorie_affichee.couleur_effective }};"{% endif %}>
-                            <title>{{ apparition.lieu.title }}</title>
+                            <title>{{ apparition.lieu.title }}{% if apparition.carte_detaillee %} : ouvrir la carte détaillée{% endif %}</title>
                         </polygon>
                     </a>
                 {% endfor %}
@@ -87,10 +98,21 @@
         {% for apparition in apparitions %}
             {% if apparition.est_zone %}
                 {% with icone=apparition.categorie_affichee.icone_effective %}
-                    <a href="{% pageurl apparition.lieu %}" class="map-zone-nom" data-categories="{{ apparition.ids_categories }}"
-                       style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">
-                        {% if icone %}{% image icone max-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
-                    </a>
+                    {% if apparition.carte_detaillee %}
+                        {# Le nom mène aussi à la carte détaillée (loupe = « on zoome ») ; #}
+                        {# la fiche reste dans la liste « Lieux de cette carte ».          #}
+                        <a href="{% pageurl apparition.carte_detaillee %}" class="map-zone-nom map-zone-nom--detaillee" data-categories="{{ apparition.ids_categories }}"
+                           style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};"
+                           aria-label="{{ apparition.lieu.title }} : ouvrir la carte détaillée ({{ apparition.carte_detaillee.title }})">
+                            {% if icone %}{% image icone max-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
+                            <svg class="map-zone-loupe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>
+                        </a>
+                    {% else %}
+                        <a href="{% pageurl apparition.lieu %}" class="map-zone-nom" data-categories="{{ apparition.ids_categories }}"
+                           style="--x: {{ apparition.coord_x|unlocalize }}; --y: {{ apparition.coord_y|unlocalize }};">
+                            {% if icone %}{% image icone max-32x32 alt="" class="map-zone-icone" %}{% endif %}{{ apparition.lieu.title }}
+                        </a>
+                    {% endif %}
                 {% endwith %}
             {% elif apparition.est_placee %}
                 {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=True %}
@@ -111,6 +133,9 @@
                 {% for apparition in apparitions %}
                     <li data-categories="{{ apparition.ids_categories }}">
                         {% include "campagnes/includes/lieu_chip.html" with lieu=apparition.lieu %}
+                        {% if apparition.carte_detaillee %}
+                            <a href="{% pageurl apparition.carte_detaillee %}" class="lieux-list-detail">carte détaillée</a>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>

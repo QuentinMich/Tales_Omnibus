@@ -1620,6 +1620,47 @@ span.carte-map-img {
     background: var(--color-map-label-hover);
 }
 
+/* CARTES RELIÉES : une zone qui a sa propre carte détaillée. Une loupe
+   après le nom dit « on peut zoomer » ; au survol, le contour s'épaissit. */
+.map-zone-loupe {
+    width: 1em;
+    height: 1em;
+    margin-left: 0.35em;
+    vertical-align: -0.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.carte-zone-lien--detaillee {
+    cursor: zoom-in;
+}
+
+.carte-zone-lien--detaillee:hover .carte-zone {
+    stroke-width: 4;
+}
+
+/* Au-dessus de la carte détaillée : « Vue détaillée de … · revenir à … » */
+.carte-englobante {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-sm);
+    margin: 0 0 var(--space-md);
+    color: var(--color-text-muted);
+}
+
+.carte-englobante-lien {
+    font-weight: 600;
+}
+
+/* Le lien « carte détaillée » à côté d'un lieu, dans la liste sous la carte */
+.lieux-list-detail {
+    margin-left: var(--space-xs);
+    font-size: 0.85em;
+}
+
 /* Point avec l'icône de sa catégorie : L'ICÔNE EST LE MARQUEUR (une hutte
    pour un village…). Pas de fond ni de couleur : on reconnaît le type de
    lieu à son dessin. On retire l'étoile (clip-path) et son fond. */

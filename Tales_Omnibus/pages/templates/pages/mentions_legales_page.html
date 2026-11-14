@@ -74,6 +74,17 @@
                 </p>
             {% endif %}
 
+            {# Insert automatique : seulement si le thème charge ses polices chez Google #}
+            {% if polices_google %}
+                <h2>Polices de caractères</h2>
+                <p>
+                    Les polices du site sont fournies par Google Fonts. Pour les afficher,
+                    votre navigateur se connecte aux serveurs de Google, qui reçoivent
+                    votre adresse IP. Voir la
+                    <a href="https://policies.google.com/privacy">politique de confidentialité de Google</a>.
+                </p>
+            {% endif %}
+
             {% if page.credits %}
                 <h2>Crédits</h2>
                 {{ page.credits|richtext }}

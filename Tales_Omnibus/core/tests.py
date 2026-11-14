@@ -137,10 +137,17 @@ class CreerDemoTests(TestCase):
 
         call_command('creer_demo', stdout=StringIO())
         self.assertGreaterEqual(Page.objects.count() - avant, 20)
-        self.assertEqual(Apparition.objects.count(), 9)
+        self.assertEqual(Apparition.objects.count(), 10)
         # Les zones de la démo rangent les lieux : Hameau › Bois des Murmures › Ardenn
         hameau = Apparition.objects.get(lieu__title="Hameau des Saules")
         self.assertEqual([l.title for l in hameau.chemin()], ["Ardenn", "Bois des Murmures"])
+        # Carte reliée : la carte du Val Gris détaille le royaume, posé sur Ardenn
+        from campagnes.models import CartePage, ids_situes_dans
+        val_gris = CartePage.objects.get(title="Carte du Val Gris")
+        self.assertEqual([c.title for c in val_gris.cartes_englobantes()], ["Carte d'Ardenn"])
+        port = Apparition.objects.get(carte__title="Carte d'Ardenn", lieu__title="Port-Lanterne")
+        self.assertEqual([l.title for l in port.chemin()], ["Ardenn", "Royaume du Val Gris"])
+        self.assertIn(port.lieu_id, ids_situes_dans(val_gris.lieu_detaille_id))
         # Toutes les pages de la démo s'affichent
         for page in Page.objects.live().specific().filter(depth__gt=2):
             self.assertEqual(self.client.get(page.url).status_code, 200, page.title)
@@ -568,3 +575,94 @@ class ImagesDeLaDemoTests(TestCase):
         image.refresh_from_db()
         self.assertEqual((image.focal_point_x, image.focal_point_y), (320, 221))
         self.assertEqual((image.focal_point_width, image.focal_point_height), (128, 72))
+
+
+class CouleursAdminTests(TestCase):
+    """L'admin Wagtail prend les couleurs du thème du site (core/couleurs_admin.py)."""
+
+    def test_chaque_theme_a_ses_couleurs_lisibles(self):
+        from core.couleurs_admin import COULEURS_ADMIN, contraste_avec_le_blanc
+        from core.models import THEMES
+        for cle, _ in THEMES:
+            self.assertIn(cle, COULEURS_ADMIN, f"Thème {cle!r} sans couleurs d'admin")
+            for couleur in COULEURS_ADMIN[cle]:
+                # Texte blanc sur le menu et sur les boutons : WCAG AA
+                self.assertGreaterEqual(contraste_avec_le_blanc(couleur), 4.5, f"{cle} : {couleur}")
+
+    def test_conversion_en_teinte_saturation_luminosite(self):
+        from core.couleurs_admin import en_hsl
+        self.assertEqual(en_hsl("#FF0000"), (0.0, 100.0, 50.0))
+        self.assertEqual(en_hsl("#000000"), (0.0, 0.0, 0.0))
+
+    def test_l_admin_recoit_les_couleurs_du_theme_choisi(self):
+        from django.contrib.auth import get_user_model
+        from core.couleurs_admin import css_couleurs_admin
+        from core.models import NavigationSettings
+        reglages = NavigationSettings.load()
+        reglages.theme = "grimoire"
+        reglages.save()
+        self.client.force_login(get_user_model().objects.create_superuser("admin", "a@example.com", "x"))
+        self.assertContains(self.client.get("/admin/"), css_couleurs_admin("grimoire"))
+
+
+class PolicesDesThemesTests(TestCase):
+    """RGPD : polices chez Google (signalé) ou hébergées sur le site (core/polices.py)."""
+
+    CSS_GOOGLE = (
+        "/* cyrillic */\n@font-face {\n  font-family: 'Cinzel';\n"
+        "  src: url(https://fonts.gstatic.com/s/cinzel/v1/c.woff2) format('woff2');\n}\n"
+        "/* latin-ext */\n@font-face {\n  font-family: 'Cinzel';\n"
+        "  src: url(https://fonts.gstatic.com/s/cinzel/v1/e.woff2) format('woff2');\n}\n"
+        "/* latin */\n@font-face {\n  font-family: 'Cinzel';\n"
+        "  src: url(https://fonts.gstatic.com/s/cinzel/v1/l.woff2) format('woff2');\n}\n"
+        "/* latin */\n@font-face {\n  font-family: 'Cinzel';\n  font-weight: 700;\n"
+        "  src: url(https://fonts.gstatic.com/s/cinzel/v1/l.woff2) format('woff2');\n}\n"
+    )
+
+    def test_seuls_les_alphabets_du_francais_sont_gardes(self):
+        from core.polices import garder_les_alphabets_utiles
+        blocs = garder_les_alphabets_utiles(self.CSS_GOOGLE)
+        self.assertEqual(len(blocs), 3)  # latin-ext + 2 latin, sans le cyrillique
+        self.assertFalse(any("c.woff2" in bloc for bloc in blocs))
+
+    def test_la_commande_heberge_les_polices_du_theme(self):
+        import io
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+        from django.core.management import call_command
+        with tempfile.TemporaryDirectory() as dossier:
+            theme = Path(dossier) / "css" / "themes" / "grimoire.css"
+            theme.parent.mkdir(parents=True)
+            theme.write_text('@import url("https://fonts.googleapis.com/css2?family=Cinzel&display=swap");\nbody {}\n',
+                             encoding="utf-8")
+
+            def faux_telechargement(url):
+                return self.CSS_GOOGLE.encode() if "googleapis" in url else b"POLICE"
+
+            module = "core.management.commands.heberger_polices"
+            with mock.patch(f"{module}.chemin_du_theme", return_value=str(theme)), \
+                    mock.patch(f"{module}.telecharger", side_effect=faux_telechargement) as telecharger:
+                call_command("heberger_polices", "--theme", "grimoire", stdout=io.StringIO())
+            polices = Path(dossier) / "fonts" / "grimoire"
+            # 1 feuille + 2 fichiers (le fichier « latin » sert à deux graisses : téléchargé une fois)
+            self.assertEqual(sorted(p.name for p in polices.iterdir()),
+                             ["cinzel-1.woff2", "cinzel-2.woff2", "polices.css"])
+            self.assertEqual(telecharger.call_count, 3)
+            self.assertNotIn("gstatic", (polices / "polices.css").read_text(encoding="utf-8"))
+            texte = theme.read_text(encoding="utf-8")
+            self.assertIn('@import url("../../fonts/grimoire/polices.css");', texte)
+            self.assertNotIn("googleapis", texte)
+
+    def test_mentions_legales_signalent_google_fonts(self):
+        from unittest import mock
+        from home.models import HomePage
+        from pages.models import MentionsLegalesPage
+        page = HomePage.objects.first().add_child(instance=MentionsLegalesPage(
+            title="Mentions légales", editeur_nom="X", editeur_email="x@example.com",
+            hebergeur_nom="H", hebergeur_adresse="Paris",
+        ))
+        with mock.patch("pages.models.theme_utilise_google_fonts", return_value=True):
+            self.assertContains(self.client.get(page.url), "fournies par Google Fonts")
+        with mock.patch("pages.models.theme_utilise_google_fonts", return_value=False):
+            self.assertNotContains(self.client.get(page.url), "Google Fonts")

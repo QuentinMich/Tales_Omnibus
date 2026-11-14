@@ -21,7 +21,8 @@
 
 /* Limelight : l'affiche Art déco (titres) ; Libre Baskerville : le journal
    (texte) ; Special Elite : la machine à écrire (étiquettes, dates, notes) */
-@import url("https://fonts.googleapis.com/css2?family=Limelight&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap");
+/* Polices hébergées sur le site (RGPD) : manage.py heberger_polices */
+@import url("../../fonts/enquete/polices.css");
 
 
 /* ==========================================================================
@@ -462,7 +463,8 @@ main {
     color: var(--or-pale);
 }
 
-.panel--strong .richtext a:not(.btn) {
+.panel--strong .richtext a:not(.btn),
+.panel--strong.richtext a:not(.btn) {
     color: var(--or-pale);
 }
 

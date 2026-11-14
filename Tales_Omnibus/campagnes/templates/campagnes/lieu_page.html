@@ -1,5 +1,5 @@
 {% extends "core/fiche_page.html" %}
-{% load encyclopedie_tags %}
+{% load encyclopedie_tags navigation_tags %}
 
 {% block body_class %}template-lieu{% endblock %}
 {% block fiche_classe %}page-lieu{% endblock %}
@@ -27,6 +27,11 @@
                     <li>{% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}</li>
                 {% endfor %}
             </ul>
+            {# Le filtre géographique de l'encyclopédie : tout ce qui est ici, à toutes les profondeurs #}
+            {% encyclopedie_url as url_encyclopedie %}
+            {% if url_encyclopedie %}
+                <p class="fiche-lieu-tout"><a href="{{ url_encyclopedie }}?lieu={{ page.pk }}">Tout ce qui se trouve dans {{ page.title }}</a> (lieux, héros, événements)</p>
+            {% endif %}
         </section>
     {% endif %}
 {% endblock %}

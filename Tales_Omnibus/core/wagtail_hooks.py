@@ -14,7 +14,10 @@ from django.urls import path, reverse
 from wagtail import hooks
 from wagtail.admin.menu import Menu, MenuItem, SubmenuMenuItem, settings_menu
 
+from django.utils.safestring import mark_safe
+
 from core.admin_views import bien_demarrer, entretien_du_site
+from core.couleurs_admin import css_couleurs_admin
 
 
 @hooks.register("register_admin_urls")
@@ -45,6 +48,19 @@ def menu_entretien():
     return MenuReserveAuxAdministrateurs(
         "Entretien du site", reverse("entretien_du_site"), icon_name="cog", order=10000,
     )
+
+
+@hooks.register("insert_global_admin_css")
+def couleurs_admin_du_theme():
+    """
+    L'admin prend les couleurs du thème choisi dans Paramètres du site
+    (core/couleurs_admin.py). Le hook n'a pas de requête : on lit le
+    réglage générique (le même pour tout le site) avec load().
+    mark_safe : le CSS vient de notre dictionnaire, jamais d'une saisie.
+    """
+    from core.models import NavigationSettings  # ici : les modèles ne sont pas prêts au chargement des hooks
+    theme = NavigationSettings.load().theme
+    return mark_safe(f"<style>{css_couleurs_admin(theme)}</style>")
 
 
 # --------------------------------------------------------------------- MENU
