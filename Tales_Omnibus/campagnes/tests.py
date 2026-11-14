@@ -593,3 +593,14 @@ class ComptesJoueursTests(CampagneTreeMixin, TestCase):
         self.brann.delete()
         self.assertFalse(Group.objects.filter(name__startswith="Fiche : Brann").exists())
         self.assertFalse(type(self.zoe).objects.get(pk=self.zoe.pk).has_perm("wagtailadmin.access_admin"))
+
+
+class PageCarteTests(CampagneTreeMixin, TestCase):
+    def test_l_accroche_est_avant_la_carte(self):
+        from campagnes.models import CartePage
+        carte = self.campagne.add_child(instance=CartePage(
+            title="Monde", intro="<p>Telle qu'on la dessinait avant le Brouillard.</p>"))
+        html = self.client.get(carte.url).content.decode()
+        self.assertLess(html.index("carte-intro"), html.index('class="carte-map"'))
+        # « Accroche » est un mot de l'admin : il n'est plus affiché au visiteur
+        self.assertNotIn(">Accroche<", html)

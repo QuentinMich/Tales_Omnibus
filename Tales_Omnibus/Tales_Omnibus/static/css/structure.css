@@ -28,6 +28,8 @@
     --color-accent: #8C782C;          /* fonds de contenu, boutons */
     --color-accent-text: #FFFFFF;     /* texte posé sur l'accent */
     --color-highlight: #FFD952;       /* titres / détails sur fond accent ou foncé */
+    --color-highlight-text: #1A1A1A;  /* texte posé SUR le surlignage (badge « Épinglée »…) :
+                                         un thème sombre a un texte courant clair, illisible ici */
     --color-title: #8C782C;           /* titres de pages */
 
     /* --- Couleurs : types de fiches (encyclopédie, fiches liées) --- */
@@ -632,7 +634,7 @@ figure {
 
 .panel--accent .btn {
     background: var(--color-highlight);
-    color: var(--color-text);
+    color: var(--color-highlight-text);
 }
 
 /* Gros bouton pleine largeur (wireframe Univers : « Explore mon univers ») */
@@ -1352,6 +1354,40 @@ figure {
     width: 100%;
 }
 
+/* PAGE CARTE : la carte tient dans l'écran. Une carte en portrait sur toute
+   la largeur faisait deux écrans de haut. On limite la HAUTEUR de l'image ;
+   le cadre (.carte-map) épouse alors exactement l'image (fit-content), sinon
+   les marqueurs, placés en % du CADRE, tomberaient à côté. */
+.page-carte-detail .carte-map {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+}
+
+.page-carte-detail .carte-map-img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: min(78vh, 56rem);
+}
+
+/* Sans image (placeholder) : rien à épouser, on garde toute la largeur */
+.page-carte-detail .carte-map:has(span.carte-map-img) {
+    width: auto;
+}
+
+.page-carte-detail span.carte-map-img {
+    width: 100%;
+}
+
+/* L'accroche, sous le titre : une introduction, comme un chapeau d'article */
+.carte-intro {
+    max-width: 48rem;
+    margin-block: var(--space-md) var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: 1.15rem;
+}
+
 span.carte-map-img {
     aspect-ratio: 3 / 4;
 }
@@ -1497,6 +1533,14 @@ span.carte-map-img {
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-sm) var(--space-md);
+}
+
+/* Le menu prend la largeur de ses options, pas toute la page : la carte,
+   désormais limitée en hauteur, est souvent plus étroite que la colonne */
+.carte-filtre select {
+    width: auto;
+    min-width: 14rem;
+    max-width: 100%;
 }
 
 /* Le nom du lieu : masqué visuellement (lu par les lecteurs d'écran) */
@@ -2002,7 +2046,7 @@ html:has(.template-home) {
 
 .fiche-epingle {
     background: var(--color-highlight);
-    color: var(--color-text);
+    color: var(--color-highlight-text);
 }
 
 /* Une fiche épinglée se repère aussi au contour */

@@ -279,6 +279,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   Piège des thèmes : une règle `.richtext a { color }` est plus spécifique
   que `.btn` et repeint le texte des boutons posés dans un texte (bouton
   « Télécharger ») : prévoir `.richtext a.btn`.
+- **Page Carte** : l'accroche est AVANT la carte (sans titre « Accroche »,
+  mot de l'admin). La carte tient dans l'écran : image limitée en hauteur
+  (`max-height: min(78vh, 56rem)`) et cadre `.carte-map` en `fit-content`
+  pour qu'il épouse l'image (les marqueurs sont en % du CADRE).
+- **`--color-highlight-text`** : texte posé SUR le surlignage (badge
+  « Épinglée », bouton d'un panneau accent). À définir dans chaque thème :
+  un thème sombre a un texte courant clair, illisible sur du jaune.
 - **Header** : sur grand écran (≥ 64rem), grille `1fr auto 1fr` : le menu est
   centré sur la PAGE (en flex, il glissait selon la largeur du titre).
 - **Logo** : `{% image logo max-320x96 %}` (jamais `fill-`, jamais rond : il

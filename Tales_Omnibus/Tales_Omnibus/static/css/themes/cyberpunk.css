@@ -53,6 +53,7 @@
     --color-accent: var(--magenta-profond);
     --color-accent-text: #FFFFFF;
     --color-highlight: var(--neon-jaune);
+    --color-highlight-text: var(--nuit);  /* noir sur jaune néon */
     --color-title: var(--neon-cyan);
 
     /* Types de fiches : des néons, avec du texte SOMBRE dessus (contraste) */

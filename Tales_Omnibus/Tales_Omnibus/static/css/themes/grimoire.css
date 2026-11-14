@@ -47,6 +47,7 @@
     --color-accent: var(--sang);
     --color-accent-text: var(--parchemin-clair);
     --color-highlight: var(--or-clair);
+    --color-highlight-text: var(--encre);
     --color-title: #6B1616;
 
     /* Types de fiches = émaux de l'héraldique : gueules, azur, sinople, pourpre */

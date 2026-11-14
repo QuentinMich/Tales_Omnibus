@@ -12,6 +12,12 @@
 
     <h1 class="page-title page-title--left">{{ page.title }}</h1>
 
+    {# L'accroche AVANT la carte : on sait ce qu'on regarde avant de la voir. #}
+    {# Pas de titre « Accroche » : c'est un mot de l'admin, pas du lecteur.   #}
+    {% if page.intro %}
+        <div class="carte-intro richtext">{{ page.intro|richtext }}</div>
+    {% endif %}
+
     {# --- FILTRE « AFFICHER » --- #}
     {# Caché sans JavaScript (attribut hidden, retiré par filtre_carte.js) : #}
     {# sans JS il ne marcherait pas, autant ne pas le montrer.              #}
@@ -83,13 +89,6 @@
             {% endif %}
         {% endfor %}
     </div>
-
-    {% if page.intro %}
-        <section class="panel carte-intro">
-            <h2 class="panel-title">Accroche</h2>
-            <div class="richtext">{{ page.intro|richtext }}</div>
-        </section>
-    {% endif %}
 
     {% if page.body %}
         <section class="section richtext">{% include_block page.body %}</section>
