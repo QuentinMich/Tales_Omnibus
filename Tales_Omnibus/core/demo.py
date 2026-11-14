@@ -142,6 +142,8 @@ STYLES_DE_ZONES = {
     # Le centre calculé d'Ardenn tombe sur le Val Gris : son nom irait se
     # coller à celui du royaume. On le pose dans la plaine, entre fleuve et fort.
     ("Carte d'Ardenn", "Ardenn"): {'centre_manuel': True, 'coord_x': 62, 'coord_y': 60},
+    # Même chose pour le Bois : son centre tombait sur l'icône du Hameau des Saules
+    ("Carte d'Ardenn", "Bois des Murmures"): {'centre_manuel': True, 'coord_x': 24, 'coord_y': 81},
     ("Carte du Val Gris", "Royaume du Val Gris"): {'bordure': 'tirets'},  # frontière floue, dans la brume
     ("Carte d'Ardenn", "Royaume du Val Gris"): {'bordure': 'tirets'},
 }

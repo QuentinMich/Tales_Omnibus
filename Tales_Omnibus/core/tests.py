@@ -523,6 +523,10 @@ class BienDemarrerTests(TestCase):
         self.assertEqual(contact.form_fields.count(), 3)
         self.assertEqual(HomePage.objects.first().page_contact_id, contact.pk)
         self.assertContains(self.client.get(self.url()), "La structure est complète")
+        # Accroche de départ : la page n'est pas vide et Google a une description
+        self.assertContains(self.client.get(CampagnesIndexPage.objects.get().url),
+                            '<meta name="description" content="Toutes nos campagnes de jeu de rôle')
+        self.assertIn("maître du jeu", UniversPage.objects.get().intro)
 
     def test_ajoute_puis_retire_la_demo_avec_ses_images(self):
         from wagtail.images.models import Image

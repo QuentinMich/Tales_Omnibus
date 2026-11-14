@@ -43,6 +43,18 @@ PAGES_FIXES = [
     PageFixe(MentionsLegalesPage, "Mentions légales", "obligatoires pour un site public (lien du pied de page)"),
 ]
 
+# Une accroche de départ pour les pages qui en ont une : sans elle, la page
+# s'ouvre vide ET Google n'a rien à afficher sous le titre (core/seo.py prend
+# l'accroche comme description). Des mots qu'un joueur taperait vraiment
+# (« jeu de rôle », « campagnes », « héros »…), à personnaliser ensuite.
+ACCROCHES = {
+    CampagnesIndexPage: "Toutes nos campagnes de jeu de rôle : leurs héros, leurs cartes et "
+                        "la chronique de chaque aventure, séance après séance.",
+    EncyclopedieIndexPage: "Les lieux, les personnages, les créatures et les légendes de l'univers, "
+                           "à explorer par campagne, par catégorie ou par lieu.",
+    UniversPage: "Un monde de jeu de rôle, ses royaumes et ses mystères, présenté par son maître du jeu.",
+}
+
 # Les champs du formulaire de la page Contact : (libellé, type de champ)
 CHAMPS_DU_CONTACT = [("Nom", "singleline"), ("Email", "email"), ("Message", "multiline")]
 
@@ -100,7 +112,12 @@ def _nouvelle_page(fixe):
     if fixe.modele is ContactPage:
         return ContactPage(title=fixe.titre, subject="Nouveau message depuis le site",
                            intro="<p>Une question, une proposition de partie ? Écris-moi.</p>")
-    return fixe.modele(title=fixe.titre)
+    page = fixe.modele(title=fixe.titre)
+    accroche = ACCROCHES.get(fixe.modele)
+    if accroche:
+        # L'accroche de l'Univers est un texte simple, les autres du texte riche
+        page.intro = accroche if fixe.modele is UniversPage else f"<p>{accroche}</p>"
+    return page
 
 
 def _relier_le_contact_a_l_accueil(racine, utilisateur):
