@@ -11,7 +11,8 @@
             {% endif %}
 
             {% if c.get_status_display %}
-                <span class="status-badge">{{ c.get_status_display }}</span>
+                {# La classe du statut sur le badge : chaque thème lui donne son voyant #}
+                <span class="status-badge status-{{ c.status|default:'en_cours' }}">{{ c.get_status_display }}</span>
             {% endif %}
         </div>
 

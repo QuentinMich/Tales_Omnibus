@@ -162,8 +162,8 @@ h3, h4 {
 }
 
 /* Liens du texte : cyan, soulignés d'un trait magenta qui s'allume au survol */
-.richtext a,
-.fiche-card p a {
+.richtext a:not(.btn),
+.fiche-card p a:not(.btn) {
     color: var(--neon-cyan);
     text-decoration-color: var(--neon-magenta);
     text-decoration-thickness: 2px;
@@ -171,19 +171,11 @@ h3, h4 {
     transition: text-shadow var(--transition);
 }
 
-.richtext a:hover,
-.fiche-card p a:hover {
+.richtext a:not(.btn):hover,
+.fiche-card p a:not(.btn):hover {
     text-shadow: 0 0 8px var(--neon-cyan);
 }
 
-/* …sauf les BOUTONS posés dans un texte (« Télécharger » d'une aide de jeu) :
-   la règle ci-dessus est plus spécifique que .btn et repeignait leur texte */
-.richtext a.btn,
-.fiche-card p a.btn {
-    color: var(--nuit);
-    text-decoration: none;
-    text-shadow: none;
-}
 
 :focus-visible {
     outline: 2px solid var(--neon-jaune);
@@ -556,6 +548,24 @@ h3, h4 {
     animation: voyant 1.6s ease-in-out infinite;
 }
 
+/* À venir : voyant orange qui clignote lentement (en attente) */
+.status-badge.status-a_venir::before {
+    background: #FFB020;
+    box-shadow: 0 0 6px #FFB020, 0 0 12px #FFB020;
+    animation: attente 2.4s steps(2, jump-none) infinite;
+}
+
+/* Terminé : voyant éteint, transmission close */
+.status-badge.status-termine::before {
+    background: #4A4766;
+    box-shadow: none;
+    animation: none;
+}
+
+@keyframes attente {
+    50% { opacity: 0.2; box-shadow: none; }
+}
+
 @keyframes voyant {
     50% { opacity: 0.35; box-shadow: 0 0 2px var(--neon-cyan); }
 }
@@ -663,7 +673,7 @@ h3, h4 {
 .img-placeholder,
 .placeholder-img {
     background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Crect x='20' y='18' width='160' height='24' fill='%230A0918' stroke='%23FF2BD6'/%3E%3Ctext x='100' y='35' text-anchor='middle' font-family='monospace' font-size='12' letter-spacing='3' fill='%2300F0FF'%3EPAS DE SIGNAL%3C/text%3E%3C/svg%3E") center / min(80%, 16rem) no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Crect x='20' y='18' width='160' height='24' fill='%230A0918' stroke='%23FF2BD6'/%3E%3Ctext x='100' y='35' text-anchor='middle' font-family='monospace' font-size='12' textLength='140' lengthAdjust='spacingAndGlyphs' fill='%2300F0FF'%3EPAS DE SIGNAL%3C/text%3E%3C/svg%3E") center / min(80%, 16rem) no-repeat,
         var(--balayage),
         var(--neige),
         var(--nuit-2);
@@ -802,6 +812,7 @@ select:focus {
     .site-name,
     .site-logo--dore,
     .status-badge::before,
+    .status-badge.status-a_venir::before,
     .enluminure--marge {
         animation: none;
     }

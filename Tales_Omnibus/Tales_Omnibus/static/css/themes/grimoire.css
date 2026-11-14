@@ -137,22 +137,14 @@ h1, h2, h3, h4 {
 }
 
 /* Les liens du texte : encre rouge, soulignés d'un filet d'or */
-.richtext a,
-.fiche-card p a {
+.richtext a:not(.btn),
+.fiche-card p a:not(.btn) {
     color: var(--sang);
     text-decoration-color: var(--or);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
 }
 
-/* …sauf les BOUTONS posés dans un texte (« Télécharger » d'une aide de jeu) :
-   la règle ci-dessus est plus spécifique que .btn et repeignait leur texte
-   en rouge sang… sur un bouton rouge sang */
-.richtext a.btn,
-.fiche-card p a.btn {
-    color: var(--or-clair);
-    text-decoration: none;
-}
 
 :focus-visible {
     outline: 3px solid var(--or);
@@ -446,8 +438,8 @@ h1, h2, h3, h4 {
         linear-gradient(var(--cuir-clair), var(--cuir));
 }
 
-.panel--accent .richtext a,
-.panel--strong .richtext a {
+.panel--accent .richtext a:not(.btn),
+.panel--strong .richtext a:not(.btn) {
     color: var(--or-clair);
 }
 
@@ -521,6 +513,20 @@ h1, h2, h3, h4 {
     border-radius: 47% 53% 45% 55% / 52% 46% 54% 48%;  /* une goutte de cire, jamais tout à fait ronde */
     background: radial-gradient(circle at 35% 35%, #B23A3A, var(--sang) 60%, #4A0F0F);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+/* À venir : la cire n'est pas encore coulée (l'empreinte vide du sceau) */
+.status-badge.status-a_venir::before {
+    background: transparent;
+    border: 1.5px dashed var(--sang);
+    box-shadow: none;
+}
+
+/* Terminé : un sceau de cire noire, brisé par une fêlure */
+.status-badge.status-termine::before {
+    background:
+        linear-gradient(115deg, transparent 46%, var(--parchemin-clair) 47% 53%, transparent 54%),
+        radial-gradient(circle at 35% 35%, #4A4440, #1E1A18 60%, #000);
 }
 
 .btn-link,

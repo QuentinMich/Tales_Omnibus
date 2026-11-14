@@ -277,8 +277,12 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   sur le nom du site. L'accent qui porte du texte blanc est un magenta
   PROFOND ; le néon vif ne sert qu'à la lumière.
   Piège des thèmes : une règle `.richtext a { color }` est plus spécifique
-  que `.btn` et repeint le texte des boutons posés dans un texte (bouton
-  « Télécharger ») : prévoir `.richtext a.btn`.
+  que `.btn` et repeint le texte des boutons posés dans un texte (« Me
+  contacter », « Télécharger »). Écrire les règles de liens avec
+  `a:not(.btn)` : elles ne visent plus du tout les boutons (une rustine
+  `.richtext a.btn` devient à son tour plus forte que `.panel--strong .btn`).
+  Texte dans un SVG en data URI : `textLength` + `lengthAdjust` pour qu'il
+  tienne dans son cadre quelle que soit la police du système.
   `tenebres.css` = « Ténèbres » (dark fantasy) : fer rivé (`--rivets`),
   suie, sang, titres en Pirata One (gothique lisible, TITRES seulement),
   texte en Alegreya ; coulures de sang sous les titres, crânes autour des
@@ -286,6 +290,22 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   flamme de chandelle pour le statut. Le rouge sang du TEXTE est
   `--sang-lisible` (le sang sombre ne se lit pas sur du fer). Contrastes
   vérifiés (formule WCAG) : tous ≥ 4,5.
+  `enquete.css` = « Enquête » (années 20, Cthulhu) : thème CLAIR. Papier,
+  tache de café, trombones (`.panel::before`), tampon « CONFIDENTIEL »
+  (`.fiche-card::after`, d'où un `padding-top` sur la fiche), photos
+  glissées dans des coins noirs, sections numérotées « Pièce n° » (compteur
+  CSS), fiches bristol pour la chronologie, enluminures en fil rouge
+  punaisé et en télégramme, curseur loupe. Bandeau laqué noir et or Art
+  déco. Le panneau d'action y est une chemise CLAIRE : ce que la structure
+  y écrit en `--color-highlight` (or pâle, prévu pour du sombre) est repassé
+  à l'encre dans le thème.
+- **Statuts de campagne** (`en_cours` / `a_venir` / `termine`) : la classe
+  `status-…` est sur le badge ET sur la carte. Chaque thème a son voyant
+  (Grimoire : sceau coulé / empreinte vide / sceau noir brisé ; Néon : LED
+  cyan / orange clignotante / éteinte ; Ténèbres : flamme / mèche fumante /
+  crâne ; Enquête : tampons rouge / bleu / noir). La vignette de la carte de
+  campagne est voilée (à venir) ou en noir et blanc (terminée) dans la
+  structure (`--filtre-a-venir`, `--filtre-termine`), en couleur au survol.
 - **Page Carte** : l'accroche est AVANT la carte (sans titre « Accroche »,
   mot de l'admin). La carte tient dans l'écran : image limitée en hauteur
   (`max-height: min(78vh, 56rem)`) et cadre `.carte-map` en `fit-content`
@@ -299,6 +319,10 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 - **`--color-highlight-text`** : texte posé SUR le surlignage (badge
   « Épinglée », bouton d'un panneau accent). À définir dans chaque thème :
   un thème sombre a un texte courant clair, illisible sur du jaune.
+- **Bannière de campagne** : `.campagne-header.has-banner` a un fond sombre
+  de secours (`--color-surface-strong`) : une bannière à fond transparent
+  laissait voir la page à travers, et le titre devenait illisible sur un
+  thème clair.
 - **Header** : sur grand écran (≥ 64rem), grille `1fr auto 1fr` : le menu est
   centré sur la PAGE (en flex, il glissait selon la largeur du titre).
 - **Logo** : `{% image logo max-320x96 %}` (jamais `fill-`, jamais rond : il
@@ -383,10 +407,8 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 ## Feuille de route (pas des bugs !)
 
-- **Thèmes (suite)** : Quentin en veut deux autres, même règles (identité
-  forte + accessibilité) : « Enquête » (Cthulhu, années 20, noir /
-  investigation : dossier, machine à écrire) et « Survivant » (zombies,
-  survival horror : journal / dossier du survivant). Bonus voulu par Quentin : que l'ADMIN prenne aussi
+- **Thème « Survivant »** (à faire, voulu par Quentin) : zombies, survival
+  horror, journal / dossier du survivant. Mêmes règles que les autres. Bonus voulu par Quentin : que l'ADMIN prenne aussi
   les couleurs du thème (piste : hook `insert_global_admin_css`).
 - **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
   site (RGPD) ou à signaler dans les mentions légales.

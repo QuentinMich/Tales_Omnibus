@@ -351,6 +351,12 @@ figure {
         justify-self: start;
     }
 
+    /* La colonne du titre est plus étroite qu'en flex : le nom du site ne
+       doit pas pour autant passer sur deux lignes */
+    .site-name {
+        white-space: nowrap;
+    }
+
     .site-search {
         justify-self: end;
     }
@@ -899,6 +905,29 @@ figure {
     opacity: 0.6;
 }
 
+/* La VIGNETTE d'une campagne raconte son statut (le texte du badge le dit
+   aussi : l'information ne repose jamais sur l'image seule) :
+   - à venir : l'image est voilée, comme un chapitre pas encore écrit ;
+   - terminée : l'image passe en noir et blanc, comme un vieux souvenir.
+   Au survol, elle reprend vie. Les thèmes peuvent ajuster ces filtres. */
+.campagne-card .card-img {
+    transition: filter 400ms ease;
+}
+
+.campagne-card.status-a_venir .card-img {
+    filter: var(--filtre-a-venir, blur(3px) brightness(0.65) saturate(0.7));
+}
+
+.campagne-card.status-termine .card-img {
+    filter: var(--filtre-termine, grayscale(1) contrast(0.95) brightness(0.9));
+}
+
+.campagne-card.status-a_venir .card-link:hover .card-img,
+.campagne-card.status-termine .card-link:hover .card-img,
+.campagne-card .card-link:focus-visible .card-img {
+    filter: none;
+}
+
 .placeholder-img {
     background: var(--color-surface-strong);
 }
@@ -939,6 +968,11 @@ figure {
     overflow: hidden;
     border-radius: var(--radius-lg);
     padding: var(--space-xl) var(--space-md);
+    /* Fond sombre de secours : une bannière à fond TRANSPARENT (un logo…)
+       laisserait voir la page à travers, et le voile (brightness) n'assombrit
+       que les pixels de l'image. Sur un thème clair, le titre devenait
+       illisible. */
+    background: var(--color-surface-strong);
     color: var(--color-accent-text);
 }
 
@@ -1162,7 +1196,7 @@ figure {
     padding: var(--space-xs) var(--space-lg);
     border-radius: var(--radius-pill);
     background: var(--color-accent);
-    color: var(--color-text);
+    color: var(--color-accent-text);  /* le texte prévu POUR l'accent */
     font-size: 1.25rem;
 }
 
@@ -1374,6 +1408,12 @@ figure {
 /* Sans image (placeholder) : rien à épouser, on garde toute la largeur */
 .page-carte-detail .carte-map:has(span.carte-map-img) {
     width: auto;
+    /* le cadre plein écran CENTRE son contenu (grille) : sans image à épouser,
+       la carte s'y réduisait à zéro. Elle reprend toute la largeur. Les
+       marges auto (qui centrent la carte) doivent partir : en grille, elles
+       absorbent l'espace libre et empêchent l'étirement. */
+    justify-self: stretch;
+    margin-inline: 0;
 }
 
 .page-carte-detail span.carte-map-img {

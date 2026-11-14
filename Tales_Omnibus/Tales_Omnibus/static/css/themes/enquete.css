@@ -1,0 +1,793 @@
+/* ==========================================================================
+   THÈME « ENQUÊTE » : années 20, noir et investigation
+   --------------------------------------------------------------------------
+   Le dossier d'un enquêteur, quelque part en 1926 : papier jauni, notes
+   tapées à la machine, tampons à l'encre rouge, photos retenues par des
+   coins noirs, fils rouges punaisés entre les indices. L'élégance de l'Art
+   déco dans le bandeau laqué noir et or… et quelques détails qui laissent
+   deviner que cette affaire n'est pas tout à fait naturelle.
+
+   Seul thème CLAIR avec le Grimoire : le dossier se lit comme une feuille.
+
+   Mêmes règles : AUCUNE mise en page modifiée, seulement couleurs, polices,
+   textures et formes. Accessibilité :
+   - texte à l'encre presque noire sur papier crème (contraste > 12) ;
+   - la machine à écrire (Special Elite) ne sert qu'aux ÉTIQUETTES et aux
+     notes courtes ; le texte courant est en Libre Baskerville, une police de
+     journal très lisible ;
+   - les tampons de couleur ne portent jamais seuls l'information : le texte
+     du statut est écrit dedans.
+   ========================================================================== */
+
+/* Limelight : l'affiche Art déco (titres) ; Libre Baskerville : le journal
+   (texte) ; Special Elite : la machine à écrire (étiquettes, dates, notes) */
+@import url("https://fonts.googleapis.com/css2?family=Limelight&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap");
+
+
+/* ==========================================================================
+   1. VARIABLES
+   ========================================================================== */
+:root {
+    /* Nuancier */
+    --papier: #EFE7D6;
+    --papier-clair: #F8F3E8;
+    --chemise: #E2CC97;        /* la chemise cartonnée « manille » */
+    --encre: #1C1A17;
+    --encre-pale: #4F4A42;
+    --laque: #141312;           /* le noir laqué Art déco */
+    --or-deco: #C9A14A;
+    --or-pale: #E9D59A;
+    --tampon: #9B1C1C;          /* encre rouge des tampons */
+    --tampon-bleu: #1F3E6E;
+    --font-machine: "Special Elite", "Courier New", monospace;
+
+    /* Variables de structure.css */
+    --color-bg: var(--papier);
+    --color-text: var(--encre);
+    --color-text-muted: var(--encre-pale);
+    --color-chrome: var(--laque);
+    --color-chrome-text: var(--papier);
+    --color-surface: var(--chemise);
+    --color-surface-strong: #22201D;
+    --color-surface-strong-text: var(--papier-clair);
+    --color-border: #8C7B5E;
+
+    --color-accent: var(--tampon);
+    --color-accent-text: var(--papier-clair);
+    --color-highlight: var(--or-pale);
+    --color-highlight-text: var(--encre);
+    --color-title: var(--encre);
+
+    /* Types de fiches : les encres d'un bureau de détective */
+    --color-type-heros: #8E1B1B;
+    --color-type-lieux: #1F3E6E;
+    --color-type-evenements: #3B5A36;
+    --color-type-lore: #2E4A44;      /* le Lore : un vert d'eau trouble… */
+    --color-type-text: var(--papier-clair);
+
+    --color-map-label: rgb(20 19 18 / 0.78);
+    --color-map-label-hover: rgb(20 19 18 / 0.95);
+    --color-map-label-text: var(--papier-clair);
+
+    --font-body: "Libre Baskerville", Georgia, serif;
+    --font-title: "Limelight", "Libre Baskerville", serif;
+    --font-size-base: 1rem;  /* Baskerville est large : pas besoin de grossir */
+    --line-height: 1.75;
+
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-pill: 0;
+    --shadow: 0 1px 1px rgb(0 0 0 / 0.15), 0 8px 18px -8px rgb(40 30 15 / 0.45);
+    --hover-brightness: 1.08;
+
+    /* --- Décors --- */
+
+    /* Grain du papier */
+    --texture-papier: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .15 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+
+    /* Chevrons Art déco (le motif du bandeau laqué) */
+    --chevrons: repeating-linear-gradient(135deg, transparent 0 10px, rgb(201 161 74 / 0.07) 10px 11px),
+                repeating-linear-gradient(45deg, transparent 0 10px, rgb(201 161 74 / 0.07) 10px 11px);
+
+    /* Éventail Art déco : un soleil levant à rayons, sous les grands titres */
+    --eventail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 30'%3E%3Cg stroke='%23C9A14A' stroke-width='1.3' fill='none'%3E%3Cpath d='M0 28H96M144 28H240'/%3E%3Cpath d='M20 24H92M148 24H220' opacity='.6'/%3E%3Cpath d='M98 28a22 22 0 0 1 44 0'/%3E%3Cpath d='M106 28a14 14 0 0 1 28 0'/%3E%3Cpath d='M120 28V4M120 28L104 9M120 28L136 9M120 28L99 18M120 28L141 18'/%3E%3C/g%3E%3Cpath d='M116 28a4 4 0 0 1 8 0z' fill='%23C9A14A'/%3E%3C/svg%3E");
+
+    /* Le trombone qui retient chaque feuille du dossier */
+    --trombone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='46' viewBox='0 0 18 46'%3E%3Cpath d='M12 12V36a5 5 0 0 1-10 0V8a7 7 0 0 1 14 0V34a3 3 0 0 1-6 0V12' fill='none' stroke='%237A7468' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M12 12V36a5 5 0 0 1-10 0V8a7 7 0 0 1 14 0V34a3 3 0 0 1-6 0V12' fill='none' stroke='%23D8D2C4' stroke-width='.7' stroke-linecap='round'/%3E%3C/svg%3E");
+
+    /* Fil rouge et punaises (le tableau de l'enquêteur) */
+    --fil-rouge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='140' viewBox='0 0 30 140'%3E%3Cpath d='M15 10L8 70L20 130' fill='none' stroke='%23A51F1F' stroke-width='1.8'/%3E%3Cg%3E%3Ccircle cx='15' cy='10' r='5' fill='%239B1C1C'/%3E%3Ccircle cx='13.5' cy='8.5' r='1.6' fill='%23F0B3B3'/%3E%3Ccircle cx='8' cy='70' r='5' fill='%231F3E6E'/%3E%3Ccircle cx='6.5' cy='68.5' r='1.6' fill='%23AFC3E6'/%3E%3Ccircle cx='20' cy='130' r='5' fill='%23C9A14A'/%3E%3Ccircle cx='18.5' cy='128.5' r='1.6' fill='%23FFF2C4'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* La loupe, en guise de curseur (point chaud au centre du verre) */
+    --curseur-loupe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='11' cy='11' r='8' fill='rgba(255,255,255,.25)' stroke='%231C1A17' stroke-width='2.4'/%3E%3Cpath d='M17 17l10 10' stroke='%235A3A1E' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M7 8a5 5 0 0 1 4-3' stroke='white' stroke-width='1.4' fill='none'/%3E%3C/svg%3E") 11 11, auto;
+}
+
+
+/* ==========================================================================
+   2. LA PAGE : le dossier, posé sur le bureau, avec une tache de café
+   ========================================================================== */
+html {
+    scrollbar-color: #8C7B5E var(--papier);
+}
+
+body {
+    background:
+        /* la tache de café, dans un coin (on a posé la tasse sur le dossier) */
+        radial-gradient(circle at 92% 88%, transparent 0 52px, rgb(120 80 35 / 0.16) 54px 58px, rgb(120 80 35 / 0.06) 60px, transparent 64px) fixed,
+        /* la lampe de bureau éclaire le haut de la page */
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgb(255 240 200 / 0.5), transparent 70%) fixed,
+        radial-gradient(ellipse at center, transparent 55%, rgb(90 70 40 / 0.18) 100%) fixed,
+        var(--texture-papier),
+        var(--papier);
+    cursor: var(--curseur-loupe);
+}
+
+a, button, summary, label, select, [role="button"] {
+    cursor: pointer;
+}
+
+::selection {
+    background: rgb(155 28 28 / 0.85);
+    color: var(--papier-clair);
+}
+
+h1, h2 {
+    font-family: var(--font-title);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+}
+
+h3, h4 {
+    font-family: var(--font-machine);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.richtext a:not(.btn),
+.fiche-card p a:not(.btn) {
+    color: var(--tampon-bleu);
+    text-decoration-color: var(--tampon);
+    text-decoration-style: wavy;          /* souligné à la main, au crayon rouge */
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+}
+
+
+:focus-visible {
+    outline: 3px solid var(--tampon-bleu);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   3. HEADER & FOOTER : laque noire et filets d'or, façon Art déco
+   ========================================================================== */
+.site-header,
+.site-footer {
+    background: var(--chevrons), var(--laque);
+}
+
+.site-header {
+    border-bottom: 3px double var(--or-deco);
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.6);
+}
+
+.site-footer {
+    border-top: 3px double var(--or-deco);
+    font-family: var(--font-machine);
+}
+
+.site-footer a {
+    color: var(--or-pale);
+}
+
+/* La note de bas de dossier… qu'on aurait peut-être dû écouter */
+.site-footer .copyright::before {
+    content: "DOSSIER CLASSÉ — ne lisez rien à voix haute. — ";
+    color: var(--or-deco);
+}
+
+.site-brand,
+.site-nav ul {
+    background: transparent;
+}
+
+/* Le nom du site : lettres d'or d'une enseigne de cinéma, entre deux filets */
+.site-name {
+    color: var(--or-pale);
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 #000, 0 0 12px rgb(201 161 74 / 0.35);
+}
+
+.site-brand {
+    border-block: 1px solid rgb(201 161 74 / 0.6);
+}
+
+.site-logo-pochoir,
+.site-logo:not(.site-logo--dore) {
+    filter: drop-shadow(0 1px 0 #000);
+}
+
+.site-logo--dore {
+    --logo-fill: linear-gradient(160deg, #F3E1A8, var(--or-deco) 50%, #8A6A28);
+}
+
+.site-nav a {
+    color: var(--papier);
+    font-family: var(--font-machine);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.site-nav a:hover {
+    color: var(--or-pale);
+}
+
+/* Rubrique active : un losange d'or de part et d'autre */
+.site-nav a.is-active {
+    color: var(--or-pale);
+    text-decoration: none;
+}
+
+.site-nav a.is-active::before { content: "◆ "; color: var(--or-deco); font-size: 0.7em; }
+.site-nav a.is-active::after  { content: " ◆"; color: var(--or-deco); font-size: 0.7em; }
+
+.site-search input {
+    font-family: var(--font-machine);
+}
+
+
+/* ==========================================================================
+   4. TITRES : affiches Art déco et notes tapées
+   ========================================================================== */
+.page-title {
+    color: var(--encre);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Sous chaque grand titre : un éventail Art déco en filets d'or */
+.page-title::after {
+    content: "";
+    display: block;
+    width: min(18rem, 70%);
+    height: 1.8rem;
+    margin: var(--space-sm) auto 0;
+    background: var(--eventail) center / contain no-repeat;
+}
+
+.page-title--left {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+}
+
+.page-title--left::after {
+    margin-left: 0;
+    background-position: left center;
+}
+
+.page-subtitle {
+    color: var(--encre-pale);
+    font-family: var(--font-body);
+    font-style: italic;
+}
+
+/* Titre de section : une PIÈCE À CONVICTION numérotée.
+   Le compteur CSS numérote les sections de la page tout seul. */
+main {
+    counter-reset: piece;
+}
+
+.section-title {
+    padding-top: 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--encre);
+    color: var(--encre);
+    counter-increment: piece;
+}
+
+.section-title::before {
+    content: "Pièce n° " counter(piece) " — ";
+    color: var(--tampon);
+    font-family: var(--font-machine);
+    font-size: 0.55em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.panel-title,
+.article-section-titre {
+    color: var(--encre);
+    font-family: var(--font-machine);
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Séparateur : un filet Art déco, losange au centre */
+.separateur {
+    height: 14px;
+    border: 0;
+    background:
+        linear-gradient(45deg, transparent 40%, var(--or-deco) 40% 60%, transparent 60%) center / 10px 10px no-repeat,
+        linear-gradient(-45deg, transparent 40%, var(--or-deco) 40% 60%, transparent 60%) center / 10px 10px no-repeat,
+        linear-gradient(transparent 6px, var(--encre) 6px 7px, transparent 7px) left center / calc(50% - 14px) 100% no-repeat,
+        linear-gradient(transparent 6px, var(--encre) 6px 7px, transparent 7px) right center / calc(50% - 14px) 100% no-repeat;
+}
+
+/* Lettrine de la description : une capitale Art déco, or sur laque */
+.fiche-description > p:first-child::first-letter,
+.univers-accroche > p:first-child::first-letter {
+    float: left;
+    margin: 0.08em 0.16em 0 0;
+    padding: 0.1em 0.16em 0.04em;
+    background: var(--laque);
+    color: var(--or-pale);
+    font-family: var(--font-title);
+    font-size: 3.2em;
+    line-height: 0.85;
+    box-shadow: 0 0 0 2px var(--papier), 0 0 0 3px var(--or-deco);
+}
+
+
+/* ==========================================================================
+   4 bis. ENLUMINURES : la lettrine, le tableau de liège, le télégramme
+   ========================================================================== */
+.enluminure .richtext > p:first-child::first-letter {
+    margin: 0.06em 0.2em 0 0;
+    padding: 0.12em 0.18em 0.04em;
+    background:
+        linear-gradient(var(--or-deco), var(--or-deco)) top 4px left 4px / calc(100% - 8px) 1px no-repeat,
+        linear-gradient(var(--or-deco), var(--or-deco)) bottom 4px left 4px / calc(100% - 8px) 1px no-repeat,
+        var(--laque);
+    color: var(--or-pale);
+    font-family: var(--font-title);
+    font-size: 3.8em;
+    line-height: 0.82;
+    box-shadow: 0 0 0 3px var(--papier), 0 0 0 4px var(--or-deco);
+}
+
+/* Les rinceaux deviennent le FIL ROUGE de l'enquêteur, tendu de punaise en
+   punaise le long du texte */
+.enluminure--marge {
+    padding-left: 2.6rem;
+    border-left: 0;
+    background: var(--fil-rouge) left top / 1.75rem auto repeat-y;
+}
+
+/* La page encadrée devient un TÉLÉGRAMME */
+.enluminure--cadre {
+    position: relative;
+    padding-top: 3rem;
+    border: 0;
+    background:
+        linear-gradient(var(--encre), var(--encre)) left 1rem top 2.4rem / calc(100% - 2rem) 1px no-repeat,
+        var(--texture-papier),
+        #F4E7B8;
+    box-shadow: var(--shadow);
+    font-family: var(--font-machine);
+}
+
+.enluminure--cadre::before {
+    content: "TÉLÉGRAMME — URGENT";
+    position: absolute;
+    top: 0.8rem;
+    left: 1rem;
+    color: var(--tampon);
+    font-family: var(--font-machine);
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+}
+
+
+/* ==========================================================================
+   5. PANNEAUX : les feuilles du dossier, retenues par un trombone
+   ========================================================================== */
+.panel,
+.fiche-card {
+    position: relative;
+    border: 1px solid #CFC2A5;
+    background: var(--texture-papier), var(--papier-clair);
+    box-shadow: var(--shadow);
+}
+
+.panel::before,
+.fiche-card::before {
+    content: "";
+    position: absolute;
+    top: -0.9rem;
+    left: 1.5rem;
+    width: 18px;
+    height: 46px;
+    background: var(--trombone) center / contain no-repeat;
+    pointer-events: none;
+}
+
+/* La fiche porte un tampon « CONFIDENTIEL » dans son coin */
+.fiche-card {
+    padding-top: 3rem;  /* la place du tampon, au-dessus du titre */
+}
+
+.fiche-card::after {
+    content: "CONFIDENTIEL";
+    position: absolute;
+    top: 0.9rem;
+    right: 1rem;
+    padding: 0.1em 0.5em;
+    border: 2px solid var(--tampon);
+    color: var(--tampon);
+    font-family: var(--font-machine);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    opacity: 0.75;
+    transform: rotate(-8deg);
+    pointer-events: none;
+}
+
+/* Panneau d'action : une chemise cartonnée « manille » */
+.panel--accent {
+    border-color: #B39A5E;
+    background: var(--texture-papier), var(--chemise);
+    color: var(--encre);
+}
+
+.panel--accent .panel-title {
+    color: var(--tampon);
+}
+
+/* Le panneau d'action est ici une chemise CLAIRE : tout ce que la structure
+   y écrit en or pâle (pensé pour un fond sombre) repasse à l'encre */
+.panel--accent .errorlist,
+.presence-campagne a {
+    color: var(--tampon);
+}
+
+.panel--accent .has-error input,
+.panel--accent .has-error textarea {
+    outline-color: var(--tampon);
+}
+
+/* Panneau sombre : une chemise de cuir noir */
+.panel--strong {
+    border-color: #000;
+    background: var(--texture-papier), #22201D;
+}
+
+.panel--strong .panel-title {
+    color: var(--or-pale);
+}
+
+.panel--strong .richtext a:not(.btn) {
+    color: var(--or-pale);
+}
+
+.flash {
+    border: 1px solid #CFC2A5;
+    border-left: 4px solid var(--tampon);
+    background: var(--papier-clair);
+    font-family: var(--font-machine);
+}
+
+
+/* ==========================================================================
+   6. BOUTONS, TAMPONS, ÉTIQUETTES
+   ========================================================================== */
+
+/* Bouton : une plaque laquée noire aux filets d'or */
+.btn {
+    border: 1px solid var(--or-deco);
+    background: var(--laque);
+    color: var(--or-pale);
+    font-family: var(--font-machine);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 3px var(--laque), inset 0 0 0 4px rgb(201 161 74 / 0.5);
+}
+
+.btn:hover {
+    background: #2A2723;
+}
+
+.panel--accent .btn {
+    background: var(--laque);
+    color: var(--or-pale);
+}
+
+.panel--strong .btn {
+    background: var(--or-pale);
+    color: var(--encre);
+}
+
+/* Tags : des étiquettes à œillet, comme celles des pièces à conviction */
+.tag {
+    padding-left: 1.4rem;
+    border: 1px solid #A8956C;
+    background:
+        radial-gradient(circle at 0.65rem 50%, var(--papier) 0 3px, #8C7B5E 3.5px 4.5px, transparent 5px),
+        #EADBB3;
+    color: var(--encre);
+    font-family: var(--font-machine);
+    clip-path: polygon(0.6rem 0, 100% 0, 100% 100%, 0.6rem 100%, 0 50%);
+}
+
+/* Les statuts sont des COUPS DE TAMPON, chacun de son encre */
+.badge,
+.status-badge {
+    border: 1px solid #A8956C;
+    background: var(--papier-clair);
+    color: var(--encre);
+    font-family: var(--font-machine);
+    letter-spacing: 0.06em;
+}
+
+.status-badge {
+    border: 2px solid var(--tampon);
+    background: rgb(248 243 232 / 0.92);
+    color: var(--tampon);
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+}
+
+.status-badge strong {
+    color: inherit;
+    font-weight: 400;
+}
+
+/* À venir : tampon bleu « EN ATTENTE » */
+.status-badge.status-a_venir {
+    border-color: var(--tampon-bleu);
+    color: var(--tampon-bleu);
+    transform: rotate(2deg);
+}
+
+/* Terminé : tampon noir, l'affaire est classée */
+.status-badge.status-termine {
+    border-style: double;
+    border-width: 3px;
+    border-color: var(--encre);
+    color: var(--encre);
+}
+
+.status-badge.status-termine::before {
+    content: "✕";
+}
+
+.badge--categorie {
+    background: var(--papier-clair);
+}
+
+.btn-link,
+.btn-back {
+    color: var(--tampon-bleu);
+    font-family: var(--font-machine);
+}
+
+.social-link {
+    border: 1px solid var(--or-deco);
+    background: var(--laque);
+    color: var(--or-pale);
+    font-family: var(--font-machine);
+}
+
+.link-tile {
+    border-left: 4px solid var(--tampon);
+    background: var(--papier-clair);
+    color: var(--encre);
+    font-family: var(--font-machine);
+}
+
+
+/* ==========================================================================
+   7. CARTES : dossiers, photos d'identité, fiches cartonnées
+   ========================================================================== */
+
+/* Campagnes : des chemises cartonnées avec leur onglet */
+.campagne-card {
+    border: 1px solid #B39A5E;
+    background: var(--texture-papier), var(--chemise);
+    box-shadow: var(--shadow);
+}
+
+.campagne-card h2 {
+    color: var(--encre);
+    font-size: 1.5rem;
+}
+
+/* Héros : des photos d'identité, bord blanc et coins noirs */
+.hero-card .card-link {
+    border: 10px solid var(--papier-clair);
+    border-bottom-width: 10px;
+    background: var(--laque);
+    box-shadow: var(--shadow);
+}
+
+.hero-card-body {
+    background: linear-gradient(transparent, rgb(20 19 18 / 0.9) 55%);
+}
+
+.hero-card-title {
+    font-family: var(--font-machine);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.hero-card-player {
+    color: var(--or-pale);
+    font-family: var(--font-machine);
+}
+
+/* Portrait de la fiche : une photo glissée dans quatre coins noirs */
+.fiche-media {
+    position: relative;
+}
+
+.fiche-media img {
+    border: 12px solid var(--papier-clair);
+    box-shadow: var(--shadow);
+}
+
+.fiche-media::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background:
+        linear-gradient(135deg, var(--laque) 50%, transparent 50%) top left / 26px 26px no-repeat,
+        linear-gradient(225deg, var(--laque) 50%, transparent 50%) top right / 26px 26px no-repeat,
+        linear-gradient(45deg, var(--laque) 50%, transparent 50%) bottom left / 26px 26px no-repeat,
+        linear-gradient(315deg, var(--laque) 50%, transparent 50%) bottom right / 26px 26px no-repeat;
+    pointer-events: none;
+}
+
+.timeline-img,
+.carte-preview-img {
+    border: 8px solid var(--papier-clair);
+    box-shadow: var(--shadow);
+}
+
+/* Image manquante : la photo n'a pas été retrouvée */
+.img-placeholder,
+.placeholder-img {
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Crect x='30' y='22' width='140' height='34' fill='none' stroke='%239B1C1C' stroke-width='2.5' transform='rotate(-6 100 39)'/%3E%3Ctext x='100' y='45' text-anchor='middle' font-family='Courier New,monospace' font-size='13' textLength='124' lengthAdjust='spacingAndGlyphs' fill='%239B1C1C' transform='rotate(-6 100 39)'%3EPHOTO MANQUANTE%3C/text%3E%3C/svg%3E") center / min(80%, 15rem) no-repeat,
+        var(--texture-papier),
+        #D9CDB3;
+}
+
+/* Chronologie : des fiches bristol du registre, lignes bleues, marge rouge */
+.timeline-card {
+    border: 1px solid #CFC2A5;
+    background:
+        linear-gradient(90deg, transparent 1.1rem, rgb(155 28 28 / 0.55) 1.1rem calc(1.1rem + 1px), transparent calc(1.1rem + 1px)),
+        repeating-linear-gradient(transparent 0 1.7rem, rgb(31 62 110 / 0.18) 1.7rem calc(1.7rem + 1px)),
+        var(--papier-clair);
+    color: var(--encre);
+    box-shadow: var(--shadow);
+}
+
+.timeline-date {
+    color: var(--tampon);
+    font-family: var(--font-machine);
+    letter-spacing: 0.06em;
+}
+
+.timeline-title a {
+    color: var(--encre);
+}
+
+.mini-card {
+    border: 1px solid #CFC2A5;
+    background: var(--papier-clair);
+    box-shadow: var(--shadow);
+}
+
+
+/* ==========================================================================
+   8. CARACTÉRISTIQUES : les cases d'un formulaire administratif
+   ========================================================================== */
+.stat {
+    border: 1px solid var(--encre);
+    background: var(--papier-clair);
+    color: var(--encre);
+    box-shadow: 3px 3px 0 rgb(28 26 23 / 0.15);
+}
+
+.stat-libelle {
+    color: var(--encre-pale);
+    font-family: var(--font-machine);
+}
+
+.stat-valeur {
+    color: var(--encre);
+    font-family: var(--font-machine);
+}
+
+.stat-complement {
+    color: var(--tampon);
+    font-family: var(--font-machine);
+}
+
+.tableau-stats-titre {
+    font-family: var(--font-machine);
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   9. FORMULAIRES : des champs à remplir à la machine
+   ========================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+textarea,
+select {
+    border: 0;
+    border-bottom: 1px solid var(--encre);
+    border-radius: 0;
+    background: rgb(255 255 255 / 0.55);
+    color: var(--encre);
+    font-family: var(--font-machine);
+    font-size: 1rem;
+}
+
+textarea {
+    background:
+        repeating-linear-gradient(transparent 0 1.6rem, rgb(31 62 110 / 0.2) 1.6rem calc(1.6rem + 1px)),
+        rgb(255 255 255 / 0.55);
+    line-height: 1.6rem;
+}
+
+::placeholder {
+    color: #6F685C;
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   10. CARTES DU MONDE : punaisées au mur du bureau
+   ========================================================================== */
+.carte-map {
+    border: 8px solid var(--papier-clair);
+    box-shadow: var(--shadow);
+}
+
+.carte-map::before,
+.carte-map::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    z-index: 3;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #F0B3B3, var(--tampon) 55%, #4A0E0E);
+    box-shadow: 1px 2px 2px rgb(0 0 0 / 0.4);
+    pointer-events: none;
+}
+
+.carte-map::before { left: 12px; }
+.carte-map::after  { right: 12px; }
+
+.map-zone-nom,
+.map-marker-label,
+.lieu-chip {
+    font-family: var(--font-machine);
+    letter-spacing: 0.04em;
+}
+
+
+/* ==========================================================================
+   11. ACCESSIBILITÉ
+   ========================================================================== */
+
+/* Le tampon penché est purement décoratif : en mode contrastes élevés, il
+   se redresse et garde un cadre visible */
+@media (forced-colors: active) {
+    .status-badge,
+    .fiche-card::after {
+        transform: none;
+        border-color: CanvasText;
+    }
+}

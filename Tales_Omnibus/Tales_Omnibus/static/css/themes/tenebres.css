@@ -153,20 +153,14 @@ h3, h4 {
     letter-spacing: 0.04em;
 }
 
-.richtext a,
-.fiche-card p a {
+.richtext a:not(.btn),
+.fiche-card p a:not(.btn) {
     color: var(--laiton);
     text-decoration-color: var(--sang-vif);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
 }
 
-/* …sauf les boutons posés dans un texte (bouton « Télécharger ») */
-.richtext a.btn,
-.fiche-card p a.btn {
-    color: var(--os);
-    text-decoration: none;
-}
 
 :focus-visible {
     outline: 3px solid var(--laiton);
@@ -422,8 +416,8 @@ h3, h4 {
     background: var(--rivets), var(--texture-suie), linear-gradient(170deg, var(--fer), #120E0C);
 }
 
-.panel--accent .richtext a,
-.panel--strong .richtext a {
+.panel--accent .richtext a:not(.btn),
+.panel--strong .richtext a:not(.btn) {
     color: var(--laiton);
 }
 
@@ -506,6 +500,32 @@ h3, h4 {
     background: radial-gradient(ellipse at 50% 75%, #FFF1C4 0 20%, #F2A33A 45%, #A51C1C 85%);
     box-shadow: 0 0 8px rgb(242 163 58 / 0.7);
     animation: flamme 2.2s ease-in-out infinite;
+}
+
+/* À venir : une mèche pas encore allumée, d'où monte un filet de fumée */
+.status-badge.status-a_venir::before {
+    width: 0.7em;
+    height: 1.1em;
+    border-radius: 0;
+    background:
+        radial-gradient(ellipse 45% 35% at 50% 28%, rgb(225 215 205 / 0.85), transparent 72%),
+        linear-gradient(transparent 58%, #D4B46C 58% 64%, #2A211B 64%) center / 3px 100% no-repeat;
+    box-shadow: none;
+    animation: fumee 3s ease-in-out infinite;
+}
+
+/* Terminé : la chandelle s'est éteinte ; il reste un crâne */
+.status-badge.status-termine::before {
+    width: 1em;
+    height: 1em;
+    border-radius: 0;
+    background: var(--crane) center / contain no-repeat;
+    box-shadow: none;
+    animation: none;
+}
+
+@keyframes fumee {
+    50% { transform: translateY(-2px) scaleX(1.2); opacity: 0.6; }
 }
 
 @keyframes flamme {
@@ -706,7 +726,8 @@ select:focus {
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
     .site-name,
-    .status-badge::before {
+    .status-badge::before,
+    .status-badge.status-a_venir::before {
         animation: none;
     }
 }
