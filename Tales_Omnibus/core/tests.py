@@ -394,3 +394,38 @@ class EntretienMigrationsEnAttenteTests(TestCase):
                 titres = [e.titre for e in lancer_entretien(sauvegarder=False, **options)]
                 self.assertEqual(titres[-1], "Arrêt")
                 self.assertNotIn("Redirections", titres)  # la suite n'a pas été lancée
+
+
+class LogoEtSvgTests(TestCase):
+    """Le logo garde sa forme, et un SVG de la médiathèque ne peut pas exécuter de script."""
+
+    SVG = (b'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="60" viewBox="0 0 300 60">'
+           b'<rect width="300" height="60" fill="#C9A24A"/></svg>')
+
+    def setUp(self):
+        from django.core.files.base import ContentFile
+        from wagtail.images.models import Image
+        from core.models import NavigationSettings
+        self.logo = Image.objects.create(title="Logo en bannière", file=ContentFile(self.SVG, name="logo.svg"))
+        reglages = NavigationSettings.load()
+        reglages.logo = self.logo
+        reglages.save()
+
+    def test_le_logo_svg_reste_un_svg_et_n_est_pas_recadre(self):
+        response = self.client.get(HomePage.objects.first().url)
+        rendition = self.logo.get_rendition("max-320x96")
+        self.assertTrue(rendition.url.endswith(".svg"))
+        self.assertContains(response, rendition.url)
+        # Bannière 300x60 réduite à 96 de haut maximum : les proportions sont gardées
+        self.assertEqual((rendition.width, rendition.height), (300, 60))
+
+    def test_un_svg_servi_depuis_media_interdit_les_scripts(self):
+        from django.http import HttpResponse
+        from django.test import RequestFactory
+        from django.conf import settings
+        from core.middleware import SvgSansScriptMiddleware
+        middleware = SvgSansScriptMiddleware(lambda request: HttpResponse("<svg/>"))
+        svg = middleware(RequestFactory().get(f"{settings.MEDIA_URL}original_images/logo.svg"))
+        self.assertIn("sandbox", svg["Content-Security-Policy"])
+        page = middleware(RequestFactory().get("/campagnes/"))
+        self.assertNotIn("Content-Security-Policy", page)

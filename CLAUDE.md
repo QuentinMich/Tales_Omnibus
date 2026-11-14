@@ -262,6 +262,23 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   complément libre. Inserts automatiques : nom et adresse du site, page
   Contact, date de publication, et cookies du lecteur de live s'il existe.
   `StandardPage` a été supprimée (aucune page ne l'utilisait).
+- **Thèmes** (`static/css/themes/<clé>.css`, choix dans Paramètres du site >
+  « Thème du site », liste fermée `THEMES` de `core/models.py`, migration
+  core 0007) : `base.html` charge le thème APRÈS `structure.css`. Un thème
+  redéfinit les variables de `:root` et ajoute des décors (textures et frises
+  en SVG data URI, `clip-path`, lettrines), JAMAIS de mise en page.
+  `grimoire.css` = médiéval fantastique (parchemin, reliure de cuir, titre du
+  site doré à chaud : `background-clip: text` + `drop-shadow`, car un
+  `text-shadow` se verrait à travers les lettres transparentes).
+- **Logo** : `{% image logo max-320x96 %}` (jamais `fill-`, jamais rond : il
+  garde sa forme). SVG accepté dans la médiathèque
+  (`WAGTAILIMAGES_EXTENSIONS` + `svg`) ; un SVG reste un SVG tant qu'on
+  n'utilise pas de `format-…` (sinon ajouter `preserve-svg`).
+  `core/middleware.py` (`SvgSansScriptMiddleware`) ajoute une
+  `Content-Security-Policy` sans script aux SVG servis depuis `/media/` : un
+  SVG peut contenir du JavaScript, et les comptes joueurs envoient des images.
+  **En production**, ajouter le même en-tête dans le serveur web pour
+  `/media/*.svg` (nginx : `add_header Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox";`).
 - **Slugs automatiques** (`core/slugs.py`, `SlugAutomatiqueMixin`, placé AVANT
   `Page` dans l'héritage) : le slug est recalculé dans `full_clean()` à chaque
   enregistrement. Fiches (`BaseFichePage`) et campagnes : slug = titre, sans
@@ -321,14 +338,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 ## Feuille de route (pas des bugs !)
 
-- **Thèmes** : un fichier CSS par thème (High Fantasy, Dark Fantasy,
-  Cyberpunk…) dans `static/css/themes/`. Chaque thème ne fait que redéfinir les
-  variables de `:root`. Le thème se choisit dans l'admin via un champ des
-  `NavigationSettings`. Le point d'accroche existe déjà : `{% block theme_css %}`
-  dans `base.html`.
-  Bonus voulu par Quentin : que l'ADMIN prenne aussi les couleurs du thème
-  (piste : hook `insert_global_admin_css` qui injecte une petite feuille
-  redéfinissant les variables CSS de l'admin Wagtail, selon le thème choisi).
+- **Thèmes (suite)** : d'autres thèmes (Dark Fantasy, Cyberpunk…) sur le
+  modèle de `grimoire.css`. Bonus voulu par Quentin : que l'ADMIN prenne aussi
+  les couleurs du thème (piste : hook `insert_global_admin_css`).
+- **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
+  site (RGPD) ou à signaler dans les mentions légales.
+- **Logo doré** (idée) : option pour « dorer » un logo monochrome avec un
+  `mask-image` (le logo sert de pochoir à un dégradé d'or).
 - **Cartes reliées** : cliquer sur la zone d'un royaume (carte du monde)
   pour ouvrir la carte détaillée de ce royaume.
 - **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),

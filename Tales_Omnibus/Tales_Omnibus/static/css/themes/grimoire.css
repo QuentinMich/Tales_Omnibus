@@ -167,26 +167,56 @@ h1, h2, h3, h4 {
     background: transparent;
 }
 
-.site-logo {
-    border: 2px solid var(--or);
-    box-shadow: 0 0 0 3px var(--cuir), 0 0 0 4px var(--or);
+/* Le titre sur la reliure : encadré de deux nervures, comme sur le dos d'un livre */
+.site-brand {
+    border-block: 3px double rgb(201 162 74 / 0.55);
 }
 
-/* Le nom du site : lettres d'or qui vacillent à la lueur d'une bougie */
+/* Le logo garde SA forme ; il est simplement « frappé » dans le cuir :
+   une ombre au-dessus (le creux), un reflet en dessous (la lèvre) */
+.site-logo {
+    filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.7)) drop-shadow(0 1px 0 rgb(255 225 160 / 0.25));
+}
+
+.site-logo--placeholder {
+    background: radial-gradient(circle at 35% 30%, var(--or-clair), var(--or) 55%, #7A5A1C);
+}
+
+/* LE TITRE DORÉ À CHAUD : feuille d'or enfoncée dans le cuir.
+   - la dorure : un dégradé d'or peint DANS les lettres (background-clip: text) ;
+   - le creux : drop-shadow (pas text-shadow, qui se verrait à travers les
+     lettres transparentes), sombre au-dessus, clair en dessous ;
+   - le reflet : le dégradé glisse lentement, comme un livre qu'on incline
+     sous une bougie. */
 .site-name {
-    color: var(--or-clair);
+    background: linear-gradient(105deg,
+        #7A5A1C 0%, var(--or) 22%, #F3DC94 40%, #FFF7DC 50%,
+        #F3DC94 60%, var(--or) 78%, #7A5A1C 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-family: "Cinzel Decorative", var(--font-title);
     font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: none;
-    text-shadow: 0 1px 0 var(--cuir), 0 0 12px rgb(233 207 122 / 0.35);
-    animation: chandelle 4s ease-in-out infinite;
+    filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.8)) drop-shadow(0 1px 0 rgb(255 225 160 / 0.22));
+    animation: reflet-dore 6s ease-in-out infinite alternate;
 }
 
-@keyframes chandelle {
-    0%, 100% { text-shadow: 0 1px 0 var(--cuir), 0 0 10px rgb(233 207 122 / 0.30); }
-    40%      { text-shadow: 0 1px 0 var(--cuir), 0 0 16px rgb(255 190 90 / 0.55); }
-    55%      { text-shadow: 0 1px 0 var(--cuir), 0 0 8px rgb(233 207 122 / 0.25); }
-    70%      { text-shadow: 0 1px 0 var(--cuir), 0 0 14px rgb(255 200 110 / 0.45); }
+@keyframes reflet-dore {
+    from { background-position: 100% 0; }
+    to   { background-position: 0% 0; }
+}
+
+/* Mode « contrastes élevés » de Windows : il supprime les fonds, donc des
+   lettres transparentes deviendraient invisibles. On rend la couleur système. */
+@media (forced-colors: active) {
+    .site-name {
+        background: none;
+        color: CanvasText;
+        filter: none;
+    }
 }
 
 .site-nav a {

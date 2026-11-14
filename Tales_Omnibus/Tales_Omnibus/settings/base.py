@@ -64,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    "core.middleware.SvgSansScriptMiddleware",
 ]
 
 ROOT_URLCONF = "Tales_Omnibus.urls"
@@ -196,6 +197,11 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # This can be omitted to allow all files, but note that this may present a security risk
 # if untrusted users are allowed to upload files -
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
+# Images : les formats par défaut de Wagtail + le SVG (logos, icônes de
+# catégories nets à toutes les tailles). Un SVG peut contenir du JavaScript :
+# voir core/middleware.py pour la protection.
+WAGTAILIMAGES_EXTENSIONS = ["avif", "gif", "jpg", "jpeg", "png", "webp", "svg"]
+
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 # Maximum upload size for documents in bytes.

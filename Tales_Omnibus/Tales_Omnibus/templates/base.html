@@ -58,7 +58,9 @@
         <header class="site-header">
             <a class="site-brand" href="{% pageurl current_site.root_page %}">
                 {% if settings.core.NavigationSettings.logo %}
-                    {% image settings.core.NavigationSettings.logo fill-60x60 alt="" class="site-logo" %}
+                    {# max- et pas fill- : le logo garde SA forme (jamais recadré, jamais rond) ; #}
+                    {# un SVG reste un SVG (Wagtail ne le convertit pas en image matricielle).  #}
+                    {% image settings.core.NavigationSettings.logo max-320x96 alt="" class="site-logo" %}
                 {% else %}
                     <span class="site-logo site-logo--placeholder" aria-hidden="true"></span>
                 {% endif %}
