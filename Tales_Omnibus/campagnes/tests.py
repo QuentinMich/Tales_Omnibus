@@ -636,3 +636,31 @@ class GroupeDeHerosTests(CampagneTreeMixin, TestCase):
         with self.assertRaises(ValidationError):
             HeroPage(title="Sans joueur", joue_par='joueur', joueur_nom="").clean()
         HeroPage(title="PNJ", joue_par='mj', joueur_nom="").clean()  # pas d'erreur
+
+
+class LieuPasEncorePlaceTests(CampagneTreeMixin, TestCase):
+    """Un lieu AJOUTÉ à une carte sans position : la mini-carte montre la carte entière."""
+
+    def setUp(self):
+        super().setUp()
+        from wagtail.images import get_image_model
+        from wagtail.images.tests.utils import get_test_image_file
+        from campagnes.models import Apparition, CartePage, LieuPage
+        from encyclopedie.models import EncyclopedieIndexPage
+        encyclopedie = self.index.get_parent().add_child(instance=EncyclopedieIndexPage(title="Encyclopédie"))
+        self.fort = encyclopedie.add_child(instance=LieuPage(title="Fort-Sombre"))
+        image = get_image_model().objects.create(title="Carte", file=get_test_image_file())
+        self.monde = self.campagne.add_child(instance=CartePage(title="Monde", main_image=image))
+        self.val = self.campagne.add_child(instance=CartePage(title="Val Gris", main_image=image))
+        Apparition.objects.create(carte=self.val, lieu=self.fort)  # pas de position
+        Apparition.objects.create(carte=self.monde, lieu=self.fort, coord_x=40, coord_y=60)
+
+    def test_la_fiche_montre_l_image_de_la_carte_et_le_signale(self):
+        html = self.client.get(self.fort.url).content.decode()
+        self.assertNotIn('img-placeholder carte-map-img', html)  # plus d'image d'attente
+        self.assertIn("(pas encore placé)", html)
+
+    def test_un_heros_voit_la_carte_ou_son_lieu_est_place(self):
+        # Les deux cartes sont dans sa campagne ; seule « Monde » a une position pour le lieu
+        hero = self.campagne.add_child(instance=HeroPage(title="Ysolde", joue_par='mj', lieu_origine=self.fort))
+        self.assertEqual(self.fort.apparition_vue_depuis(hero).carte_id, self.monde.pk)

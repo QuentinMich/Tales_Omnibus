@@ -547,15 +547,18 @@ class LieuPage(FicheEncyclopedieMixin, BaseFichePage):
         """
         La carte à montrer sur la fiche d'un héros ou d'un événement : de
         préférence une carte de LEUR campagne (le lieu tel qu'on le voyait à
-        cette époque), sinon la première carte où le lieu figure.
+        cette époque), sinon la première carte où le lieu figure. Dans les
+        deux cas, une carte où le lieu est PLACÉ passe avant une carte où il
+        a seulement été ajouté (sans position, la mini-carte ne peut pas zoomer).
         """
         apparitions = self.apparitions_publiees()
         campagne = CampagnePage.objects.ancestor_of(page).first()
         if campagne:
             dans_la_campagne = apparitions.filter(carte__in=CartePage.objects.descendant_of(campagne))
             if dans_la_campagne:
-                return dans_la_campagne.first()
-        return apparitions.first()
+                apparitions = dans_la_campagne
+        apparitions = list(apparitions)
+        return next((a for a in apparitions if a.est_placee), apparitions[0] if apparitions else None)
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)

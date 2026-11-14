@@ -321,6 +321,52 @@ IMAGES = {
     "icone-lieu-dit": ("icone-lieu-dit", "Lieu-dit", "Site/Icône", ""),
 }
 
+# Le POINT FOCAL de Wagtail (en % de l'image : centre x, centre y, largeur,
+# hauteur de la zone à garder) : les rendus « fill-… » recadrent AUTOUR de
+# lui. Sans lui, Wagtail recadre au centre, et une vignette en paysage d'un
+# portrait coupe le visage. Relevé à l'œil sur chaque image (le visage, la
+# créature, la scène). Une image absente de ce dictionnaire : le centre suffit.
+POINTS_FOCAUX = {
+    "heros-maelis-ventcourt": (50, 23, 20, 15),
+    "heros-brann-le-rouquin": (50, 28, 25, 20),
+    "heros-pip-chardon": (50, 46, 20, 15),
+    "heros-soeur-ysolde": (50, 39, 20, 15),
+    "heros-gaspard-tetenoire": (52, 40, 30, 30),
+    "lore-vael-deesse-des-brumes": (50, 24, 20, 15),
+    "lore-kroth-le-petit": (51, 28, 20, 15),
+    "lore-lordre-du-corbeau": (50, 30, 30, 20),
+    "lore-le-marchand-borgne": (52, 28, 20, 15),
+    "lore-le-dragon-de-suie": (40, 41, 30, 25),
+    "lore-lepee-sans-nom": (50, 45, 30, 50),
+    "lore-la-legende-du-lac-gris": (50, 62, 60, 30),
+    "evenement-la-nuit-des-cendres": (50, 35, 40, 40),
+    "evenement-le-bal-des-lanternes": (50, 55, 60, 40),
+    "evenement-le-pacte-du-corbeau": (50, 40, 30, 30),
+    "gravure-erudit": (58, 38, 30, 25),
+}
+
+
+def slug_de_fichier(titre):
+    """
+    slugify(), mais sans perdre les ligatures : Django SUPPRIME « œ » et « æ »
+    (ce ne sont pas des lettres accentuées), « Sœur » donnerait « sur ».
+    """
+    for ligature, lettres in (("œ", "oe"), ("Œ", "Oe"), ("æ", "ae"), ("Æ", "Ae")):
+        titre = titre.replace(ligature, lettres)
+    return slugify(titre)
+
+
+def poser_le_point_focal(image, cle):
+    """Convertit le point focal déclaré (en %) en pixels, l'unité de Wagtail."""
+    if cle not in POINTS_FOCAUX or not image.width or image.focal_point_x is not None:
+        return  # pas déclaré, image sans taille (SVG), ou déjà réglé à la main
+    x, y, largeur, hauteur = POINTS_FOCAUX[cle]
+    image.focal_point_x = round(image.width * x / 100)
+    image.focal_point_y = round(image.height * y / 100)
+    image.focal_point_width = round(image.width * largeur / 100)
+    image.focal_point_height = round(image.height * hauteur / 100)
+    image.save(update_fields=["focal_point_x", "focal_point_y", "focal_point_width", "focal_point_height"])
+
 # Quelle catégorie reçoit quelle icône (seulement si elle n'en a pas déjà une)
 ICONES_DES_CATEGORIES = {"Ville": "icone-ville", "Village": "icone-village", "Lieu-dit": "icone-lieu-dit"}
 
@@ -361,6 +407,7 @@ def importer_les_images():
                 image.file.save(fichier.name, File(contenu), save=False)
                 image.save()
             image.tags.add(TAG_IMAGES)
+        poser_le_point_focal(image, cle)
         importees[cle] = image
     return importees
 
@@ -412,6 +459,10 @@ def _creer(index, encyclopedie):
         # Réutilise les images du site, à tour de rôle ; aucune image = placeholder
         return portraits[n % len(portraits)] if portraits else None
 
+    def cle_image(prefixe, titre):
+        """« heros » + « Sœur Ysolde » -> « heros-soeur-ysolde » (nom du fichier)."""
+        return f"{prefixe}-{slug_de_fichier(titre)}"
+
     def illustration(cle, repli):
         """L'image de démo de cette clé, sinon l'image de secours."""
         return demo.get(cle, repli)
@@ -452,14 +503,14 @@ def _creer(index, encyclopedie):
     for n, (titre, (cat, intro, tags, epingle)) in enumerate(LIEUX.items()):
         lieux[titre] = publier(encyclopedie, LieuPage(
             title=titre, intro=f"<p>{intro}</p>", epinglee=epingle,
-            main_image=illustration(f"lieu-{slugify(titre)}", image(n) if n % 2 else None),
+            main_image=illustration(cle_image("lieu", titre), image(n) if n % 2 else None),
         ), tags, cat)
     for n, (titre, (cat, intro, tags, epingle)) in enumerate(LORE.items()):
         gravure = gravures[n % len(gravures)] if gravures else image(n + 1)
         publier(encyclopedie, LorePage(
             caracteristiques=STATS_DU_LORE.get(titre, []),
             title=titre, intro=f"<p>{intro}</p>", epinglee=epingle,
-            main_image=illustration(f"lore-{slugify(titre)}", image(n) if n % 3 else None),
+            main_image=illustration(cle_image("lore", titre), image(n) if n % 3 else None),
             body=article(intro, gravure, 'droite' if n % 2 else 'gauche',
                          ornement=("lettrine", "marge", "cadre")[n % 3]),
         ), tags, cat)
@@ -516,7 +567,7 @@ def _creer(index, encyclopedie):
     for n, (titre, (cat, ordre, date, lieu, intro, tags)) in enumerate(EVENEMENTS.items()):
         publier(chrono, EvenementPage(
             title=titre, date_ordre=ordre, date_affichage=date, lieu=lieux[lieu], intro=f"<p>{intro}</p>",
-            main_image=illustration(f"evenement-{slugify(titre)}", image(n) if n % 2 == 0 else None),
+            main_image=illustration(cle_image("evenement", titre), image(n) if n % 2 == 0 else None),
         ), tags, cat)
 
     for n, (titre, (cat, joueur, origine, intro, tags, epingle, joue_par, parti)) in enumerate(HEROS.items()):
@@ -524,7 +575,7 @@ def _creer(index, encyclopedie):
             caracteristiques=STATS_DES_HEROS.get(titre, []),
             title=titre, joueur_nom=joueur, lieu_origine=lieux[origine], epinglee=epingle,
             joue_par=joue_par, a_quitte_le_groupe=parti,
-            intro=f"<p>{intro}</p>", main_image=illustration(f"heros-{slugify(titre)}", image(n)),
+            intro=f"<p>{intro}</p>", main_image=illustration(cle_image("heros", titre), image(n)),
             joueur_bio="<p>Joue depuis trois campagnes, apporte toujours les chips.</p>" if joueur else "",
         ), tags, cat)
 

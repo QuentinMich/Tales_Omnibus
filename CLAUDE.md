@@ -444,6 +444,14 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
+- **Images de la démo** : point focal déclaré en % dans `POINTS_FOCAUX`
+  (core/demo.py), converti en pixels à l'import (`poser_le_point_focal`) :
+  les vignettes `fill-` gardent les visages. Noms de fichiers via
+  `slug_de_fichier()`, PAS `slugify()` seul : Django SUPPRIME « œ » (« Sœur »
+  donnait « sur », et la démo prenait une autre image).
+- **Lieu ajouté à une carte sans position** : la mini-carte montre la carte
+  ENTIÈRE (`.carte-map--entiere`, même cadre que les zoomées) + « (pas encore
+  placé) » ; `apparition_vue_depuis` préfère une carte où le lieu est placé.
 - **Démo** : `manage.py creer_demo` (ou la page Bien démarrer) crée une
   campagne factice complète (28 pages, 5 héros dont un compagnon et un ancien membre, catégories, familles, apparitions,
   zones imbriquées, zone hachurée, images rangées) ; `creer_demo --supprimer`

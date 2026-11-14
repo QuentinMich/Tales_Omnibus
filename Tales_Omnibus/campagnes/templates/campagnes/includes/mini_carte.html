@@ -29,6 +29,13 @@
                         {% include "campagnes/includes/marqueur.html" with apparition=apparition lien=False %}
                     {% endif %}
                 </a>
+            {% elif carte.main_image %}
+                {# --- LIEU AJOUTÉ À LA CARTE MAIS PAS ENCORE PLACÉ : rien à viser, #}
+                {# on montre la carte entière (sans zoom ni marqueur) #}
+                <a href="{% pageurl carte %}" class="carte-map carte-map--entiere"
+                   aria-label="Voir la carte {{ carte.title }} ({{ lieu.title }} n'y est pas encore placé)">
+                    {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+                </a>
             {% else %}
                 {# --- SANS IMAGE : l'image d'attente, sans zoom --- #}
                 <div class="carte-map">
@@ -47,6 +54,7 @@
         <figcaption class="carte-mini-legende">
             {% include "campagnes/includes/lieu_chip.html" with lieu=lieu %}
             {% if apparition %}sur la carte <a href="{% pageurl apparition.carte %}">{{ apparition.carte.title }}</a>{% endif %}
+            {% if apparition and not apparition.est_placee %}<em class="carte-mini-non-place">(pas encore placé)</em>{% endif %}
         </figcaption>
         {% include "campagnes/includes/situe_dans.html" %}
         {% if apparition.a_cette_epoque %}

@@ -541,3 +541,30 @@ class ReferencementTests(TestCase):
         self.assertContains(self.client.get("/sitemap.xml"), "/campagnes/")
         index.unpublish()
         self.assertNotContains(self.client.get("/sitemap.xml"), "/campagnes/")
+
+
+class ImagesDeLaDemoTests(TestCase):
+    """Chaque fiche de la démo retrouve SON image, et le point focal est posé."""
+
+    def test_chaque_fiche_a_une_image_declaree(self):
+        from core import demo
+        titres = ([("lieu", t) for t in demo.LIEUX] + [("lore", t) for t in demo.LORE]
+                  + [("heros", t) for t in demo.HEROS])
+        for prefixe, titre in titres:
+            if titre == "Notes du MJ":
+                continue  # fiche de texte seul, volontairement sans illustration
+            self.assertIn(f"{prefixe}-{demo.slug_de_fichier(titre)}", demo.IMAGES, titre)
+
+    def test_les_ligatures_ne_disparaissent_pas(self):
+        from core.demo import slug_de_fichier
+        self.assertEqual(slug_de_fichier("Sœur Ysolde"), "soeur-ysolde")  # slugify seul : « sur-ysolde »
+
+    def test_le_point_focal_est_converti_en_pixels(self):
+        from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+        from core.demo import poser_le_point_focal
+        image = Image.objects.create(title="Pip", file=get_test_image_file())  # 640 x 480
+        poser_le_point_focal(image, "heros-pip-chardon")  # (50, 46, 20, 15) en %
+        image.refresh_from_db()
+        self.assertEqual((image.focal_point_x, image.focal_point_y), (320, 221))
+        self.assertEqual((image.focal_point_width, image.focal_point_height), (128, 72))
