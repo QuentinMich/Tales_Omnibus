@@ -1,0 +1,6 @@
+{% load wagtailcore_tags %}
+{# Passage enluminé : la lettrine est la 1re lettre du texte (::first-letter en CSS) : #}
+{# le mot reste entier pour les lecteurs d'écran et les moteurs de recherche.          #}
+<div class="enluminure enluminure--{{ value.ornement }}">
+    <div class="richtext">{{ value.texte|richtext }}</div>
+</div>

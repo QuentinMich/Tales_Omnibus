@@ -429,3 +429,25 @@ class LogoEtSvgTests(TestCase):
         self.assertIn("sandbox", svg["Content-Security-Policy"])
         page = middleware(RequestFactory().get("/campagnes/"))
         self.assertNotIn("Content-Security-Policy", page)
+
+    def test_logo_dore_devient_un_pochoir(self):
+        from core.models import NavigationSettings
+        reglages = NavigationSettings.load()
+        reglages.logo_dore = True
+        reglages.save()
+        response = self.client.get(HomePage.objects.first().url)
+        url = self.logo.get_rendition("max-320x96").url
+        # L'image n'est plus un <img> : elle sert de masque, avec ses proportions
+        self.assertContains(response, f"--logo-url: url('{url}')")
+        self.assertContains(response, "aspect-ratio: 300.0 / 60.0")
+        self.assertNotContains(response, 'class="site-logo"')
+
+
+class EnluminureBlockTests(TestCase):
+    def test_rendu_avec_l_ornement_choisi(self):
+        from core.blocks import EnluminureBlock
+        bloc = EnluminureBlock()
+        html = bloc.render(bloc.to_python({"ornement": "marge", "texte": "<p>Il était une fois</p>"}))
+        self.assertIn('class="enluminure enluminure--marge"', html)
+        # La lettrine est faite en CSS : le mot reste entier dans le HTML
+        self.assertIn("Il était une fois", html)

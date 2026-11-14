@@ -237,9 +237,13 @@ class Command(BaseCommand):
             # Réutilise les images du site, à tour de rôle ; aucune image = placeholder
             return portraits[n % len(portraits)] if portraits else None
 
-        def article(intro, illustration, position):
+        def article(intro, illustration, position, ornement="lettrine"):
             """Un corps d'article de démo : de quoi voir chaque bloc du StreamField."""
-            blocs = [('section', {'titre': "Ce qu'on en sait", 'texte': (
+            blocs = [('enluminure', {'ornement': ornement, 'texte': (
+                "<p>Il est dit, dans les registres de la Guilde des Copistes, que nul ne "
+                "connaît le premier mot de cette histoire. On sait seulement qu'il fut "
+                "écrit à l'encre de brume, et qu'il s'efface quand on le lit à voix haute.</p>")}),
+                ('section', {'titre': "Ce qu'on en sait", 'texte': (
                 f"<p>{intro} Les érudits ne sont d'accord sur rien, sauf sur le fait "
                 "qu'il vaut mieux ne pas en parler la nuit.</p>")})]
             if illustration:
@@ -274,7 +278,8 @@ class Command(BaseCommand):
             publier(encyclopedie, LorePage(
                 caracteristiques=STATS_DU_LORE.get(titre, []),
                 title=titre, intro=f"<p>{intro}</p>", epinglee=epingle, main_image=image(n) if n % 3 else None,
-                body=article(intro, image(n + 1), 'droite' if n % 2 else 'gauche'),
+                body=article(intro, image(n + 1), 'droite' if n % 2 else 'gauche',
+                             ornement=("lettrine", "marge", "cadre")[n % 3]),
             ), tags, cat)
 
         # La campagne et ses enfants

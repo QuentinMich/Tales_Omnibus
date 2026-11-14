@@ -279,6 +279,20 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   SVG peut contenir du JavaScript, et les comptes joueurs envoient des images.
   **En production**, ajouter le même en-tête dans le serveur web pour
   `/media/*.svg` (nginx : `add_header Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox";`).
+- **Logo doré** (case « Dorer le logo », `NavigationSettings.logo_dore`,
+  migration core 0008) : l'image n'est plus un `<img>` mais un pochoir
+  (`mask: var(--logo-url)`, `aspect-ratio` posé par le template avec
+  `|unlocalize` : un SVG a des dimensions DÉCIMALES). Le thème choisit ce
+  qu'on voit à travers via `--logo-fill` (Grimoire : `--dorure` + reflet).
+  Le creux (`drop-shadow`) est sur le cadre `.site-logo-pochoir` : sur
+  l'élément masqué, le masque couperait l'ombre.
+- **Bloc « Enluminure »** (`EnluminureBlock`, `BaseStreamBlock`) : texte +
+  ornement (lettrine / rinceaux dans la marge / page encadrée). La lettrine
+  est un `::first-letter` (le mot reste entier dans le HTML). Version sobre
+  dans `structure.css`, version enluminée dans le thème. La démo en met un
+  au début de chaque fiche Lore (les 3 ornements à tour de rôle). Dans le
+  Grimoire, la lettrine AUTOMATIQUE ne touche que `.fiche-description` : une
+  seule par fiche, les autres passent par le bloc.
 - **Slugs automatiques** (`core/slugs.py`, `SlugAutomatiqueMixin`, placé AVANT
   `Page` dans l'héritage) : le slug est recalculé dans `full_clean()` à chaque
   enregistrement. Fiches (`BaseFichePage`) et campagnes : slug = titre, sans
@@ -343,8 +357,11 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   les couleurs du thème (piste : hook `insert_global_admin_css`).
 - **Polices du Grimoire** : chargées depuis Google Fonts ; à héberger sur le
   site (RGPD) ou à signaler dans les mentions légales.
-- **Logo doré** (idée) : option pour « dorer » un logo monochrome avec un
-  `mask-image` (le logo sert de pochoir à un dégradé d'or).
+- **Packs de SVG** (idée de Quentin) : un « addon » qui remplace d'un coup
+  les icônes du site (catégories : village, ville, donjon…) par un autre
+  style. Brique déjà prête : le POCHOIR (`mask-image`) du logo doré, qui
+  laisse le THÈME choisir la couleur d'une icône monochrome (or, néon…). À
+  étendre aux icônes de catégories ; un pack = des SVG monochromes + un nom.
 - **Cartes reliées** : cliquer sur la zone d'un royaume (carte du monde)
   pour ouvrir la carte détaillée de ce royaume.
 - **Filtre géographique** de l'encyclopédie (« tous les lieux d'Ardenn »),

@@ -1,4 +1,4 @@
-{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags navigation_tags seo_tags %}
+{% load l10n static wagtailcore_tags wagtailuserbar wagtailsettings_tags wagtailimages_tags navigation_tags seo_tags %}
 {% get_settings %}
 {% wagtail_site as current_site %}
 <!DOCTYPE html>
@@ -60,7 +60,18 @@
                 {% if settings.core.NavigationSettings.logo %}
                     {# max- et pas fill- : le logo garde SA forme (jamais recadré, jamais rond) ; #}
                     {# un SVG reste un SVG (Wagtail ne le convertit pas en image matricielle).  #}
-                    {% image settings.core.NavigationSettings.logo max-320x96 alt="" class="site-logo" %}
+                    {% if settings.core.NavigationSettings.logo_dore %}
+                        {# Logo « doré » : l'image sert de POCHOIR (mask-image) et c'est le #}
+                        {# thème qui choisit ce qu'on voit à travers (or, néon, encre…).    #}
+                        {# |unlocalize : un SVG a des dimensions décimales, et en français  #}
+                        {# Django écrirait « 300,0 », ce qui rendrait le CSS invalide.      #}
+                        {% image settings.core.NavigationSettings.logo max-320x96 as logo_img %}
+                        <span class="site-logo-pochoir">
+                            <span class="site-logo site-logo--dore" style="--logo-url: url('{{ logo_img.url }}'); aspect-ratio: {{ logo_img.width|unlocalize }} / {{ logo_img.height|unlocalize }};"></span>
+                        </span>
+                    {% else %}
+                        {% image settings.core.NavigationSettings.logo max-320x96 alt="" class="site-logo" %}
+                    {% endif %}
                 {% else %}
                     <span class="site-logo site-logo--placeholder" aria-hidden="true"></span>
                 {% endif %}

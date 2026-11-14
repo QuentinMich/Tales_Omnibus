@@ -186,6 +186,31 @@ class SeparateurBlock(blocks.StaticBlock):
         admin_text = "Trait de séparation entre deux parties."
 
 
+class EnluminureBlock(blocks.StructBlock):
+    """
+    Un passage ENLUMINÉ, comme dans un manuscrit : grande lettrine décorée au
+    début du texte, et selon l'ornement choisi, une bordure dans la marge ou
+    un cadre. Sans thème, la lettrine est simplement grande et colorée ; c'est
+    le thème qui ajoute la feuille d'or, les rinceaux, etc.
+    """
+    ORNEMENTS = [
+        ("lettrine", "Lettrine seule"),
+        ("marge", "Lettrine + rinceaux dans la marge"),
+        ("cadre", "Lettrine + page encadrée"),
+    ]
+    ornement = blocks.ChoiceBlock(choices=ORNEMENTS, default="lettrine", label="Ornement")
+    texte = blocks.RichTextBlock(
+        label="Texte",
+        help_text="La première lettre du premier paragraphe devient la lettrine.",
+        features=['bold', 'italic', 'link', 'blockquote'],
+    )
+
+    class Meta:
+        template = "core/blocks/enluminure_block.html"
+        icon = "openquote"
+        label = "Enluminure (lettrine décorée)"
+
+
 class BaseStreamBlock(blocks.StreamBlock):
     """
     Bloc réutilisable pour le StreamField des pages fixes (Univers, fiches, etc.)
@@ -200,6 +225,7 @@ class BaseStreamBlock(blocks.StreamBlock):
     image = SingleImageBlock()
     document = DocumentBlock()
     separateur = SeparateurBlock()
+    enluminure = EnluminureBlock()
     embed = EmbedVideoBlock()
 
     class Meta:

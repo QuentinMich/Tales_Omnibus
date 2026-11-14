@@ -74,6 +74,13 @@
               0 6px 18px -6px rgb(58 35 22 / 0.55);
     --hover-brightness: 1.15;
 
+    /* Feuille d'or : partagée par le titre du site, le logo doré et les
+       lettrines enluminées. background-size 250 % : de quoi faire glisser
+       le reflet (animation reflet-dore). */
+    --dorure: linear-gradient(105deg,
+        #7A5A1C 0%, #C9A24A 22%, #F3DC94 40%, #FFF7DC 50%,
+        #F3DC94 60%, #C9A24A 78%, #7A5A1C 100%);
+
     /* --- Décors réutilisables (SVG dessinés à la main, en data URI) --- */
 
     /* Grain du papier : un bruit fractal très léger */
@@ -189,9 +196,7 @@ h1, h2, h3, h4 {
    - le reflet : le dégradé glisse lentement, comme un livre qu'on incline
      sous une bougie. */
 .site-name {
-    background: linear-gradient(105deg,
-        #7A5A1C 0%, var(--or) 22%, #F3DC94 40%, #FFF7DC 50%,
-        #F3DC94 60%, var(--or) 78%, #7A5A1C 100%);
+    background: var(--dorure);
     background-size: 250% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -202,6 +207,19 @@ h1, h2, h3, h4 {
     text-transform: none;
     filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.8)) drop-shadow(0 1px 0 rgb(255 225 160 / 0.22));
     animation: reflet-dore 6s ease-in-out infinite alternate;
+}
+
+/* Logo doré : la feuille d'or vue à travers la silhouette du logo, avec le
+   même reflet que le titre. Le creux (drop-shadow) est posé sur le CADRE
+   autour : sur le logo lui-même, le pochoir couperait l'ombre. */
+.site-logo--dore {
+    --logo-fill: var(--dorure);
+    background-size: 250% 100%;
+    animation: reflet-dore 6s ease-in-out infinite alternate;
+}
+
+.site-logo-pochoir {
+    filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.8)) drop-shadow(0 1px 0 rgb(255 225 160 / 0.22));
 }
 
 @keyframes reflet-dore {
@@ -324,8 +342,10 @@ h1, h2, h3, h4 {
     background: var(--frise) center / min(16rem, 80%) no-repeat;
 }
 
-/* LETTRINE : la première lettre d'une fiche, en gothique rouge et or */
-.fiche-card .richtext > p:first-child::first-letter,
+/* LETTRINE : la première lettre de la DESCRIPTION d'une fiche, en gothique
+   rouge et or. Une seule par fiche : trop de lettrines tuent la lettrine.
+   Pour en mettre ailleurs, le client utilise le bloc « Enluminure ». */
+.fiche-description > p:first-child::first-letter,
 .univers-accroche > p:first-child::first-letter {
     float: left;
     margin: 0.08em 0.12em 0 0;
@@ -339,6 +359,52 @@ h1, h2, h3, h4 {
     box-shadow: 0 0 0 3px var(--parchemin), 0 0 0 4px var(--or);
 }
 
+
+/* ==========================================================================
+   4 bis. ENLUMINURES (bloc « Enluminure » des articles)
+   ========================================================================== */
+
+/* La lettrine : une capitale gothique en feuille d'or, posée sur un carré
+   de vermillon cerné d'or, avec un petit rinceau peint en fond */
+.enluminure .richtext > p:first-child::first-letter {
+    margin: 0.06em 0.18em 0 0;
+    padding: 0.12em 0.16em 0.05em;
+    border: 3px double var(--or);
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23C9A24A' stroke-width='.8' opacity='.55'%3E%3Cpath d='M2 38C8 26 14 30 20 20S32 14 38 2'/%3E%3Cpath d='M8 30c3-4 7-3 8 0M26 12c3-4 7-3 8 0'/%3E%3C/g%3E%3Cg fill='%23C9A24A' opacity='.6'%3E%3Ccircle cx='4' cy='4' r='1.5'/%3E%3Ccircle cx='36' cy='36' r='1.5'/%3E%3C/g%3E%3C/svg%3E") center / cover,
+        radial-gradient(circle at 30% 25%, #9E2B2B, var(--sang) 60%, #4A0F0F);
+    color: var(--or-clair);
+    font-family: "UnifrakturCook", var(--font-title);
+    font-size: 4.2em;
+    line-height: 0.82;
+    text-shadow: 0 1px 0 #4A0F0F, 0 0 6px rgb(233 207 122 / 0.45);
+    box-shadow: 0 0 0 3px var(--parchemin), 0 0 0 4px var(--or), 0 4px 10px rgb(58 35 22 / 0.4);
+}
+
+/* Les rinceaux : une tige de vigne qui court dans la marge, avec ses
+   feuilles vertes et ses baies rouges (un motif qui se répète vers le bas) */
+.enluminure--marge {
+    padding-left: 2.6rem;
+    border-left: 0;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='64' viewBox='0 0 28 64'%3E%3Cpath d='M14 0C4 10 24 22 14 32S4 54 14 64' fill='none' stroke='%23C9A24A' stroke-width='2'/%3E%3Cpath d='M15 10c6-5 11-3 11 1-5 3-9 2-11-1z' fill='%232E5E2A'/%3E%3Cpath d='M13 42c-6-5-11-3-11 1 5 3 9 2 11-1z' fill='%232E5E2A'/%3E%3Ccircle cx='6' cy='22' r='2.4' fill='%237A1C1C'/%3E%3Ccircle cx='22' cy='52' r='2.4' fill='%237A1C1C'/%3E%3C/svg%3E") left top / 1.75rem auto repeat-y;
+}
+
+/* La page encadrée : double filet d'or, coins dorés, fond de vélin clair */
+.enluminure--cadre {
+    border: 3px double var(--or);
+    border-radius: 0;
+    background:
+        var(--coins-dores),
+        var(--texture-papier),
+        var(--parchemin-clair);
+    box-shadow: 0 0 0 4px var(--parchemin-fonce), 0 0 0 5px var(--sang), var(--shadow);
+}
+
+/* Le texte d'une enluminure : un peu plus grand, comme un incipit */
+.enluminure .richtext {
+    font-size: 1.08em;
+}
 
 /* ==========================================================================
    5. PANNEAUX : pages d'enluminure, cuir et sang
@@ -620,7 +686,8 @@ textarea {
    11. ACCESSIBILITÉ : pas de bougie qui vacille si on a demandé le calme
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-    .site-name {
+    .site-name,
+    .site-logo--dore {
         animation: none;
     }
 }

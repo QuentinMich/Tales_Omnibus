@@ -224,6 +224,16 @@ figure {
     object-fit: contain;
 }
 
+/* Logo « doré » : sa silhouette sert de pochoir (mask), le fond visible à
+   travers vient de --logo-fill (le thème le redéfinit : or, néon…). La largeur
+   se déduit de la hauteur grâce à l'aspect-ratio posé par le template. */
+.site-logo--dore {
+    display: block;
+    -webkit-mask: var(--logo-url) center / contain no-repeat;
+    mask: var(--logo-url) center / contain no-repeat;
+    background: var(--logo-fill, var(--color-title));
+}
+
 .site-logo--placeholder {
     display: block;
     width: 2.75rem;
@@ -729,6 +739,39 @@ figure {
 .article-section-titre {
     color: var(--color-title);
     font-size: 1.5rem;
+}
+
+/* --- Enluminure (bloc « Enluminure ») ---
+   Version sobre : une grande lettrine à la couleur des titres. Les thèmes
+   l'habillent (feuille d'or, rinceaux…). ::first-letter garde le mot entier
+   dans le HTML : rien ne change pour les lecteurs d'écran. */
+.enluminure {
+    margin-block: var(--space-lg);
+}
+
+.enluminure .richtext > p:first-child::first-letter {
+    float: left;
+    margin: 0.05em 0.12em 0 0;
+    color: var(--color-title);
+    font-family: var(--font-title);
+    font-size: 3.6em;
+    line-height: 0.85;
+}
+
+.enluminure--marge {
+    padding-left: var(--space-md);
+    border-left: 4px solid var(--color-accent);
+}
+
+.enluminure--cadre {
+    padding: var(--space-lg);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+}
+
+/* La lettrine flotte : le bloc la garde dedans même si le texte est court */
+.enluminure .richtext {
+    display: flow-root;
 }
 
 /* Une image à gauche / à droite est entourée par le texte qui SUIT, même

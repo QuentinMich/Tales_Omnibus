@@ -75,10 +75,20 @@ class NavigationSettings(ClusterableModel, BaseGenericSetting):
         related_name='+',
         verbose_name="Logo du site"
     )
+    logo_dore = models.BooleanField(
+        default=False,
+        verbose_name="Dorer le logo",
+        help_text=(
+            "Pour un logo d'UNE seule couleur sur fond transparent (idéalement un SVG) : "
+            "sa silhouette est remplie avec la couleur du thème (la feuille d'or du "
+            "Grimoire…). Un logo en couleurs ou sur fond plein deviendrait un simple aplat."
+        ),
+    )
 
     panels = [
         FieldPanel('site_name'),
         FieldPanel('logo'),
+        FieldPanel('logo_dore'),
         FieldPanel('theme'),
         InlinePanel('social_links', label="Réseaux Sociaux"),
     ]
