@@ -635,6 +635,25 @@ class CouleursAdminTests(TestCase):
         self.client.force_login(get_user_model().objects.create_superuser("admin", "a@example.com", "x"))
         self.assertContains(self.client.get("/admin/"), css_couleurs_admin("grimoire"))
 
+    def test_l_admin_porte_le_logo_et_le_nom_du_site(self):
+        from django.contrib.auth import get_user_model
+        from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+        from core.models import NavigationSettings
+        # Sans logo : l'oiseau de Wagtail reste (bloc vide)
+        self.assertNotContains(self.client.get("/admin/login/"), "logo-du-site-admin\"")
+        reglages = NavigationSettings.load()
+        reglages.site_name = "Les Brumes"
+        reglages.logo = Image.objects.create(title="Logo", file=get_test_image_file())
+        reglages.save()
+        connexion = self.client.get("/admin/login/")
+        self.assertContains(connexion, "Se connecter à Les Brumes")
+        self.assertContains(connexion, 'class="logo-du-site-admin"')
+        self.client.force_login(get_user_model().objects.create_superuser("admin", "a@example.com", "x"))
+        tableau = self.client.get("/admin/")
+        self.assertContains(tableau, "<title>Tableau de bord - Les Brumes</title>", html=False)
+        self.assertContains(tableau, 'class="logo-du-site-admin"')
+
 
 class PolicesDesThemesTests(TestCase):
     """RGPD : polices chez Google (signalé) ou hébergées sur le site (core/polices.py)."""

@@ -60,7 +60,12 @@ def couleurs_admin_du_theme():
     """
     from core.models import NavigationSettings  # ici : les modèles ne sont pas prêts au chargement des hooks
     theme = NavigationSettings.load().theme
-    return mark_safe(f"<style>{css_couleurs_admin(theme)}</style>")
+    # Le logo du site en haut du menu (core/templates/wagtailadmin/base.html) :
+    # il tient dans son cadre, menu ouvert comme replié, sans être déformé.
+    logo = ".logo-du-site-admin { display: block; max-width: 100%; max-height: 100%; " \
+           "width: auto; height: auto; margin: auto; object-fit: contain; } " \
+           ".sidebar--slim .logo-du-site-admin { max-width: 2.5rem; }"  # menu replié : un peu d'air
+    return mark_safe(f"<style>{css_couleurs_admin(theme)} {logo}</style>")
 
 
 # --------------------------------------------------------------------- MENU

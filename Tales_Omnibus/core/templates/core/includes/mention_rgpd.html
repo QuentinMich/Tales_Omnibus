@@ -1,0 +1,12 @@
+{# Information RGPD sous un formulaire de contact (article 13 du RGPD : informer AU MOMENT de la collecte). #}
+{# Pas de case à cocher : répondre à une demande de contact ne repose pas sur le consentement,          #}
+{# mais sur la demande elle-même. La CNIL demande seulement d'informer, au plus près du formulaire.     #}
+{# Paramètre : destinataire = qui lit le message (« le maître du jeu », « le joueur de X »).              #}
+{% load wagtailcore_tags %}
+{% slugurl "mentions-legales" as url_mentions %}
+<p class="form-rgpd">
+    Vos nom, adresse e-mail et message sont transmis à {{ destinataire|default:"l'auteur du site" }}
+    uniquement pour vous répondre. Ils ne sont ni revendus, ni utilisés à d'autres fins.
+    {% if url_mentions %}Pour en savoir plus et exercer vos droits (accès, suppression) :
+    <a href="{{ url_mentions }}#donnees-personnelles">mentions légales</a>.{% endif %}
+</p>

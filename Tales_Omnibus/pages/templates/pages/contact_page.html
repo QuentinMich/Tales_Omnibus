@@ -63,6 +63,7 @@
                 <p class="no-data">Aucun champ n'est encore configuré pour ce formulaire.</p>
             {% endfor %}
 
+            {% include "core/includes/mention_rgpd.html" with destinataire="l'auteur du site" %}
             <button type="submit" class="btn">Envoyer le message</button>
         </form>
     </section>

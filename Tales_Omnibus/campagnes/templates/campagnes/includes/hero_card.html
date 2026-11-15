@@ -3,7 +3,7 @@
 <article class="hero-card">
     <a href="{% pageurl hero %}" class="card-link">
         {% if hero.main_image %}
-            {% image hero.main_image fill-400x640 alt="" class="hero-card-img" %}
+            {% image hero.main_image fill-400x640 alt="" loading="lazy" class="hero-card-img" %}
         {% else %}
             <span class="img-placeholder hero-card-img" aria-hidden="true"></span>
         {% endif %}

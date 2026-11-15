@@ -5,7 +5,7 @@
     <a href="{% pageurl c %}" class="card-link">
         <div class="card-image-wrapper">
             {% if c.banner_image %}
-                {% image c.banner_image fill-600x350 alt="" class="card-img" %}
+                {% image c.banner_image fill-600x350 alt="" loading="lazy" class="card-img" %}
             {% else %}
                 <div class="placeholder-img"></div>
             {% endif %}

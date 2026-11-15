@@ -96,7 +96,7 @@
                     <h2 class="panel-title">Carte interactive</h2>
                     <a href="{% pageurl carte_principale %}" class="carte-preview">
                         {% if carte_principale.main_image %}
-                            {% image carte_principale.main_image fill-700x700 alt="" class="carte-preview-img" %}
+                            {% image carte_principale.main_image fill-700x700 alt="" loading="lazy" class="carte-preview-img" %}
                         {% else %}
                             <span class="img-placeholder carte-preview-img" aria-hidden="true"></span>
                         {% endif %}

@@ -1,0 +1,11 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailsettings_tags wagtailimages_tags %}
+{# L'admin aux couleurs du site : le logo du site (Paramètres du site) remplace  #}
+{# l'oiseau de Wagtail en haut du menu, et l'onglet du navigateur porte le nom  #}
+{# du site. Mécanisme prévu par Wagtail : les blocs « branding_… ». Ce gabarit   #}
+{# porte le même nom que celui de Wagtail et l'ÉTEND : l'app core est avant      #}
+{# wagtail.admin dans INSTALLED_APPS, Django la trouve donc en premier.          #}
+{# Sans logo, le bloc reste vide et Wagtail remet son oiseau.                    #}
+{% block branding_logo %}{% get_settings use_default_site=True %}{% with logo=settings.core.NavigationSettings.logo %}{% if logo %}{% image logo max-160x160 alt="" class="logo-du-site-admin" %}{% endif %}{% endwith %}{% endblock %}
+
+{% block branding_title %}{% get_settings use_default_site=True %}{{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}

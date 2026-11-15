@@ -286,12 +286,14 @@ figure {
 .site-search {
     display: flex;
     align-items: center;
+    max-width: 100%;  /* jamais plus large que sa place : il rétrécit, il ne déborde pas */
     border-radius: var(--radius-pill);
     background: var(--color-surface);
     overflow: hidden;
 }
 
 .site-search input {
+    flex: 0 1 11rem;  /* 11rem de base, mais peut rétrécir */
     width: 11rem;
     min-width: 0;
     padding: var(--space-sm) var(--space-md);
@@ -325,6 +327,14 @@ figure {
     outline: none;
 }
 
+/* Écran moyen (tablette, petit portable) : quand la recherche passe à la
+   ligne, elle se range à DROITE, sous le menu, plutôt que sous le logo. */
+@media (min-width: 48rem) and (max-width: 71.99rem) {
+    .site-search {
+        margin-left: auto;
+    }
+}
+
 /* --- Page de résultats --- */
 .recherche-formulaire {
     display: flex;
@@ -352,8 +362,11 @@ figure {
    et la recherche (qui n'ont pas la même largeur : en flex, le menu glissait
    d'une cinquantaine de pixels). Trois colonnes : les deux colonnes de côté
    sont égales (1fr), celle du milieu prend la largeur du menu. Si le titre
-   est très long, sa colonne s'élargit d'elle-même : rien ne déborde. */
-@media (min-width: 64rem) {
+   est très long, sa colonne s'élargit d'elle-même.
+   72rem et pas 64rem : à 1024 px, titre + menu + recherche ne tenaient pas
+   sur une ligne, et la recherche passait PAR-DESSUS le menu (« Conta… »).
+   En dessous, le header reste en flex et la recherche passe à la ligne. */
+@media (min-width: 72rem) {
     .site-header {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
@@ -572,6 +585,9 @@ figure {
     padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-pill);
     background: var(--color-surface);
+    /* Sa PROPRE couleur de texte : posé sur une bannière, il héritait du
+       texte clair du header et « Statut : » disparaissait sur son fond clair */
+    color: var(--color-text);
     font-size: 0.9rem;
 }
 
@@ -1324,6 +1340,14 @@ figure {
 .contact-form .btn {
     grid-column: 1 / -1;
     justify-self: end;
+}
+
+/* Information RGPD sous le formulaire : toute la largeur, en petit */
+.form-rgpd {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 0.85em;
+    opacity: 0.85;
 }
 
 .form-group {
@@ -2379,10 +2403,13 @@ html:has(.template-home) {
 
     /* Rangée du groupe sur téléphone : 6 cartes sur une ligne seraient
        minuscules. On laisse les cartes passer à la ligne (2 par ligne sur un
-       téléphone), centrées ; le facteur de taille revient à 1. */
+       téléphone), centrées ; le facteur de taille revient à 1.
+       Maximum 1fr et PAS --hero-card-max : auto-fit compte les colonnes
+       avec leur taille MAXIMALE ; 2 × 16rem ne tenant pas sur un téléphone,
+       il n'en mettait qu'une (cartes géantes, une par ligne). */
     .heros-grid--groupe {
         --facteur: 1;
-        grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), var(--hero-card-max)));
+        grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
     }
 
     /* Tableau de stats : sur un téléphone, 10 colonnes ne tiennent pas.

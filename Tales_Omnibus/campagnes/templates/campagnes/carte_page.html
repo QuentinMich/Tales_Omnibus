@@ -151,7 +151,7 @@
                     {% with carte_soeur=c.specific %}
                         <a href="{% pageurl carte_soeur %}" class="mini-card">
                             {% if carte_soeur.main_image %}
-                                {% image carte_soeur.main_image fill-400x240 alt="" class="mini-card-img" %}
+                                {% image carte_soeur.main_image fill-400x240 alt="" loading="lazy" class="mini-card-img" %}
                             {% else %}
                                 <span class="img-placeholder mini-card-img" aria-hidden="true"></span>
                             {% endif %}

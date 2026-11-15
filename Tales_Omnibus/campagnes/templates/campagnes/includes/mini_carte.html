@@ -19,7 +19,7 @@
                    aria-label="Voir {{ lieu.title }} sur la carte {{ carte.title }}">
                     <span class="carte-zoom">
                         {# width-1400 comme la page Carte : même image, jamais recadrée #}
-                        {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+                        {% image carte.main_image width-1400 alt="" loading="lazy" class="carte-map-img" %}
                         {% if apparition.est_zone %}
                             {% include "campagnes/includes/mini_zone.html" %}
                         {% endif %}
@@ -34,7 +34,7 @@
                 {# on montre la carte entière (sans zoom ni marqueur) #}
                 <a href="{% pageurl carte %}" class="carte-map carte-map--entiere"
                    aria-label="Voir la carte {{ carte.title }} ({{ lieu.title }} n'y est pas encore placé)">
-                    {% image carte.main_image width-1400 alt="" class="carte-map-img" %}
+                    {% image carte.main_image width-1400 alt="" loading="lazy" class="carte-map-img" %}
                 </a>
             {% else %}
                 {# --- SANS IMAGE : l'image d'attente, sans zoom --- #}

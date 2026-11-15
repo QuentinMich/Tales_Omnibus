@@ -316,7 +316,8 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   (joueurs seulement) TOUJOURS sur une ligne, `style="--colonnes: N"` posé
   par le template, cartes plafonnées à `--hero-card-max`, titre et espaces
   réduits au-delà de 4 (`--facteur`) ; sur téléphone, `auto-fit` (2 par
-  ligne). Puis « Compagnons de route » (cartes plus petites,
+  ligne : `minmax(…, 1fr)` et PAS `--hero-card-max`, car `auto-fit` compte
+  les colonnes avec leur taille MAXIMALE). Puis « Compagnons de route » (cartes plus petites,
   `--compagnon-card-max`) et une ligne « Ont quitté le groupe ». Carte
   partagée : `campagnes/includes/hero_card.html`. Pas de champ « nombre de
   héros » : le site les compte lui-même.
@@ -337,6 +338,16 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   lieux dedans, les héros qui en sont ORIGINAIRES, les événements qui s'y
   sont passés ; jamais le Lore (`filtrer_par_lieu`). La fiche d'une région
   a un lien « Tout ce qui se trouve dans X ».
+- **Logo et nom du site dans l'admin** (`core/templates/wagtailadmin/base.html`
+  et `login.html`, blocs `branding_logo`, `branding_title`, `branding_login`) :
+  le logo des Paramètres du site remplace l'oiseau de Wagtail (menu et page
+  de connexion), l'onglet porte le nom du site. Sans logo, l'oiseau revient.
+  Taille : classe `.logo-du-site-admin` dans le CSS injecté par le hook.
+- **Badge de statut** : il a sa PROPRE couleur de texte (`--color-text`) ; sur
+  une bannière, il héritait du texte clair du header (« Statut : » invisible).
+- **Rapport de certification** : `rapport/` (non versionné pour l'instant) :
+  le .docx (template de l'école), son PDF, les captures et `outils/` (le
+  générateur et le texte). Les emplacements `[À COMPLÉTER]` sont surlignés.
 - **Admin aux couleurs du thème** (`core/couleurs_admin.py`, hook
   `insert_global_admin_css`) : Wagtail dérive toute son interface de deux
   couleurs en teinte / saturation / luminosité (`--w-color-primary-*` = menu,
@@ -352,6 +363,14 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   seule. FAIT le 14/11 : les 5 thèmes sont hébergés (48 fichiers, ~1,1 Mo),
   plus aucun appel à Google. Un NOUVEAU thème : y mettre l'`@import` Google,
   puis `manage.py heberger_polices --theme <clé>`.
+- **Formulaires et RGPD** : sous chaque formulaire (Contact, héros),
+  `core/includes/mention_rgpd.html` (paramètre `destinataire`) informe AU
+  MOMENT de la collecte et renvoie à `mentions-legales/#donnees-personnelles`.
+  PAS de case à cocher : un formulaire de contact ne repose pas sur le
+  consentement (choix assumé, écart avec le cadrage expliqué dans le rapport).
+- **Chargement différé** : `loading="lazy"` sur les images hors du premier
+  écran (cartes, vignettes, mini-cartes, blocs image) ; jamais sur la
+  bannière, l'image d'accueil, la carte principale ni l'image de la fiche.
 - **SEO, vérifications du brief** : chaque page a UN seul `<h1>` (sur
   l'accueil, c'est le NOM DU SITE dans le header, `:where(h1).site-name`
   pour ne pas hériter du style des titres) ; le test de la démo vérifie
@@ -417,8 +436,11 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   de secours (`--color-surface-strong`) : une bannière à fond transparent
   laissait voir la page à travers, et le titre devenait illisible sur un
   thème clair.
-- **Header** : sur grand écran (≥ 64rem), grille `1fr auto 1fr` : le menu est
-  centré sur la PAGE (en flex, il glissait selon la largeur du titre).
+- **Header** : sur grand écran (≥ 72rem, PAS 64 : à 1024 px la recherche
+  passait PAR-DESSUS le menu), grille `1fr auto 1fr` : le menu est centré sur
+  la PAGE. En dessous, flex qui passe à la ligne : la recherche se range à
+  droite sous le menu (`margin-left: auto` entre 48 et 72rem) et peut
+  rétrécir (`flex: 0 1 11rem`, `max-width: 100%`).
 - **Logo** : `{% image logo max-320x96 %}` (jamais `fill-`, jamais rond : il
   garde sa forme). SVG accepté dans la médiathèque
   (`WAGTAILIMAGES_EXTENSIONS` + `svg`) ; un SVG reste un SVG tant qu'on
