@@ -176,8 +176,9 @@ garamond = Police("grimoire/ebgaramond-8.woff2", 600)
 ech_ales = 0.21 * H / cinzel.os2.sCapHeight
 ales, fin_ales = cinzel.mot("ALES", JAMBE[1] + 0.13 * H, HAUT + 0.49 * H, ech_ales, 60)
 
-# « mnibus » : hauteur d'x de 17 % de H, sur la ligne de base, juste après le O
-ech_mnibus = 0.17 * H / garamond.os2.sxHeight
+# « mnibus » : hauteur d'x de 14,5 % de H (plus petit que ALES : T > O > ALES > mnibus),
+# sur la ligne de base, juste après le O
+ech_mnibus = 0.145 * H / garamond.os2.sxHeight
 mnibus, fin_mnibus = garamond.mot("mnibus", CX + R + 0.05 * H, BAS, ech_mnibus, 30)
 
 x0 = BARRE[0]
