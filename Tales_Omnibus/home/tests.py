@@ -69,6 +69,22 @@ class HomeContenuTests(WagtailPageTestCase):
         html = self.get_home().content.decode()
         self.assertLess(html.index('home-hero'), html.index('site-header'))
 
+    def test_banniere_tales_omnibus_sans_image(self):
+        # Pas d'image d'ouverture : la bannière en pochoir, plus le rectangle barré
+        html = self.get_home().content.decode()
+        self.assertIn('home-hero--defaut', html)
+        self.assertIn('img/banniere-tales-omnibus.svg', html)
+        self.assertNotIn('img-placeholder home-hero-img', html)
+
+    def test_image_choisie_a_la_place_de_la_banniere(self):
+        from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+        self.home.hero_image = Image.objects.create(title="Ouverture", file=get_test_image_file())
+        self.home.save_revision().publish()
+        html = self.get_home().content.decode()
+        self.assertIn('home-hero-img', html)
+        self.assertNotIn('banniere-tales-omnibus.svg', html)
+
     def test_univers_reprend_l_intro_si_pas_d_accroche(self):
         self.assertContains(self.get_home(), "Intro de la page univers")
 

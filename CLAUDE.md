@@ -477,6 +477,26 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   thème, ocre clair sans thème), `--logo-admin-fill`. Le pochoir a une
   largeur FIXE (6,5rem, 2,5rem menu replié, 8rem à la connexion) : le lien
   de Wagtail autour prend la taille de son contenu, un % retomberait à 0.
+- **Bannière Tales Omnibus** (écran titre de l'accueil SANS image choisie, à
+  la place du rectangle barré) : le monogramme déconstruit d'après le
+  CROQUIS de Quentin : un grand T sur toute la hauteur, « ALES » sous sa
+  barre, le O au pied de la jambe suivi de « mnibus ».
+  `static/img/banniere-tales-omnibus.svg`, généré par
+  `logo/banniere_logo.py` (O et coup d'épée du logo ; le T est allongé et
+  1,5 fois plus GRAS, `GRAS_T`, sinon il paraissait maigre ; mise en page en % de la
+  hauteur du T ; « ALES » en Cinzel 700, « mnibus » en EB Garamond 600
+  (Cinzel n'a pas de minuscules), SIL OFL, converties en TRACÉS avec
+  fontTools, outil de dessin PAS dans requirements.txt).
+  Affichée en pochoir avec les classes du logo doré (`site-logo-pochoir` +
+  `site-logo--dore`) : couleur, reflet et ombre du thème sans une ligne de
+  plus. Le fond : `--fond-ecran-titre`, posé par chaque thème sur
+  `.home-hero--defaut` = le décor de son image manquante SANS le message
+  (cuir, neige qui grésille en `steps()` coupée par reduced-motion, suie et
+  lueur de sang, papier, béton à la lampe torche) ; sans thème, gris et
+  lettres jaunes (`--color-highlight`). Bannière en `contain` dans une boîte
+  `min(100%, 60rem)` × `min(100%, 30rem)`, et un `padding-bottom` qui
+  réserve la place de la flèche « Entrer ». Une image choisie, elle, reste
+  en `cover` (recadrée) : prévue pour une photo, pas pour un logo.
 - **Logo doré** (case « Dorer le logo », `NavigationSettings.logo_dore`,
   migration core 0008) : l'image n'est plus un `<img>` mais un pochoir
   (`mask: var(--logo-url)`, `aspect-ratio` posé par le template avec

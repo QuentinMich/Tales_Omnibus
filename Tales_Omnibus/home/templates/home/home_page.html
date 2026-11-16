@@ -6,11 +6,18 @@
 {# --- 1. ÉCRAN TITRE : image plein écran, placée AVANT le header (voir base.html) --- #}
 {#     Elle disparaît une fois dépassée : voir home/static/js/ecran_titre.js        #}
 {% block before_header %}
-    <div class="home-hero">
+    <div class="home-hero{% if not page.hero_image %} home-hero--defaut{% endif %}">
         {% if page.hero_image %}
             {% image page.hero_image width-1920 alt="" class="home-hero-img" %}
         {% else %}
-            <span class="img-placeholder home-hero-img" aria-hidden="true"></span>
+            {# Pas d'image choisie : la bannière Tales Omnibus (logo/banniere_logo.py),  #}
+            {# en pochoir comme le logo par défaut. Les classes du logo doré lui donnent #}
+            {# la couleur, le reflet et l'ombre du thème ; le FOND (cuir, neige…) vient #}
+            {# de --fond-ecran-titre. Décorative : le nom du site est déjà le <h1>.     #}
+            <span class="site-logo-pochoir banniere-cadre" aria-hidden="true">
+                <span class="site-logo--dore banniere"
+                      style="--logo-url: url('{% static 'img/banniere-tales-omnibus.svg' %}');"></span>
+            </span>
         {% endif %}
         <a href="#contenu" class="home-hero-scroll" aria-label="Entrer sur le site">&darr;</a>
     </div>

@@ -660,6 +660,14 @@ main {
         #D9CDB3;
 }
 
+/* Écran titre sans image : la bannière sur le papier du dossier (sans le
+   tampon « PHOTO MANQUANTE ») */
+.home-hero--defaut {
+    --fond-ecran-titre:
+        var(--texture-papier),
+        radial-gradient(circle at 50% 45%, var(--papier-clair), #D9CDB3 75%);
+}
+
 /* Chronologie : des fiches bristol du registre, lignes bleues, marge rouge */
 .timeline-card {
     border: 1px solid #CFC2A5;

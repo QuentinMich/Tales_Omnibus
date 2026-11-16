@@ -673,6 +673,15 @@ h3, h4 {
         #262921;
 }
 
+/* Écran titre sans image : la bannière peinte sur le béton, éclairée par
+   une lampe torche (sans le « PORTÉ DISPARU ») */
+.home-hero--defaut {
+    --fond-ecran-titre:
+        radial-gradient(ellipse 45% 50% at 50% 45%, rgb(255 236 190 / 0.16), transparent),
+        var(--texture-beton),
+        #262921;
+}
+
 /* Chronologie : des pages arrachées au carnet (bord du bas en dentelle de
    perforations), écrites au feutre. Papier CLAIR : texte foncé. */
 .timeline-card {

@@ -2129,6 +2129,39 @@ span.carte-map-img {
     object-fit: cover;
 }
 
+/* Écran titre SANS image : la bannière « T ales / O mnibus » au centre, sur
+   le décor du thème (--fond-ecran-titre : cuir du Grimoire, neige du Néon…).
+   Pas de recadrage possible : c'est un pochoir en « contain », qui garde ses
+   proportions quelle que soit la forme de l'écran. */
+.home-hero--defaut {
+    display: grid;
+    place-items: center;
+    /* En bas, la place de la flèche « Entrer » (3,5rem + ses marges) :
+       la bannière ne passe jamais dessous, même sur un petit écran */
+    padding: var(--space-lg) var(--space-lg) calc(3.5rem + 2 * var(--space-lg));
+    box-sizing: border-box;
+    background: var(--fond-ecran-titre,
+        radial-gradient(circle at 50% 45%, #6A6A6A, var(--color-surface-strong) 70%));
+}
+
+.banniere-cadre {
+    display: grid;          /* le cadre porte l'ombre du thème (filter) : */
+    place-items: center;    /* sur l'élément masqué, le masque la couperait */
+    width: min(100%, 60rem);
+    height: min(100%, 30rem);
+}
+
+/* width ET height à 100 % : le pochoir (contain) se centre dans la boîte, et
+   c'est la plus petite des deux qui décide de la taille des lettres. */
+.banniere {
+    width: 100%;
+    height: 100%;
+    -webkit-mask: var(--logo-url) center / contain no-repeat;
+    mask: var(--logo-url) center / contain no-repeat;
+    /* Sans thème : le jaune du wireframe (l'ocre ne se lirait pas sur le gris) */
+    background: var(--logo-fill, var(--color-highlight));
+}
+
 /* Flèche "Entrer" en bas de l'image, qui rebondit doucement */
 .home-hero-scroll {
     position: absolute;

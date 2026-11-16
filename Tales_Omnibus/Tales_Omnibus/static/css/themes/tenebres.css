@@ -624,6 +624,15 @@ h3, h4 {
         #120F0D;
 }
 
+/* Écran titre sans image : la bannière en os sur la suie, une lueur de
+   sang derrière (le décor de l'image manquante, sans le crâne) */
+.home-hero--defaut {
+    --fond-ecran-titre:
+        radial-gradient(circle at 50% 45%, rgb(126 20 20 / 0.3), transparent 60%),
+        var(--texture-suie),
+        #120F0D;
+}
+
 .timeline-card {
     border: 1px solid #000;
     border-left: 4px solid var(--sang);

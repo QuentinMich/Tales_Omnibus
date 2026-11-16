@@ -612,6 +612,14 @@ h1, h2, h3, h4 {
         radial-gradient(circle, var(--cuir-clair), var(--cuir));
 }
 
+/* Écran titre sans image : la bannière dorée à chaud sur la reliure de cuir
+   (même cuir que l'image manquante, sans la rose des vents) */
+.home-hero--defaut {
+    --fond-ecran-titre:
+        var(--texture-cuir),
+        radial-gradient(circle at 50% 45%, var(--cuir-clair), var(--cuir) 75%);
+}
+
 /* Chronologie : des pages de chronique, la date en capitale rouge */
 .timeline-card {
     border: 1px solid var(--or);
