@@ -665,8 +665,8 @@ class CouleursAdminTests(TestCase):
         from wagtail.images.models import Image
         from wagtail.images.tests.utils import get_test_image_file
         from core.models import NavigationSettings
-        # Sans logo : l'oiseau de Wagtail reste (bloc vide)
-        self.assertNotContains(self.client.get("/admin/login/"), "logo-du-site-admin\"")
+        # Sans logo choisi : le monogramme Tales Omnibus (logo par défaut, en pochoir)
+        self.assertContains(self.client.get("/admin/login/"), "img/logo-tales-omnibus.svg")
         reglages = NavigationSettings.load()
         reglages.site_name = "Les Brumes"
         reglages.logo = Image.objects.create(title="Logo", file=get_test_image_file())
@@ -678,6 +678,30 @@ class CouleursAdminTests(TestCase):
         tableau = self.client.get("/admin/")
         self.assertContains(tableau, "<title>Tableau de bord - Les Brumes</title>", html=False)
         self.assertContains(tableau, 'class="logo-du-site-admin"')
+
+    def test_logo_par_defaut_et_logo_dore(self):
+        """
+        Sans logo choisi, le site affiche le monogramme Tales Omnibus en pochoir.
+        Un logo « doré » est aussi un pochoir dans l'admin, rempli à la couleur
+        du thème (sinon une silhouette noire disparaîtrait sur l'admin sombre).
+        """
+        from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+        from core.couleurs_admin import LOGO_ADMIN
+        from core.models import THEMES, NavigationSettings
+        accueil = self.client.get("/")
+        self.assertContains(accueil, "site-logo--dore")
+        self.assertContains(accueil, "img/logo-tales-omnibus.svg")
+        reglages = NavigationSettings.load()
+        reglages.logo = Image.objects.create(title="Logo", file=get_test_image_file())
+        reglages.logo_dore = True
+        reglages.save()
+        connexion = self.client.get("/admin/login/")
+        self.assertContains(connexion, "logo-du-site-admin--dore")
+        self.assertNotContains(connexion, "img/logo-tales-omnibus.svg")  # c'est SON logo qui s'affiche
+        # Chaque thème a la couleur de logo de son admin
+        for cle, _ in THEMES:
+            self.assertIn(cle, LOGO_ADMIN, f"Thème {cle!r} sans couleur de logo d'admin")
 
 
 class PolicesDesThemesTests(TestCase):

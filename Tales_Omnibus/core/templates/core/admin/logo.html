@@ -1,0 +1,25 @@
+{% load static images_tags l10n %}
+{# Le logo du site dans l'admin (menu de gauche et page de connexion).        #}
+{# Usage : {% include "core/admin/logo.html" with logo=… dore=… taille="max-160x160" %} #}
+{#  - pas de logo choisi : le monogramme Tales Omnibus, logo par défaut de      #}
+{#    l'outil (static/img/logo-tales-omnibus.svg), toujours en pochoir ;        #}
+{#  - « Dorer le logo » coché : le logo est une silhouette d'une seule couleur, #}
+{#    souvent NOIRE, invisible sur l'admin sombre. On l'affiche donc en pochoir #}
+{#    (même principe que le header du site), rempli avec la couleur du thème    #}
+{#    (--logo-admin-fill, core/couleurs_admin.py) ;                             #}
+{#  - sinon : l'image telle quelle.                                             #}
+{# taille est une variable : d'où le filtre |rendu (images_tags) au lieu du   #}
+{# tag {% image %}, qui veut le format écrit en toutes lettres.               #}
+{% if not logo %}
+    <span class="logo-du-site-admin logo-du-site-admin--dore" aria-hidden="true"
+          style="--logo-url: url('{% static 'img/logo-tales-omnibus.svg' %}'); aspect-ratio: 724 / 749;"></span>
+{% else %}
+    {% with logo_img=logo|rendu:taille %}
+        {% if dore %}
+            <span class="logo-du-site-admin logo-du-site-admin--dore" aria-hidden="true"
+                  style="--logo-url: url('{{ logo_img.url }}'); aspect-ratio: {{ logo_img.width|unlocalize }} / {{ logo_img.height|unlocalize }};"></span>
+        {% else %}
+            <img src="{{ logo_img.url }}" width="{{ logo_img.width|unlocalize }}" height="{{ logo_img.height|unlocalize }}" alt="" class="logo-du-site-admin">
+        {% endif %}
+    {% endwith %}
+{% endif %}

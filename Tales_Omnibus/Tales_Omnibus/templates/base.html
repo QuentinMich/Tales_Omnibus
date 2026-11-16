@@ -73,7 +73,12 @@
                         {% image settings.core.NavigationSettings.logo max-320x96 alt="" class="site-logo" %}
                     {% endif %}
                 {% else %}
-                    <span class="site-logo site-logo--placeholder" aria-hidden="true"></span>
+                    {# Pas de logo choisi : le monogramme Tales Omnibus (la marque de     #}
+                    {# l'outil, static/img/logo-tales-omnibus.svg), toujours en pochoir : #}
+                    {# il prend la couleur du thème. 724 / 749 = proportions du SVG.      #}
+                    <span class="site-logo-pochoir">
+                        <span class="site-logo site-logo--dore" style="--logo-url: url('{% static 'img/logo-tales-omnibus.svg' %}'); aspect-ratio: 724 / 749;"></span>
+                    </span>
                 {% endif %}
                 {# SEO : une page = un seul <h1>. Sur l'ACCUEIL, le sujet de la page, #}
                 {# c'est le site lui-même : son nom devient le <h1>. Ailleurs, c'est  #}

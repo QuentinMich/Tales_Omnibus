@@ -65,7 +65,18 @@ def couleurs_admin_du_theme():
     logo = ".logo-du-site-admin { display: block; max-width: 100%; max-height: 100%; " \
            "width: auto; height: auto; margin: auto; object-fit: contain; } " \
            ".sidebar--slim .logo-du-site-admin { max-width: 2.5rem; }"  # menu replié : un peu d'air
-    return mark_safe(f"<style>{css_couleurs_admin(theme)} {logo}</style>")
+    # Logo « doré » (ou logo par défaut) : un pochoir (core/templates/core/admin/logo.html),
+    # rempli avec la couleur du thème. Un <span> n'a pas de taille propre, et
+    # le lien de Wagtail qui l'entoure prend la taille de son CONTENU : une
+    # largeur en % (du lien) serait circulaire et retomberait à 0. Largeur
+    # FIXE donc, la hauteur suit l'aspect-ratio ; menu replié : 2,5rem
+    # (règle .sidebar--slim ci-dessus, plus précise).
+    pochoir = ".logo-du-site-admin--dore { width: 6.5rem; " \
+              "-webkit-mask: var(--logo-url) center / contain no-repeat; " \
+              "mask: var(--logo-url) center / contain no-repeat; background: var(--logo-admin-fill); } " \
+              ".login-logo { display: flex; justify-content: center; } " \
+              ".login-logo .logo-du-site-admin--dore { width: 8rem; }"
+    return mark_safe(f"<style>{css_couleurs_admin(theme)} {logo} {pochoir}</style>")
 
 
 # --------------------------------------------------------------------- MENU

@@ -1,11 +1,12 @@
 {% extends "wagtailadmin/login.html" %}
-{% load wagtailsettings_tags wagtailimages_tags %}
+{% load wagtailsettings_tags %}
 {# Page de connexion aux couleurs du site : « Se connecter à Tales Omnibus » #}
 {# et le logo du site sous le formulaire (même principe que wagtailadmin/base.html). #}
+{# Sans logo choisi : le monogramme Tales Omnibus (logo par défaut).               #}
 {% block branding_login %}{% get_settings use_default_site=True %}Se connecter à {{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}
 
 {% block branding_title %}{% get_settings use_default_site=True %}{{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}
 
-{% block branding_logo %}{% get_settings use_default_site=True %}{% with logo=settings.core.NavigationSettings.logo %}{% if logo %}
-    <div class="login-logo">{% image logo max-240x240 alt="" class="logo-du-site-admin" %}</div>
-{% else %}{{ block.super }}{% endif %}{% endwith %}{% endblock %}
+{% block branding_logo %}{% get_settings use_default_site=True %}{% with reglages=settings.core.NavigationSettings %}
+    <div class="login-logo">{% include "core/admin/logo.html" with logo=reglages.logo dore=reglages.logo_dore taille="max-240x240" %}</div>
+{% endwith %}{% endblock %}

@@ -461,6 +461,22 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   SVG peut contenir du JavaScript, et les comptes joueurs envoient des images.
   **En production**, ajouter le même en-tête dans le serveur web pour
   `/media/*.svg` (nginx : `add_header Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox";`).
+- **Logo de la marque Tales Omnibus** (monogramme T dans un O, fendu en
+  diagonale), le logo PAR DÉFAUT de l'outil : `static/img/logo-tales-omnibus.svg`.
+  Sans logo choisi dans Paramètres du site, le header (`base.html`), le menu
+  et la page de connexion de l'admin l'affichent en pochoir doré (couleur du
+  thème). Un MJ qui choisit son logo le remplace. Sources dans `logo/` à la
+  racine : `logo-tales-omnibus.svg` (fentes de 30), `-petit.svg` (fentes de
+  60, lisible à 16 px : future icône d'onglet) et `vectoriser_logo.py` qui
+  les génère (2 cercles concentriques de centre (512, 521), rayons 356,5 et
+  209, ajustés par moindres carrés sur le dessin de Quentin : 97 % de
+  recouvrement). Admin : `core/templates/core/admin/logo.html` (pochoir si
+  logo par défaut ou doré, sinon `<img>` ; filtre `|rendu` de `images_tags`
+  car `{% image %}` ne lit pas une variable de format). Remplissage :
+  `LOGO_ADMIN` (`core/couleurs_admin.py`, recopie du `--logo-fill` de chaque
+  thème, ocre clair sans thème), `--logo-admin-fill`. Le pochoir a une
+  largeur FIXE (6,5rem, 2,5rem menu replié, 8rem à la connexion) : le lien
+  de Wagtail autour prend la taille de son contenu, un % retomberait à 0.
 - **Logo doré** (case « Dorer le logo », `NavigationSettings.logo_dore`,
   migration core 0008) : l'image n'est plus un `<img>` mais un pochoir
   (`mask: var(--logo-url)`, `aspect-ratio` posé par le template avec
