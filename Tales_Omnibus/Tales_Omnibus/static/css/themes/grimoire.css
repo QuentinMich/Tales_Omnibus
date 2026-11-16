@@ -613,9 +613,19 @@ h1, h2, h3, h4 {
 }
 
 /* Écran titre sans image : la bannière dorée à chaud sur la reliure de cuir
-   (même cuir que l'image manquante, sans la rose des vents) */
+   (même cuir que l'image manquante, sans la rose des vents), avec les coins
+   dorés des panneaux, à l'échelle d'une couverture de livre */
 .home-hero--defaut {
+    --c: linear-gradient(var(--or), var(--or));
     --fond-ecran-titre:
+        var(--c) top 1.25rem left 1.25rem / 3.5rem 3px no-repeat,
+        var(--c) top 1.25rem left 1.25rem / 3px 3.5rem no-repeat,
+        var(--c) top 1.25rem right 1.25rem / 3.5rem 3px no-repeat,
+        var(--c) top 1.25rem right 1.25rem / 3px 3.5rem no-repeat,
+        var(--c) bottom 1.25rem left 1.25rem / 3.5rem 3px no-repeat,
+        var(--c) bottom 1.25rem left 1.25rem / 3px 3.5rem no-repeat,
+        var(--c) bottom 1.25rem right 1.25rem / 3.5rem 3px no-repeat,
+        var(--c) bottom 1.25rem right 1.25rem / 3px 3.5rem no-repeat,
         var(--texture-cuir),
         radial-gradient(circle at 50% 45%, var(--cuir-clair), var(--cuir) 75%);
 }

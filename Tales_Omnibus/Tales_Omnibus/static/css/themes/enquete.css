@@ -661,9 +661,14 @@ main {
 }
 
 /* Écran titre sans image : la bannière sur le papier du dossier (sans le
-   tampon « PHOTO MANQUANTE ») */
+   tampon « PHOTO MANQUANTE »), glissée dans les quatre coins noirs des
+   photos du dossier, comme le portrait des fiches */
 .home-hero--defaut {
     --fond-ecran-titre:
+        linear-gradient(135deg, var(--laque) 50%, transparent 50%) top 1rem left 1rem / 3rem 3rem no-repeat,
+        linear-gradient(225deg, var(--laque) 50%, transparent 50%) top 1rem right 1rem / 3rem 3rem no-repeat,
+        linear-gradient(45deg, var(--laque) 50%, transparent 50%) bottom 1rem left 1rem / 3rem 3rem no-repeat,
+        linear-gradient(315deg, var(--laque) 50%, transparent 50%) bottom 1rem right 1rem / 3rem 3rem no-repeat,
         var(--texture-papier),
         radial-gradient(circle at 50% 45%, var(--papier-clair), #D9CDB3 75%);
 }

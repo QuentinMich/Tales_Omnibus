@@ -682,13 +682,35 @@ h3, h4 {
 
 /* Écran titre sans image : la bannière en hologramme sur un écran qui
    grésille (la neige, sans le « PAS DE SIGNAL »). La neige saute d'une
-   position à l'autre (steps) : on dirait qu'elle bouge. */
+   position à l'autre (steps) : on dirait qu'elle bouge. Aux 4 coins, les
+   équerres de visée des panneaux, en grand : cyan en haut, magenta en bas. */
 .home-hero--defaut {
     --fond-ecran-titre:
         var(--balayage),
         var(--neige),
         radial-gradient(circle at 50% 45%, var(--nuit-3), var(--nuit-2) 70%);
     animation: neige-qui-gresille 0.5s steps(1) infinite;
+}
+
+/* Les équerres sur un calque À PART : l'animation de la neige déplace TOUS
+   les calques du fond (background-position), elles sauteraient avec elle */
+.home-hero--defaut::after {
+    --cyan: linear-gradient(var(--neon-cyan), var(--neon-cyan));
+    --magenta: linear-gradient(var(--neon-magenta), var(--neon-magenta));
+    content: "";
+    position: absolute;
+    inset: 1.25rem;
+    background:
+        var(--cyan) top left / 2.75rem 3px no-repeat,
+        var(--cyan) top left / 3px 2.75rem no-repeat,
+        var(--cyan) top right / 2.75rem 3px no-repeat,
+        var(--cyan) top right / 3px 2.75rem no-repeat,
+        var(--magenta) bottom left / 2.75rem 3px no-repeat,
+        var(--magenta) bottom left / 3px 2.75rem no-repeat,
+        var(--magenta) bottom right / 2.75rem 3px no-repeat,
+        var(--magenta) bottom right / 3px 2.75rem no-repeat;
+    filter: drop-shadow(0 0 4px rgb(0 240 255 / 0.6));
+    pointer-events: none;
 }
 
 @keyframes neige-qui-gresille {

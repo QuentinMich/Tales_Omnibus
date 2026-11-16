@@ -682,6 +682,29 @@ h3, h4 {
         #262921;
 }
 
+/* Et deux morceaux de chatterton aux coins du haut, comme sur les panneaux
+   (DANS l'écran : au ras du haut de la page, ils seraient coupés) */
+.home-hero--defaut::before,
+.home-hero--defaut::after {
+    content: "";
+    position: absolute;
+    top: 1.5rem;
+    width: 7.5rem;
+    height: 2rem;
+    background: var(--chatterton) center / 100% 100% no-repeat;
+    pointer-events: none;
+}
+
+.home-hero--defaut::before {
+    left: 0.25rem;
+    transform: rotate(-32deg);
+}
+
+.home-hero--defaut::after {
+    right: 0.25rem;
+    transform: rotate(28deg);
+}
+
 /* Chronologie : des pages arrachées au carnet (bord du bas en dentelle de
    perforations), écrites au feutre. Papier CLAIR : texte foncé. */
 .timeline-card {

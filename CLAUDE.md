@@ -493,7 +493,12 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   `.home-hero--defaut` = le décor de son image manquante SANS le message
   (cuir, neige qui grésille en `steps()` coupée par reduced-motion, suie et
   lueur de sang, papier, béton à la lampe torche) ; sans thème, gris et
-  lettres jaunes (`--color-highlight`). Bannière en `contain` dans une boîte
+  lettres jaunes (`--color-highlight`). Plus les COINS des panneaux, en
+  grand, pour que l'écran titre fasse partie du site : coins dorés
+  (Grimoire), équerres de visée (Néon, sur un `::after` À PART : l'animation
+  de la neige déplace tous les calques du fond), rivets (Ténèbres), coins
+  noirs de photo (Enquête), chatterton (Survivant, `::before`/`::after`,
+  posés DANS l'écran pour ne pas être coupés en haut de page). Bannière en `contain` dans une boîte
   `min(100%, 60rem)` × `min(100%, 30rem)`, et un `padding-bottom` qui
   réserve la place de la flèche « Entrer ». Une image choisie, elle, reste
   en `cover` (recadrée) : prévue pour une photo, pas pour un logo.

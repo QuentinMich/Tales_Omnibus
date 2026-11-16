@@ -625,9 +625,15 @@ h3, h4 {
 }
 
 /* Écran titre sans image : la bannière en os sur la suie, une lueur de
-   sang derrière (le décor de l'image manquante, sans le crâne) */
+   sang derrière (le décor de l'image manquante, sans le crâne). Aux 4 coins,
+   les rivets des plaques de fer, plus gros : c'est une grande plaque. */
 .home-hero--defaut {
+    --rivet: radial-gradient(circle, #9C8B74 0 3px, #3A2F27 5px, transparent 7px);
     --fond-ecran-titre:
+        var(--rivet) top 1rem left 1rem / 18px 18px no-repeat,
+        var(--rivet) top 1rem right 1rem / 18px 18px no-repeat,
+        var(--rivet) bottom 1rem left 1rem / 18px 18px no-repeat,
+        var(--rivet) bottom 1rem right 1rem / 18px 18px no-repeat,
         radial-gradient(circle at 50% 45%, rgb(126 20 20 / 0.3), transparent 60%),
         var(--texture-suie),
         #120F0D;
