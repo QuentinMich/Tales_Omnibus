@@ -477,6 +477,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   thème, ocre clair sans thème), `--logo-admin-fill`. Le pochoir a une
   largeur FIXE (6,5rem, 2,5rem menu replié, 8rem à la connexion) : le lien
   de Wagtail autour prend la taille de son contenu, un % retomberait à 0.
+- **Icône d'onglet** (`core/includes/icones_onglet.html`, inclus par
+  `base.html` et par le bloc `branding_favicon` de `wagtailadmin/base.html`
+  ET `login.html`, qui n'étend pas base.html) : `static/img/favicon.svg` =
+  le petit monogramme (fentes de 60) dans un cadre CARRÉ, doré `#C29A3E`
+  (lisible sur un onglet clair ou sombre) ; `apple-touch-icon.png` 180×180,
+  fond sombre (iOS ne garde pas la transparence), dessiné depuis le SVG.
+  Toujours la marque, même si le MJ a choisi son propre logo.
 - **Bannière Tales Omnibus** (écran titre de l'accueil SANS image choisie, à
   la place du rectangle barré) : le monogramme déconstruit d'après le
   CROQUIS de Quentin : un grand T sur toute la hauteur, « ALES » sous sa

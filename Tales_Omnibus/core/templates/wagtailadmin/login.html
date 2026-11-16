@@ -5,6 +5,9 @@
 {# Sans logo choisi : le monogramme Tales Omnibus (logo par défaut).               #}
 {% block branding_login %}{% get_settings use_default_site=True %}Se connecter à {{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}
 
+{# L'icône d'onglet du site (la page de connexion n'étend pas wagtailadmin/base.html) #}
+{% block branding_favicon %}{% include "core/includes/icones_onglet.html" %}{% endblock %}
+
 {% block branding_title %}{% get_settings use_default_site=True %}{{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}
 
 {% block branding_logo %}{% get_settings use_default_site=True %}{% with reglages=settings.core.NavigationSettings %}

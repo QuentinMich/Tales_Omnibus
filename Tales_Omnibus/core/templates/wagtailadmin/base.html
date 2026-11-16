@@ -8,4 +8,7 @@
 {# Sans logo choisi : le monogramme Tales Omnibus (logo par défaut).             #}
 {% block branding_logo %}{% get_settings use_default_site=True %}{% with reglages=settings.core.NavigationSettings %}{% include "core/admin/logo.html" with logo=reglages.logo dore=reglages.logo_dore taille="max-160x160" %}{% endwith %}{% endblock %}
 
+{# L'icône d'onglet du site remplace celle de Wagtail #}
+{% block branding_favicon %}{% include "core/includes/icones_onglet.html" %}{% endblock %}
+
 {% block branding_title %}{% get_settings use_default_site=True %}{{ settings.core.NavigationSettings.site_name|default:"Wagtail" }}{% endblock %}

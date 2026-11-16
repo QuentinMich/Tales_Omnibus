@@ -703,6 +703,17 @@ class CouleursAdminTests(TestCase):
         for cle, _ in THEMES:
             self.assertIn(cle, LOGO_ADMIN, f"Thème {cle!r} sans couleur de logo d'admin")
 
+    def test_icone_d_onglet_sur_le_site_et_l_admin(self):
+        """Le monogramme est l'icône d'onglet du site, de la connexion et de l'admin."""
+        from django.contrib.auth import get_user_model
+        admin = get_user_model().objects.create_superuser("chef", "chef@exemple.fr", "motdepasse")
+        pages = [self.client.get("/"), self.client.get("/admin/login/")]
+        self.client.force_login(admin)
+        pages.append(self.client.get("/admin/"))
+        for page in pages:
+            self.assertContains(page, "img/favicon.svg")
+            self.assertContains(page, "img/apple-touch-icon.png")
+
 
 class PolicesDesThemesTests(TestCase):
     """RGPD : polices chez Google (signalé) ou hébergées sur le site (core/polices.py)."""

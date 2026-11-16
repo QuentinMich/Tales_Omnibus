@@ -1,0 +1,9 @@
+{% load static %}
+{# Icône d'onglet : le monogramme Tales Omnibus, partagé par le site (base.html) #}
+{# et l'admin (wagtailadmin/base.html, bloc branding_favicon).                   #}
+{#  - SVG : net à toutes les tailles (16 px dans l'onglet, plus en favori) ;     #}
+{#  - PNG 180×180 : pour l'écran d'accueil d'un iPhone (« Ajouter à l'écran     #}
+{#    d'accueil »), qui ne lit pas le SVG, sur fond sombre (iOS ne garde pas     #}
+{#    la transparence : il mettrait du noir).                                    #}
+<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
