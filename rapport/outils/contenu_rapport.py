@@ -29,7 +29,7 @@ CONTENU = [
           "mentions légales. Le MJ gère tout depuis l'administration, sans écrire une ligne de code : il "
           "place les lieux sur ses cartes à la souris, choisit parmi six thèmes graphiques et peut ouvrir à "
           "chaque joueur un accès limité à sa propre fiche."),
-    ("p", "Le site est fonctionnel en environnement de développement et couvert par 191 tests automatisés. "
+    ("p", "Le site est fonctionnel en environnement de développement et couvert par 192 tests automatisés. "
           "Une campagne de démonstration complète s'installe en un clic. La mise en ligne fera l'objet de "
           "la partie 3."),
 
@@ -214,7 +214,7 @@ CONTENU = [
           "installe une campagne de démonstration ; une page **Entretien du site** vérifie et répare le site. "
           "L'administration reprend les couleurs et le logo du thème choisi."),
     ("img", ("13_admin_bien_demarrer", 10, "La page « Bien démarrer » : structure du site et démonstration en un clic.")),
-    ("p", "Ces configurations sont validées par **191 tests automatisés** (`python manage.py test`) : création des "
+    ("p", "Ces configurations sont validées par **192 tests automatisés** (`python manage.py test`) : création des "
           "droits des joueurs, envoi des formulaires, sitemap, redirections, affichage de chaque page de la démonstration."),
 
     ("h2", "Présentation de la création et de la réalisation des interfaces utilisateurs"),
@@ -236,7 +236,7 @@ CONTENU = [
           "Grimoire (médiéval), Néon (cyberpunk), Ténèbres (dark fantasy), Enquête (années 20) et Survivant (zombies)."),
     ("code", [
         "/* structure.css : la palette du wireframe */",
-        ":root { --color-bg: #FFFFFF; --color-accent: #8C782C; --color-highlight: #FFD952; }",
+        ":root { --color-bg: #FFFFFF; --color-accent: #88742B; --color-highlight: #FFD952; }",
         "",
         "/* themes/grimoire.css : le même site, en parchemin et reliure de cuir */",
         ":root { --color-bg: var(--parchemin); --color-accent: var(--sang); --font-title: \"Cinzel\", serif; }",
@@ -329,7 +329,7 @@ CONTENU = [
     ("h2", "Présentation des étapes réalisées pour le déploiement de l'application"),
     ("todo", "Partie à rédiger après les cours de déploiement : hébergement choisi et justifié, configuration du nom de domaine talesomnibus.com, mise en ligne, outil d'analyse de trafic."),
     ("p", "Ce qui est déjà préparé pour la mise en ligne :"),
-    ("li", "**Tests** : 191 tests automatisés, un audit de toutes les pages publiées (un seul titre principal par "
+    ("li", "**Tests** : 192 tests automatisés, un audit de toutes les pages publiées (un seul titre principal par "
            "page, aucune image sans texte alternatif, aucun titre en double) et une recette visuelle sur ordinateur "
            "et téléphone, dans les six thèmes."),
     ("li", "**Réglages de production** séparés (`production.py`) et en-tête de sécurité pour les images SVG, à reporter dans la configuration du serveur web."),
@@ -339,7 +339,7 @@ CONTENU = [
           "sans cookie) ou Plausible, pour ne pas imposer de bandeau de consentement."),
     ("p", "**Stratégie de mise à jour** : les versions sont figées dans `requirements.txt` (`wagtail>=8.1,<8.2`). "
           "Une mise à jour de Wagtail se fait d'abord sur une copie de développement : lecture des notes de "
-          "version, `pip install -U`, migrations, lancement des 191 tests et de l'entretien, puis déploiement. "
+          "version, `pip install -U`, migrations, lancement des 192 tests et de l'entretien, puis déploiement. "
           "Privilégier les versions LTS (support long) de Wagtail."),
 
     # ================================================================ PARTIE 4

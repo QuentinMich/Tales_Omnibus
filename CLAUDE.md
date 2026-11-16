@@ -59,7 +59,9 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 
 - **CSS** : `Tales_Omnibus/Tales_Omnibus/static/css/structure.css` gère la mise
   en page et utilise **uniquement des variables CSS** (`:root`). La palette par
-  défaut vient du wireframe : ocre `#8C782C` et jaune `#FFD952` pour ce que le
+  défaut vient du wireframe : ocre `#88742B` (le `#8C782C` du wireframe,
+  assombri de 3 % pour le contraste WCAG AA du texte blanc posé dessus :
+  4,59:1 au lieu de 4,34:1) et jaune `#FFD952` pour ce que le
   client modifie, gris pour la structure. Composants réutilisables : `panel`
   (`--rounded`, `--accent`, `--strong`), `btn` (`--large`), `link-tiles`,
   `prestations`, `fiche-top` / `fiche-card`.

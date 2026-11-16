@@ -24,13 +24,16 @@
     --color-surface-strong-text: #FFFFFF;
     --color-border: #595959;          /* filets / séparateurs */
 
-    /* --- Couleurs : contenu client (ocre) --- */
-    --color-accent: #8C782C;          /* fonds de contenu, boutons */
+    /* --- Couleurs : contenu client (ocre) ---
+       L'ocre du wireframe (#8C782C) a été assombri de 3 % : le texte blanc
+       posé dessus passait à 4,34:1, sous le seuil WCAG AA (4,5:1) des
+       textes courants. #88742B donne 4,59:1, sans différence visible. */
+    --color-accent: #88742B;          /* fonds de contenu, boutons */
     --color-accent-text: #FFFFFF;     /* texte posé sur l'accent */
     --color-highlight: #FFD952;       /* titres / détails sur fond accent ou foncé */
     --color-highlight-text: #1A1A1A;  /* texte posé SUR le surlignage (badge « Épinglée »…) :
                                          un thème sombre a un texte courant clair, illisible ici */
-    --color-title: #8C782C;           /* titres de pages */
+    --color-title: #88742B;           /* titres de pages (même ocre, même contraste) */
 
     /* --- Couleurs : types de fiches (encyclopédie, fiches liées) --- */
     --color-type-heros: #A23B3B;      /* rouge */
@@ -293,9 +296,15 @@ figure {
 }
 
 .site-search input {
-    flex: 0 1 11rem;  /* 11rem de base, mais peut rétrécir */
+    flex: 0 1 11rem;  /* 11rem de base, mais peut rétrécir… */
     width: 11rem;
-    min-width: 0;
+    /* …jusqu'à 9rem, pas moins : « Rechercher… » doit rester lisible.
+       En grand écran, l'en-tête est une grille 1fr | menu | 1fr : avec un
+       thème au menu large (Enquête, machine à écrire en capitales), la
+       colonne de la recherche s'amincissait et coupait le texte
+       (« Recherc »). Vérifié dans les 6 thèmes de 375 px à 1280 px :
+       ni débordement, ni chevauchement avec le menu. */
+    min-width: 9rem;
     padding: var(--space-sm) var(--space-md);
     border: 0;
     background: transparent;
