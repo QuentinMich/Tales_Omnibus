@@ -158,7 +158,8 @@ class CreerDemoTests(TestCase):
 
         call_command('creer_demo', stdout=StringIO())
         self.assertGreaterEqual(Page.objects.count() - avant, 20)
-        self.assertEqual(Apparition.objects.count(), 10)
+        # 7 lieux sur la carte d'Ardenn + le Val Gris et sa forteresse sur la carte détaillée
+        self.assertEqual(Apparition.objects.count(), 9)
         # Les zones de la démo rangent les lieux : Hameau › Bois des Murmures › Ardenn
         hameau = Apparition.objects.get(lieu__title="Hameau des Saules")
         self.assertEqual([l.title for l in hameau.chemin()], ["Ardenn", "Bois des Murmures"])
@@ -166,9 +167,16 @@ class CreerDemoTests(TestCase):
         from campagnes.models import CartePage, ids_situes_dans
         val_gris = CartePage.objects.get(title="Carte du Val Gris")
         self.assertEqual([c.title for c in val_gris.cartes_englobantes()], ["Carte d'Ardenn"])
+        # Le Val Gris entoure la forteresse, présente sur les deux cartes ;
+        # le port, sur la côte, reste dans Ardenn
+        fort = Apparition.objects.get(carte__title="Carte d'Ardenn", lieu__title="Fort-Sombre")
+        self.assertEqual([l.title for l in fort.chemin()], ["Ardenn", "Royaume du Val Gris"])
         port = Apparition.objects.get(carte__title="Carte d'Ardenn", lieu__title="Port-Lanterne")
-        self.assertEqual([l.title for l in port.chemin()], ["Ardenn", "Royaume du Val Gris"])
-        self.assertIn(port.lieu_id, ids_situes_dans(val_gris.lieu_detaille_id))
+        self.assertEqual([l.title for l in port.chemin()], ["Ardenn"])
+        # Le filtre géographique « tout ce qui est dans le Val Gris » : le fort, pas le port
+        dans_le_val_gris = ids_situes_dans(val_gris.lieu_detaille_id)
+        self.assertIn(fort.lieu_id, dans_le_val_gris)
+        self.assertNotIn(port.lieu_id, dans_le_val_gris)
         # Toutes les pages de la démo s'affichent, avec UN seul <h1> (SEO),
         # et aucune image sans attribut alt (vide = décorative, mais présent)
         import re
@@ -619,6 +627,23 @@ class CouleursAdminTests(TestCase):
             for couleur in COULEURS_ADMIN[cle]:
                 # Texte blanc sur le menu et sur les boutons : WCAG AA
                 self.assertGreaterEqual(contraste_avec_le_blanc(couleur), 4.5, f"{cle} : {couleur}")
+
+    def test_la_palette_du_site_par_defaut_est_lisible(self):
+        """
+        La palette de structure.css (thème « Aucun ») : texte blanc sur l'ocre
+        (boutons, panneaux) et titres ocre sur fond blanc, au moins 4,5:1.
+        On lit les variables directement dans le fichier CSS.
+        """
+        import re
+        from pathlib import Path
+        from django.conf import settings
+        from core.couleurs_admin import contraste_avec_le_blanc
+        css = (Path(settings.PROJECT_DIR) / "static" / "css" / "structure.css").read_text(encoding="utf-8")
+        variables = dict(re.findall(r"(--color-[\w-]+):\s*(#[0-9A-Fa-f]{6})", css))
+        self.assertEqual(variables["--color-accent-text"].upper(), "#FFFFFF")
+        self.assertEqual(variables["--color-bg"].upper(), "#FFFFFF")
+        for nom in ("--color-accent", "--color-title"):
+            self.assertGreaterEqual(contraste_avec_le_blanc(variables[nom]), 4.5, f"{nom} : {variables[nom]}")
 
     def test_conversion_en_teinte_saturation_luminosite(self):
         from core.couleurs_admin import en_hsl
