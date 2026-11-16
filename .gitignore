@@ -1,16 +1,50 @@
-env/
-__pycache__/
-*.pyc
+# .gitignore du dépôt Tales Omnibus : le SITE (dossier Tales_Omnibus/) ET les
+# documents de la CERTIFICATION, qui restent versionnés :
+#   - Cahier_des_Charges_Tales_Omnibus_v2.docx, Schéma_fonctionnel.png,
+#     Tales_Omnibus_Wireframe.zip (le cadrage) ;
+#   - rapport/ (le .docx, son PDF, les captures et le générateur outils/) ;
+#   - logo/ (les sources du logo et leur script) ; CLAUDE.md.
+# Principe : on versionne le CODE et les DOCUMENTS, jamais les DONNÉES d'une
+# installation ni les secrets.
+
+# --- Données d'une installation (chaque ordinateur, chaque serveur a les siennes)
+# La base de données (contenu, comptes, mots de passe hachés)
 *.sqlite3
-.DS_Store
-.env
-
-# Dossiers générés à la racine du projet Django uniquement
-# (le "/" devant évite d'ignorer aussi les dossiers static/ des apps)
+*.sqlite3-journal
+# Les fichiers envoyés depuis l'admin (images, documents) et leurs vignettes
 /Tales_Omnibus/media/
-/Tales_Omnibus/static/
-# Copies de la base faites par manage.py entretien
+# Les copies de la base faites par « manage.py entretien »
 /Tales_Omnibus/sauvegardes/
+# Les fichiers statiques REGROUPÉS par « manage.py collectstatic » (STATIC_ROOT).
+# Le « / » devant : seulement ce dossier-là, pas les static/ des apps ni
+# Tales_Omnibus/Tales_Omnibus/static/ (thèmes, polices, logo), qui SONT du code.
+/Tales_Omnibus/static/
 
+# --- Secrets et réglages propres à un serveur ------------------------------
+# Réglages de production propres au serveur (clé secrète, domaines…),
+# importés par settings/production.py
+/Tales_Omnibus/Tales_Omnibus/settings/local.py
+.env
+.env.*
+
+# --- Environnement Python ---------------------------------------------------
+env/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# --- Fichiers temporaires de Word (rapport, cahier des charges ouverts) -------
+~$*.docx
+~$*.doc
+
+# --- Outils, systèmes, éditeurs ----------------------------------------------
 # Config locale de Claude Code (serveur de preview)
 .claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+.coverage
+htmlcov/
