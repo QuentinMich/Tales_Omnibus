@@ -61,7 +61,7 @@
 
             <h2>Cookies</h2>
             <p>
-                Ce site n'utilise aucun cookie publicitaire ni de mesure d'audience.
+                Ce site n'utilise aucun cookie publicitaire ni de mesure d'audience{% if statistiques %} (ses statistiques de visite se font sans cookie, voir plus bas){% endif %}.
                 Seuls des cookies techniques, indispensables à la sécurité des
                 formulaires, sont déposés : ils ne nécessitent pas votre consentement.
             </p>
@@ -71,6 +71,20 @@
                     La page d'accueil intègre un lecteur {{ lecteur_live }}. Ce service
                     peut déposer ses propres cookies, régis par sa politique de
                     confidentialité.
+                </p>
+            {% endif %}
+
+            {# Insert automatique : seulement si un compte GoatCounter est indiqué (Paramètres du site) #}
+            {% if statistiques %}
+                <h2>Mesure d'audience</h2>
+                <p>
+                    Le site compte ses visites avec GoatCounter, un service de statistiques
+                    sans cookie. Il enregistre la page consultée, la page d'où vous venez,
+                    le type de navigateur, la taille d'écran et le pays, sans conserver
+                    votre adresse IP ni vous suivre d'un site à l'autre : les chiffres
+                    obtenus sont anonymes et ne servent qu'à savoir quelles pages sont lues.
+                    Voir la
+                    <a href="https://www.goatcounter.com/help/privacy">politique de confidentialité de GoatCounter</a>.
                 </p>
             {% endif %}
 

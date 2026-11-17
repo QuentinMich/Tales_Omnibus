@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -11,7 +13,7 @@ from wagtail.models import Orderable, Page
 from wagtail.search import index
 from wagtail.fields import StreamField, RichTextField
 from wagtail.admin.forms import WagtailAdminModelForm
-from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 
 from core.blocks import BaseStreamBlock
 from core.slugs import SlugAutomatiqueMixin
@@ -89,13 +91,46 @@ class NavigationSettings(ClusterableModel, BaseGenericSetting):
         ),
     )
 
+    goatcounter = models.CharField(
+        max_length=100, blank=True, default="",
+        verbose_name="Compte GoatCounter",
+        help_text=(
+            "Pour compter les visites, sans cookie : créez un compte gratuit sur goatcounter.com, "
+            "puis écrivez ici son nom (pour https://monunivers.goatcounter.com, écrire « monunivers », "
+            "ou collez l'adresse entière). Vide = aucune statistique. Vos propres visites, "
+            "une fois connecté à l'administration, ne sont pas comptées."
+        ),
+    )
+
     panels = [
         FieldPanel('site_name'),
         FieldPanel('logo'),
         FieldPanel('logo_dore'),
         FieldPanel('theme'),
         InlinePanel('social_links', label="Réseaux Sociaux"),
+        MultiFieldPanel([FieldPanel('goatcounter')], heading="Statistiques de visite"),
     ]
+
+    def clean(self):
+        super().clean()
+        # Un MJ colle souvent l'adresse entière : on n'en garde que le nom du compte.
+        # « https://MonUnivers.goatcounter.com/ » -> « monunivers »
+        code = self.goatcounter.strip().lower()
+        code = re.sub(r'^(https?:)?//', '', code)
+        code = re.sub(r'\.goatcounter\.com.*$', '', code)
+        self.goatcounter = code.strip('/')
+        # Vérifié APRÈS le nettoyage : Django valide les champs avant clean(),
+        # un validateur sur le champ refuserait donc l'adresse entière.
+        if self.goatcounter and not re.fullmatch(r'[a-z0-9-]{1,63}', self.goatcounter):
+            raise ValidationError({'goatcounter': (
+                "Écrivez seulement le nom du compte (lettres minuscules, chiffres et tirets), "
+                "ou collez l'adresse https://….goatcounter.com."
+            )})
+
+    @property
+    def url_goatcounter(self):
+        """Adresse où le script envoie les visites (vide = statistiques coupées)."""
+        return f"https://{self.goatcounter}.goatcounter.com/count" if self.goatcounter else ""
 
     class Meta:
         # Le nom affiché dans l'admin (menu, titre de la page). Le nom de la

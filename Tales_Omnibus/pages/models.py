@@ -106,7 +106,10 @@ class MentionsLegalesPage(SlugAutomatiqueMixin, Page):
         # Un thème qui charge ses polices chez Google transmet l'adresse IP du
         # visiteur à Google : on le dit. Après manage.py heberger_polices, le
         # thème n'appelle plus Google et la phrase disparaît toute seule.
-        context['polices_google'] = theme_utilise_google_fonts(NavigationSettings.load(request_or_site=request).theme)
+        reglages = NavigationSettings.load(request_or_site=request)
+        context['polices_google'] = theme_utilise_google_fonts(reglages.theme)
+        # Mesure d'audience : signalée seulement si un compte GoatCounter est indiqué.
+        context['statistiques'] = bool(reglages.goatcounter)
         return context
 
 

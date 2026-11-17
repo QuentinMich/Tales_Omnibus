@@ -1,4 +1,6 @@
 from django import template
+from django.conf import settings as reglages
+from django.utils.html import format_html
 from wagtail.models import Site
 
 from campagnes.models import CampagnesIndexPage
@@ -95,3 +97,35 @@ def encyclopedie_url(context):
     accueil = Site.find_for_request(request).root_page
     encyclopedie = EncyclopedieIndexPage.objects.live().descendant_of(accueil).first()
     return encyclopedie.url if encyclopedie else ""
+
+
+@register.simple_tag(takes_context=True)
+def statistiques_de_visite(context):
+    """
+    Script GoatCounter (mesure d'audience SANS cookie), seulement quand il le faut.
+
+    Rien n'est envoyé :
+    - si aucun compte n'est indiqué dans Paramètres du site (chaque MJ qui
+      installe l'outil branche SON compte : rien n'est écrit en dur) ;
+    - en développement (DEBUG) : les essais en local ne faussent pas les chiffres ;
+    - dans un aperçu de l'admin ;
+    - pour un visiteur connecté (le MJ, les joueurs) : on compte le public.
+    """
+    from core.models import NavigationSettings  # ici : évite un import circulaire
+
+    request = context.get('request')
+    if reglages.DEBUG or request is None:
+        return ""
+    compte = NavigationSettings.load(request_or_site=request)
+    if not compte.goatcounter:
+        return ""
+    if getattr(request, 'is_preview', False):
+        return ""
+    utilisateur = getattr(request, 'user', None)
+    if utilisateur is not None and utilisateur.is_authenticated:
+        return ""
+    return format_html(
+        '<script data-goatcounter="{}" async src="https://gc.zgo.at/count.js"></script>',
+        compte.url_goatcounter,
+    )
+

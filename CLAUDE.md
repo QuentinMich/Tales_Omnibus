@@ -382,6 +382,16 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
 - **Chargement différé** : `loading="lazy"` sur les images hors du premier
   écran (cartes, vignettes, mini-cartes, blocs image) ; jamais sur la
   bannière, l'image d'accueil, la carte principale ni l'image de la fiche.
+- **Statistiques de visite** (GoatCounter, SANS cookie, migration core 0013) :
+  champ `NavigationSettings.goatcounter` (Paramètres du site > « Statistiques
+  de visite ») = le nom du compte ; `clean()` accepte l'adresse entière collée
+  et n'en garde que le nom (validation APRÈS nettoyage, pas de validateur sur
+  le champ : Django valide les champs avant `clean()`). Le script est posé par
+  `{% statistiques_de_visite %}` (navigation_tags) : rien si pas de compte, en
+  DEBUG, dans un aperçu, ou pour un visiteur connecté (le MJ ne gonfle pas ses
+  chiffres). Jamais de compte écrit en dur : l'outil est distribué. Mentions
+  légales : section « Mesure d'audience » automatique si un compte est indiqué.
+  En PRODUCTION : remettre le compte de Quentin dans Paramètres du site.
 - **SEO, vérifications du brief** : chaque page a UN seul `<h1>` (sur
   l'accueil, c'est le NOM DU SITE dans le header, `:where(h1).site-name`
   pour ne pas hériter du style des titres) ; le test de la démo vérifie

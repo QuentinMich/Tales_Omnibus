@@ -96,6 +96,14 @@ class MentionsLegalesTests(TestCase):
         self.home.save_revision().publish()
         self.assertContains(self.client.get(self.page.url), "intègre un lecteur YouTube")
 
+    def test_mesure_d_audience_signalee_seulement_si_un_compte_est_indique(self):
+        from core.models import NavigationSettings
+        self.assertNotContains(self.client.get(self.page.url), "GoatCounter")
+        reglages = NavigationSettings.load()
+        reglages.goatcounter = "monunivers"
+        reglages.save()
+        self.assertContains(self.client.get(self.page.url), "<h2>Mesure d'audience</h2>", html=False)
+
     def test_une_seule_page_de_mentions(self):
         from pages.models import MentionsLegalesPage
         self.assertFalse(MentionsLegalesPage.can_create_at(self.home))

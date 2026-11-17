@@ -1,5 +1,7 @@
 import os
-from django.test import RequestFactory, TestCase
+from django.contrib.auth import get_user_model
+from django.test import RequestFactory, TestCase, override_settings
+from wagtail.models import Page
 from wagtail.blocks.struct_block import StructBlockValidationError
 
 from campagnes.models import CampagnePage, CampagnesIndexPage
@@ -787,3 +789,46 @@ class PoidsDesImagesTests(TestCase):
         image = Image.objects.create(title="Test", file=get_test_image_file())  # un PNG
         self.assertTrue(image.file.name.endswith(".png"))  # l'original n'est pas touché
         self.assertTrue(image.get_rendition("fill-100x100").file.name.endswith(".webp"))
+
+
+class StatistiquesDeVisiteTests(TestCase):
+    """Script GoatCounter : jamais écrit en dur, jamais pour le MJ, jamais en local."""
+
+    def setUp(self):
+        from core.models import NavigationSettings
+        self.reglages = NavigationSettings.load()
+        self.accueil = Page.objects.get(depth=2)
+
+    def script(self):
+        return '<script data-goatcounter=' in self.client.get(self.accueil.url).content.decode()
+
+    def test_l_adresse_entiere_est_reduite_au_nom_du_compte(self):
+        for saisie in ("https://MonUnivers.goatcounter.com/", "monunivers.goatcounter.com", " monunivers "):
+            self.reglages.goatcounter = saisie
+            self.reglages.full_clean()
+            self.assertEqual(self.reglages.goatcounter, "monunivers")
+        self.assertEqual(self.reglages.url_goatcounter, "https://monunivers.goatcounter.com/count")
+
+    def test_un_nom_invalide_est_refuse(self):
+        from django.core.exceptions import ValidationError
+        self.reglages.goatcounter = "mon univers!"
+        with self.assertRaises(ValidationError):
+            self.reglages.full_clean()
+
+    @override_settings(DEBUG=False)
+    def test_script_seulement_avec_un_compte_et_pour_le_public(self):
+        self.assertFalse(self.script())  # aucun compte : aucun script
+        self.reglages.goatcounter = "monunivers"
+        self.reglages.save()
+        self.assertTrue(self.script())
+        self.assertContains(self.client.get(self.accueil.url), "https://monunivers.goatcounter.com/count")
+        # Le MJ connecté ne gonfle pas ses propres chiffres
+        self.client.force_login(get_user_model().objects.create_superuser("mj", "mj@example.com", "x"))
+        self.assertFalse(self.script())
+
+    @override_settings(DEBUG=True)
+    def test_pas_de_script_en_developpement(self):
+        self.reglages.goatcounter = "monunivers"
+        self.reglages.save()
+        self.assertFalse(self.script())
+
