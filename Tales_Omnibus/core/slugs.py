@@ -14,6 +14,18 @@ from django.utils.text import slugify
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 
 
+# slugify() ne garde que les lettres que l'Unicode sait décomposer (é -> e).
+# Les LIGATURES ne se décomposent pas : Django les SUPPRIME (« Cœur » -> « cur »).
+LIGATURES = (("œ", "oe"), ("Œ", "Oe"), ("æ", "ae"), ("Æ", "Ae"), ("ß", "ss"))
+
+
+def slug_lisible(texte):
+    """slugify() sans perdre de lettres : « Cœur-de-Corneille » -> « coeur-de-corneille »."""
+    for ligature, lettres in LIGATURES:
+        texte = texte.replace(ligature, lettres)
+    return slugify(texte, allow_unicode=False)
+
+
 class SlugAutomatiqueMixin:
     """
     À mettre AVANT Page dans l'héritage : class HeroPage(SlugAutomatiqueMixin, Page).
@@ -43,7 +55,7 @@ class SlugAutomatiqueMixin:
     def slug_voulu(self):
         # allow_unicode=False : « Encyclopédie » -> « encyclopedie » (sans accent,
         # donc pas de %C3%A9 dans la barre d'adresse)
-        return self.slug_fixe or slugify(self.title or "", allow_unicode=False)
+        return self.slug_fixe or slug_lisible(self.title or "")
 
     def full_clean(self, *args, **kwargs):
         # full_clean est appelé par le formulaire de l'admin ET par save() :

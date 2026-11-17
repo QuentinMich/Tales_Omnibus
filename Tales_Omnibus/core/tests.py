@@ -832,3 +832,17 @@ class StatistiquesDeVisiteTests(TestCase):
         self.reglages.save()
         self.assertFalse(self.script())
 
+
+class SlugsAvecLigaturesTests(TestCase):
+    """Django supprime « œ » au lieu de l'écrire « oe » : « Cœur-de-Corneille » donnait /cur-de-corneille/."""
+
+    def test_les_ligatures_deviennent_des_lettres(self):
+        from core.slugs import slug_lisible
+        self.assertEqual(slug_lisible("Cœur-de-Corneille"), "coeur-de-corneille")
+        self.assertEqual(slug_lisible("L'Æther d'Areiū"), "laether-dareiu")
+
+    def test_le_slug_automatique_d_une_page_garde_le_oe(self):
+        accueil = Page.objects.get(depth=2)
+        campagne = accueil.add_child(instance=CampagnePage(title="Sœurs de Feiri"))
+        self.assertEqual(campagne.slug, "soeurs-de-feiri")
+

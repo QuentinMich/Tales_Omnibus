@@ -730,3 +730,14 @@ textarea {
         animation: none;
     }
 }
+
+/* Cinzel Decorative : son CRÉNAGE (espacement propre à chaque paire de lettres)
+   colle le H et le E, et « THE » se lisait « TĦE ». Ce n'est PAS une ligature :
+   font-variant-ligatures n'y change rien, font-kerning: none, si. */
+.site-name,
+.page-title,
+.campagne-card h2,
+.hero-card-title {
+    font-kerning: none;
+}
+

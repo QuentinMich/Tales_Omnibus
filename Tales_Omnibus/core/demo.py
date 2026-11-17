@@ -29,7 +29,8 @@ from pathlib import Path
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.utils.text import slugify
+
+from core.slugs import slug_lisible
 from taggit.models import Tag
 from wagtail.documents import get_document_model
 from wagtail.images.models import Image
@@ -363,13 +364,8 @@ POINTS_FOCAUX = {
 
 
 def slug_de_fichier(titre):
-    """
-    slugify(), mais sans perdre les ligatures : Django SUPPRIME « œ » et « æ »
-    (ce ne sont pas des lettres accentuées), « Sœur » donnerait « sur ».
-    """
-    for ligature, lettres in (("œ", "oe"), ("Œ", "Oe"), ("æ", "ae"), ("Æ", "Ae")):
-        titre = titre.replace(ligature, lettres)
-    return slugify(titre)
+    """Nom de fichier d'une image de la démo : même règle que les adresses des pages."""
+    return slug_lisible(titre)
 
 
 def poser_le_point_focal(image, cle):

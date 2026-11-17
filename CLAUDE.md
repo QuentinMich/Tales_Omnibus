@@ -588,6 +588,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   supprimait `coord_x` AVANT de créer `Apparition`) : relire toute migration
   qui déplace des données, et placer le `RunPython` entre les deux.
 
+- **Ligatures dans les slugs** : `slugify()` SUPPRIME « œ », « æ », « ß »
+  (« Cœur-de-Corneille » donnait `/cur-de-corneille/`). Toujours passer par
+  `core.slugs.slug_lisible()` (slugs automatiques ET fichiers de la démo).
+- **« THE » qui se lit « TĦE » dans le Grimoire** : c'est le CRÉNAGE de
+  Cinzel Decorative qui colle le H et le E, pas une ligature
+  (`font-variant-ligatures` n'y fait rien) : `font-kerning: none` sur les
+  titres qui utilisent cette police.
 - **Images de la démo** : point focal déclaré en % dans `POINTS_FOCAUX`
   (core/demo.py), converti en pixels à l'import (`poser_le_point_focal`) :
   les vignettes `fill-` gardent les visages. Noms de fichiers via
