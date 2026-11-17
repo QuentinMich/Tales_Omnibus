@@ -5,7 +5,8 @@ Balisage dans les textes : **gras**, `code`, _italique_.
 import os
 RACINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..") + os.sep
 _CAPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "captures")
-CAPTURES = {os.path.splitext(f)[0]: os.path.join(_CAPT, f) for f in sorted(os.listdir(_CAPT))}
+CAPTURES = {os.path.splitext(f)[0]: os.path.join(_CAPT, f) for f in sorted(os.listdir(_CAPT))
+            if os.path.isfile(os.path.join(_CAPT, f))}
 
 COUVERTURE = {
     "titre": "TALES OMNIBUS",
@@ -29,9 +30,9 @@ CONTENU = [
           "mentions légales. Le MJ gère tout depuis l'administration, sans écrire une ligne de code : il "
           "place les lieux sur ses cartes à la souris, choisit parmi six thèmes graphiques et peut ouvrir à "
           "chaque joueur un accès limité à sa propre fiche."),
-    ("p", "Le site est fonctionnel en environnement de développement et couvert par 192 tests automatisés. "
-          "Une campagne de démonstration complète s'installe en un clic. La mise en ligne fera l'objet de "
-          "la partie 3."),
+    ("p", "Le site est couvert par 201 tests automatisés, une campagne de démonstration complète s'installe "
+          "en un clic, et il est en ligne à l'adresse https://quentin.bdx-certif-cms.tech, avec une mesure "
+          "d'audience sans cookie."),
 
     # ================================================================ INTRODUCTION
     ("h1s", "Introduction"),
@@ -160,62 +161,42 @@ CONTENU = [
     ("p", "La procédure suit la documentation officielle de Wagtail (« Getting started »), sous Windows :"),
     ("table", ([
         ["Commande", "À quoi elle sert"],
-        ["`python --version`", "Vérifier Python (3.12 au minimum ; projet développé en 3.15)."],
-        ["`python -m venv env`", "Créer un environnement virtuel : les bibliothèques du projet restent isolées."],
-        ["`env\\Scripts\\activate`", "L'activer (sous Linux / macOS : `source env/bin/activate`)."],
+        ["`python -m venv env` puis `env\\Scripts\\activate`", "Créer et activer un environnement virtuel : les bibliothèques du projet restent isolées."],
         ["`pip install wagtail`", "Installer Wagtail et Django."],
         ["`wagtail start Tales_Omnibus`", "Générer le squelette du projet (réglages, page d'accueil, recherche)."],
         ["`pip install -r requirements.txt`", "Installer les versions figées du projet (Wagtail 8.1, Django 6.1)."],
-        ["`python manage.py migrate`", "Créer les tables de la base de données (SQLite en développement)."],
-        ["`python manage.py createsuperuser`", "Créer le compte administrateur."],
+        ["`python manage.py migrate` puis `createsuperuser`", "Créer les tables de la base (SQLite) et le compte administrateur."],
         ["`python manage.py runserver`", "Lancer le serveur, puis ouvrir http://127.0.0.1:8000/admin pour vérifier."],
-    ], [4000, L - 4000])),
-    ("p", "Le code est versionné avec **Git** et publié sur GitHub. Le projet a été développé sur deux "
-          "ordinateurs (la maison et le centre de formation) : la base de données n'étant pas versionnée, "
-          "une commande maison, `python manage.py entretien`, remet chaque poste à jour après un `git pull`. "
-          "Elle sauvegarde la base, applique les migrations et range les contenus. Les réglages sont séparés "
-          "entre développement (`dev.py`) et production (`production.py`)."),
-    ("img", ("11_admin_arbre", 10, "L'administration Wagtail fonctionnelle : l'arbre de pages d'une campagne.")),
+    ], [4300, L - 4300])),
+    ("p", "Le code est versionné avec **Git** et publié sur GitHub. Développé sur deux ordinateurs, le projet a "
+          "une commande maison, `python manage.py entretien`, qui remet chaque poste à jour après un `git pull` "
+          "(sauvegarde de la base, migrations, rangement des contenus)."),
+    ("img2", ("11_admin_arbre", "13_admin_bien_demarrer", 7.6, "L'administration Wagtail fonctionnelle : l'arbre de pages d'une campagne (à gauche) et la page « Bien démarrer » (à droite).")),
 
     # ================================================================ PARTIE 2
-    ("h1", "Partie n°2 Réalisation de l'application"),
+    ("h1s", "Partie n°2 Réalisation de l'application"),
     ("h2", "Explication des choix de paramétrage"),
     ("h3", "Droits et accès des utilisateurs"),
-    ("p", "Deux profils ont été mis en place. Le **MJ** est administrateur et a tous les droits. Chaque "
-          "**joueur** peut recevoir un compte pour mettre à jour lui-même la fiche de son héros, et seulement "
-          "celle-là."),
-    ("p", "Dans Wagtail, les droits sur les pages ne se donnent pas à une personne mais à un **groupe**, sur une "
-          "branche de l'arbre. Le paramétrage est donc automatisé : quand le MJ choisit le compte d'un joueur "
-          "sur une fiche de héros (champ visible du seul administrateur) puis la publie, le site crée ou met à jour :"),
+    ("p", "Le **MJ** est administrateur. Chaque **joueur** peut recevoir un compte pour tenir à jour la fiche de "
+          "son héros, et seulement celle-là. Dans Wagtail, les droits sur les pages se donnent à un **groupe**, "
+          "pas à une personne : quand le MJ choisit le compte d'un joueur sur une fiche (champ visible du seul "
+          "administrateur) puis la publie, le site crée ou met à jour :"),
     ("li", "le groupe **« Joueurs »** : accès à l'administration et droit d'envoyer et de choisir des images ;"),
     ("li", "un groupe **« Fiche : Maëlis Ventcourt (n°264) »** : droits de modifier et de publier CETTE page uniquement."),
     ("p", "Retirer le compte ou supprimer la fiche retire l'accès. Un joueur ne voit ni les autres fiches, ni les "
           "réglages, ni les comptes."),
     ("todo", "Capture de la page Comptes > Groupes > « Fiche : … » montrant les permissions (créer un compte joueur test, l'associer à un héros, publier)."),
     ("h3", "Installation et configuration des extensions"),
-    ("li", "**Formulaires** : la page Contact hérite de `AbstractEmailForm` ; ses champs (Nom, E-mail, Message) se "
-           "règlent dans l'admin, et les messages reçus sont consultables dans le menu « Messages ». Le formulaire "
-           "des fiches de héros envoie le message au joueur, avec l'adresse du visiteur en « répondre à »."),
-    ("li", "**Réglages du site** (`BaseGenericSetting`) : nom de l'univers, logo, case « Dorer le logo » et choix du "
-           "thème, dans le menu « Paramètres du site »."),
-    ("li", "**Sitemap et robots.txt** : le plan du site est servi à l'adresse `/sitemap.xml` et toujours à jour ; un "
-           "`robots.txt` interdit aux moteurs l'administration et la recherche et leur indique le plan."),
-    ("li", "**Redirections** : chaque adresse de page est calculée à partir de son titre. Quand une page publiée "
-           "est renommée, une redirection 301 est créée automatiquement depuis l'ancienne adresse."),
-    ("li", "**Embeds** : le lecteur de l'accueil accepte une chaîne Twitch ou YouTube ; Twitch exige le domaine "
-           "du site, calculé automatiquement."),
-    ("li", "**Recherche** : titres, accroches, articles et tags des fiches sont indexés ; un champ de recherche est "
-           "présent dans l'en-tête de toutes les pages."),
-    ("li", "**Snippets** : catégories arborescentes (Personnage › Déité › Déité mineure), familles de tags "
-           "(Créatures, Factions, Magie) et prestations du MJ, gérées dans le menu « Organisation »."),
-    ("h3", "Une administration pensée pour un non-codeur"),
-    ("p", "Le menu de l'administration a été réorganisé et renommé avec le vocabulaire du MJ (« Plan du site », "
-          "« Dossiers », « Organisation »). Une page **Bien démarrer** crée en un clic les pages obligatoires et "
-          "installe une campagne de démonstration ; une page **Entretien du site** vérifie et répare le site. "
-          "L'administration reprend les couleurs et le logo du thème choisi."),
-    ("img", ("13_admin_bien_demarrer", 10, "La page « Bien démarrer » : structure du site et démonstration en un clic.")),
-    ("p", "Ces configurations sont validées par **192 tests automatisés** (`python manage.py test`) : création des "
-          "droits des joueurs, envoi des formulaires, sitemap, redirections, affichage de chaque page de la démonstration."),
+    ("li", "**Formulaires** : la page Contact hérite de `AbstractEmailForm` ; ses champs se règlent dans l'admin "
+           "et les messages se lisent dans le menu « Messages ». Le formulaire d'une fiche de héros écrit au joueur."),
+    ("li", "**Réglages du site** (`BaseGenericSetting`) : nom de l'univers, logo, thème et compte de statistiques, "
+           "dans « Paramètres du site »."),
+    ("li", "**Sitemap, robots.txt et redirections** : plan du site toujours à jour ; l'adresse d'une page suit son "
+           "titre, et une redirection 301 est créée quand une page publiée est renommée."),
+    ("li", "**Embeds, recherche et snippets** : lecteur Twitch ou YouTube sur l'accueil, recherche dans l'en-tête de "
+           "chaque page, catégories, familles de tags et prestations gérées dans « Organisation »."),
+    ("p", "L'administration parle le vocabulaire du MJ (« Plan du site », « Dossiers ») et reprend les couleurs et le "
+          "logo du thème. Ces réglages sont vérifiés par **201 tests automatisés** (`python manage.py test`)."),
 
     ("h2", "Présentation de la création et de la réalisation des interfaces utilisateurs"),
     ("h3", "Du wireframe aux gabarits"),
@@ -223,34 +204,22 @@ CONTENU = [
           "(templates Django) qui s'héritent les uns des autres. Un gabarit de base (`base.html`) porte l'en-tête, "
           "le menu, la recherche et le pied de page. Les quatre types de fiches (héros, lieu, événement, lore) "
           "étendent un squelette commun (`fiche_page.html`) et n'en remplissent que les parties propres. "
-          "Des morceaux réutilisables (carte de héros, mini-carte, badge de catégorie) sont inclus partout où ils servent."),
-    ("p", "La mise en page reprend fidèlement les wireframes : une feuille `structure.css` reproduit leur palette "
-          "(gris pour la structure, ocre et jaune pour ce que le client modifie) et n'utilise **que des variables "
-          "CSS**, définies une seule fois au début du fichier."),
-    ("todo", "Wireframe « Campagne-slug » à placer ici, avant la capture du rendu final, pour comparaison."),
-    ("img", ("03_carte_ardenn", 7, "La carte interactive : zones (royaumes, forêt), zone hachurée, lieux représentés par l'icône de leur catégorie.")),
+          "La mise en page reprend les wireframes : `structure.css` reproduit leur palette (gris pour la structure, "
+          "ocre et jaune pour ce que le client modifie) et n'utilise **que des variables CSS**."),
+    ("img2", ("00_wireframe_campagne", "01_campagne_wireframe", 8, "La page Campagne : le wireframe (à gauche) et le rendu réel avec la palette par défaut (à droite).")),
+    ("img", ("03_carte_ardenn", 6, "La carte interactive : zones (royaumes, forêt), zone hachurée, lieux représentés par l'icône de leur catégorie.")),
     ("h3", "Personnalisation graphique : six thèmes au choix"),
-    ("p", "La personnalisation graphique repose sur ces variables. Un **thème** est une petite feuille CSS qui "
-          "redéfinit les variables (couleurs, polices, formes) et ajoute des décors, sans jamais toucher à la "
-          "mise en page. Le MJ choisit parmi six thèmes dans « Paramètres du site » : aucun (le wireframe), "
-          "Grimoire (médiéval), Néon (cyberpunk), Ténèbres (dark fantasy), Enquête (années 20) et Survivant (zombies)."),
-    ("code", [
-        "/* structure.css : la palette du wireframe */",
-        ":root { --color-bg: #FFFFFF; --color-accent: #88742B; --color-highlight: #FFD952; }",
-        "",
-        "/* themes/grimoire.css : le même site, en parchemin et reliure de cuir */",
-        ":root { --color-bg: var(--parchemin); --color-accent: var(--sang); --font-title: \"Cinzel\", serif; }",
-    ]),
-    ("img2", ("01_campagne_wireframe", "09_grimoire_campagne", 8, "La page Campagne avec la palette du wireframe (à gauche) puis avec le thème Grimoire (à droite) : seules les variables et les décors changent.")),
-    ("p", "Chaque thème a été contrôlé pour la lisibilité : les contrastes texte / fond sont calculés avec la "
-          "formule du W3C (WCAG) et atteignent au moins 4,5 pour 1. Les polices des thèmes sont hébergées sur le "
-          "site lui-même, pour qu'aucune donnée de visiteur ne parte chez Google."),
+    ("p", "Un **thème** est une petite feuille CSS qui redéfinit ces variables (couleurs, polices, formes) et "
+          "ajoute des décors, sans jamais toucher à la mise en page : `--color-accent: #88742B` devient le rouge "
+          "sang du Grimoire. Le MJ choisit parmi six thèmes dans « Paramètres du site » : aucun (le wireframe), "
+          "Grimoire, Néon, Ténèbres, Enquête et Survivant (la même page Campagne en Grimoire : Annexe 4)."),
+    ("p", "Les contrastes de chaque thème atteignent au moins 4,5 pour 1 (formule WCAG), et leurs polices sont "
+          "hébergées sur le site : aucune donnée de visiteur ne part chez Google."),
     ("h3", "Responsive"),
     ("p", "Les listes utilisent CSS Grid avec `auto-fit` : le nombre de colonnes s'adapte seul à la largeur. Deux "
           "points de rupture complètent : sous 48rem (téléphone) les blocs s'empilent et le menu se centre ; à "
-          "partir de 72rem (grand écran) l'en-tête passe en trois colonnes avec le menu centré. Sur la page "
-          "d'une campagne, les héros restent toujours sur une seule ligne sur ordinateur, quel que soit leur "
-          "nombre (le gabarit transmet ce nombre au CSS), et passent à deux par ligne sur téléphone."),
+          "partir de 72rem l'en-tête passe en trois colonnes. Les héros d'une campagne tiennent sur une ligne sur "
+          "ordinateur (le gabarit transmet leur nombre au CSS) et passent à deux par ligne sur téléphone."),
     ("img2", ("07_mobile_fiche", "08_mobile_heros", 4.3, "Sur téléphone : une fiche de héros et la rangée des héros (deux par ligne).")),
 
     ("h2", "Détail des étapes d'intégration des contenus et présentation des contenus intégrés ainsi que de leur hiérarchisation."),
@@ -262,85 +231,125 @@ CONTENU = [
     ("li", "**Les lieux**, dans l'encyclopédie, puis **les cartes** : sur la page d'une carte, le MJ ajoute ses lieux "
            "et les place à la souris (« Placer » pour un point, « Tracer » pour une zone)."),
     ("li", "**Les héros, la chronologie et ses événements**, sous leur campagne, puis **les fiches de lore**."),
-    ("img", ("12_admin_editeur_carte", 10, "L'éditeur de carte dans l'administration : les lieux se placent à la souris.")),
     ("h3", "Hiérarchisation"),
     ("li", "**Le menu** a des libellés fixes (Accueil, Univers, Campagnes, Encyclopédie, Contact) : renommer une page ne casse rien."),
     ("li", "**Les catégories** forment une arborescence pensée pour le visiteur, indépendante du rangement des "
            "pages dans l'admin. Filtrer l'encyclopédie sur « Personnage » montre aussi les héros, PNJ et déités."),
     ("li", "**Les tags**, rangés par familles, relient des fiches de types différents (un dragon, un lieu brûlé, une légende)."),
-    ("li", "**La géographie** est calculée, jamais saisie : à la publication d'une carte, chaque lieu est rangé dans "
-           "la plus petite zone qui le contient (Port-Lanterne › Royaume du Val Gris › Ardenn). L'encyclopédie peut "
-           "alors filtrer « tout ce qui se trouve dans Ardenn », et la carte du monde ouvre la carte détaillée d'un royaume."),
+    ("li", "**La géographie** est calculée à partir des cartes (Port-Lanterne › Royaume du Val Gris › Ardenn) : voir "
+           "les solutions ci-dessous."),
     ("h3", "Médias : formats, tailles et rangement"),
-    ("li", "**Rangement** : les images et documents sont classés en dossiers (Personnage › Héros, Lieu › Carte…). "
-           "Le texte alternatif (alt) est construit automatiquement à partir du dossier, du titre et d'une description facultative."),
-    ("li", "**Redimensionnement** : le gabarit ne sert jamais l'image d'origine. Il demande à Wagtail la taille dont il "
-           "a besoin, par exemple `{% image page.main_image fill-300x240-c50 %}`. Le **point focal** placé dans l'admin "
-           "garde les visages dans le cadre lors des recadrages. Les cartes, elles, ne sont jamais recadrées (`width-1400`) : "
-           "les positions des lieux sont en pourcentage de l'image."),
-    ("li", "**Conversion** : toutes les déclinaisons générées sont converties en **WebP**, 25 à 35 % plus léger que le "
-           "JPEG. Les 28 images de la démonstration ont été converties de JPEG en WebP (qualité 82) : 2,5 Mo au total."),
-    ("li", "**Chargement différé** : les images situées plus bas dans la page (cartes de héros, chronologie, "
-           "résultats, mini-cartes) portent l'attribut `loading=lazy` : le téléphone ne les télécharge qu'en "
-           "s'en approchant. Les images du premier écran (bannière, carte principale) se chargent tout de suite."),
-    ("img", ("05_box_du_lieu", 10, "Sur une fiche de héros, la « box » du lieu d'origine : mini-carte zoomée, géographie, fiches liées.")),
+    ("li", "**Rangement** : images et documents sont classés en dossiers (Personnage › Héros, Lieu › Carte…), dont le "
+           "nom sert aussi à construire automatiquement le texte alternatif."),
+    ("li", "**Redimensionnement** : le gabarit demande à Wagtail la taille dont il a besoin "
+           "(`{% image page.main_image fill-300x240-c50 %}`), et le **point focal** garde les visages dans le cadre. "
+           "Les cartes ne sont jamais recadrées (`width-1400`) : les lieux y sont placés en pourcentage."),
+    ("li", "**Poids** : toutes les déclinaisons sont converties en **WebP** (25 à 35 % plus léger que le JPEG), et les "
+           "images hors du premier écran se chargent seulement quand on s'en approche (`loading=lazy`)."),
+    ("img2", ("12_admin_editeur_carte", "05_box_du_lieu", 7.6, "L'éditeur de carte de l'administration (à gauche) et, sur une fiche de héros, la « box » de son lieu d'origine (à droite).")),
 
     ("h2", "Problèmes rencontrés"),
-    ("p", "**1. Une carte interactive… que personne ne saurait remplir.** Pour que le visiteur explore le monde "
-          "en cliquant, chaque lieu doit avoir une position sur l'image de la carte (en pourcentage, pour suivre "
-          "la taille de l'écran), et chaque région un contour. Sans outil dédié, le MJ aurait dû mesurer chaque "
-          "point dans un logiciel d'image et saisir des nombres à la main, et tracer un royaume serait revenu à "
-          "écrire la liste de ses sommets. Une fonctionnalité impossible à utiliser n'existe pas."),
-    ("p", "**2. Des centaines de fiches à garder lisibles.** Selon les MJ, un tel site rassemble facilement 200 à "
-          "300 fiches. À ce volume, deux risques apparaissent. Le visiteur se perd : l'arbre de pages range les "
-          "fiches pour l'administration, pas pour la lecture. Le MJ, lui, ne peut pas soigner à la main, pour "
-          "chaque page, le titre, la description, le texte alternatif des images ou les adresses : il "
-          "rencontrerait des erreurs sans savoir les corriger."),
-    ("p", "**3. Un outil pour quelqu'un qui n'y connaît rien.** Le site est destiné à être distribué : son futur "
-          "propriétaire n'a jamais vu Wagtail et ne lira pas de documentation technique. Un champ mal compris, "
-          "une page obligatoire oubliée (les mentions légales) ou une adresse cassée, et l'outil est abandonné."),
+    ("p", "**1. Une carte interactive que personne ne saurait remplir.** Chaque lieu doit avoir une position sur "
+          "l'image, chaque région un contour. Sans outil, le MJ aurait dû mesurer chaque point dans un logiciel "
+          "d'image et saisir des nombres, ou la liste des sommets d'un royaume. Inutilisable."),
+    ("p", "**2. Des centaines de fiches à garder lisibles.** Un tel site atteint vite 200 à 300 fiches. Le visiteur "
+          "se perd, car l'arbre des pages range pour l'administration, pas pour la lecture ; et le MJ ne peut pas "
+          "soigner à la main le titre, la description, le texte alternatif et l'adresse de chaque page."),
+    ("p", "**3. Un outil pour quelqu'un qui n'y connaît rien.** Destiné à être distribué, le site sera tenu par "
+          "quelqu'un qui n'a jamais vu Wagtail : un champ mal compris, une page légale oubliée ou une adresse "
+          "cassée, et l'outil est abandonné."),
     ("h2", "Solutions apportées"),
-    ("p", "**1. Un éditeur de carte dans l'administration.** L'image de la carte s'affiche dans le formulaire, et "
-          "chaque lieu a ses boutons : « Placer » (un clic pose un point), « Tracer » (des clics successifs "
-          "dessinent une zone), « Effacer ». Le site calcule ensuite seul la géographie : à la publication, "
-          "chaque lieu est rangé dans la plus petite zone qui le contient. Pour une zone en croissant, dont le "
-          "centre calculé tombe dehors, un bouton « Placer le centre » permet de le corriger, et le site vérifie "
-          "qu'il reste bien dans la zone. Point de vigilance technique : les positions sont transmises au CSS, et "
-          "le site étant en français, Django écrivait `12,5` au lieu de `12.5` ; le filtre `|unlocalize` règle ce piège."),
-    ("p", "**2. Une arborescence secondaire, pensée pour le visiteur, et des automatismes.** Deux classements "
-          "s'ajoutent à l'arbre des pages. Les **catégories** (Personnage › Déité › Déité mineure), avec "
-          "couleur et icône, se choisissent sur chaque fiche ; filtrer sur une catégorie montre toute sa branche. "
-          "La **géographie**, issue des zones des cartes, permet de demander « tout ce qui se trouve dans "
-          "Ardenn » : les lieux, les héros qui en sont originaires, les événements qui s'y sont passés. Côté "
-          "maintenance, ce que le MJ ne peut pas surveiller est calculé : titre et description de chaque page "
-          "à partir de son contenu, texte alternatif des images à partir de leur dossier, adresse à partir du "
-          "titre avec redirection quand il change. Une commande d'entretien vérifie le tout et répare ce qui "
-          "doit l'être (elle a par exemple réparé une page devenue introuvable après un déplacement)."),
-    ("p", "**3. Une méthode : expliquer partout, automatiser le reste.** Chaque champ porte un texte d'aide "
-          "rédigé pour un MJ, et le menu de l'administration utilise son vocabulaire. La page **Bien démarrer** "
-          "crée les pages obligatoires et une démonstration complète en un clic. Les **mentions légales** sont "
-          "rédigées d'avance : le MJ ne remplit que son nom, son hébergeur et ses crédits, et le texte se "
-          "complète tout seul (adresse du site, page Contact, cookies du lecteur vidéo s'il est utilisé, polices "
-          "externes si le thème en charge). Le site reste ainsi conforme même si son propriétaire ne connaît "
-          "pas la loi."),
+    ("p", "**1. Un éditeur de carte dans l'administration** : l'image s'affiche dans le formulaire et chaque lieu a "
+          "ses boutons « Placer » (un clic), « Tracer » (une zone, clic par clic) et « Effacer ». À la publication, "
+          "le site range chaque lieu dans la plus petite zone qui le contient. Point de vigilance : les positions "
+          "passent au CSS, et le site étant en français, Django écrivait `12,5` au lieu de `12.5` ; le filtre "
+          "`|unlocalize` règle ce piège."),
+    ("p", "**2. Une arborescence secondaire et des automatismes** : les **catégories** (Personnage › Déité › Déité "
+          "mineure) et la **géographie** issue des cartes permettent de filtrer l'encyclopédie, par exemple sur "
+          "« tout ce qui se trouve dans Ardenn ». Titre, description, texte alternatif et adresse sont calculés, et "
+          "la commande d'entretien vérifie et répare le site (elle a réparé une page devenue introuvable après un déplacement)."),
+    ("p", "**3. Expliquer partout, automatiser le reste** : chaque champ a un texte d'aide écrit pour un MJ, la page "
+          "**Bien démarrer** crée les pages obligatoires et une démonstration en un clic, et les **mentions légales** "
+          "se complètent seules (adresse du site, page Contact, cookies du lecteur vidéo, statistiques). Le site "
+          "reste conforme même si son propriétaire ne connaît pas la loi."),
 
     # ================================================================ PARTIE 3
     ("h1s", "Partie n°3 déploiement de l'application"),
     ("h2", "Présentation des étapes réalisées pour le déploiement de l'application"),
-    ("todo", "Partie à rédiger après les cours de déploiement : hébergement choisi et justifié, configuration du nom de domaine talesomnibus.com, mise en ligne, outil d'analyse de trafic."),
-    ("p", "Ce qui est déjà préparé pour la mise en ligne :"),
-    ("li", "**Tests** : 192 tests automatisés, un audit de toutes les pages publiées (un seul titre principal par "
-           "page, aucune image sans texte alternatif, aucun titre en double) et une recette visuelle sur ordinateur "
-           "et téléphone, dans les six thèmes."),
-    ("li", "**Réglages de production** séparés (`production.py`) et en-tête de sécurité pour les images SVG, à reporter dans la configuration du serveur web."),
-    ("li", "**Référencement** : l'entretien alerte tant que l'adresse du site est encore « localhost », car le sitemap la communique aux moteurs de recherche."),
-    ("li", "**Sauvegardes** : l'entretien copie la base avant toute opération (les dix dernières copies sont gardées)."),
-    ("p", "**Pistes pour l'analyse de trafic** : un outil sans cookie et respectueux du RGPD, comme Matomo (configuré "
-          "sans cookie) ou Plausible, pour ne pas imposer de bandeau de consentement."),
-    ("p", "**Stratégie de mise à jour** : les versions sont figées dans `requirements.txt` (`wagtail>=8.1,<8.2`). "
-          "Une mise à jour de Wagtail se fait d'abord sur une copie de développement : lecture des notes de "
-          "version, `pip install -U`, migrations, lancement des 192 tests et de l'entretien, puis déploiement. "
-          "Privilégier les versions LTS (support long) de Wagtail."),
+    ("p", "Tales Omnibus est en ligne à l'adresse **https://quentin.bdx-certif-cms.tech**. Cette partie suit "
+          "l'ordre du déploiement : tests, choix de l'hébergement, mise en ligne, mesure de la fréquentation, "
+          "puis stratégie de mise à jour."),
+
+    ("h3", "1. Phases de test"),
+    ("p", "**Avant la mise en ligne** : 201 tests automatisés, un audit de toutes les pages publiées et mes propres "
+          "parcours sur ordinateur et téléphone, dans les six thèmes. Ils ont corrigé de vrais défauts (la recherche "
+          "passait par-dessus le menu à 1024 pixels ; les héros s'affichaient un par ligne sur téléphone)."),
+    ("p", "**Après la mise en ligne**, le site a été confié à un relecteur dans le rôle du client, qui l'a "
+          "parcouru en ligne sans explication préalable. Ses retours et leur correction :"),
+    ("todo", "Nom du relecteur (un pair ou le formateur) et ses 2 ou 3 retours réels dans le tableau ci-dessous ; captures avant / après en Annexe 5."),
+    ("table", ([
+        ["Retour du testeur", "Page concernée", "Correction apportée", "Date"],
+        ["…", "…", "…", "…"],
+        ["…", "…", "…", "…"],
+    ], [3600, 1700, 3200, L - 8500])),
+
+    ("h3", "2. Solution d'hébergement"),
+    ("p", "Le site est installé sur un **serveur privé virtuel (VPS)** hébergé en France chez Hostinger, sous "
+          "Ubuntu, partagé par la promotion : chaque apprenant y a son propre compte et son propre espace. "
+          "Trois solutions ont été comparées :"),
+    ("table", ([
+        ["Critère", "VPS (retenu)", "Hébergement mutualisé", "Plateforme clé en main (PaaS)"],
+        ["Python / Django", "Fonctionne sans restriction", "Prévu pour PHP : Wagtail n'y tourne pas, ou mal", "Bien pris en charge"],
+        ["Coût", "Environ 12 € par mois pour toute la promotion", "Quelques euros, mais un seul espace pour tous", "Un abonnement par projet"],
+        ["Isolation", "Un compte par apprenant", "Difficile sans offre revendeur", "Un projet par compte"],
+        ["Maîtrise", "Totale : on voit et règle chaque brique", "Faible : l'hébergeur cache tout", "Moyenne"],
+    ], [1900, 2600, 2600, L - 7100])),
+    ("p", "Pour Tales Omnibus, le critère décisif est la **compatibilité** : le site repose sur Django, et une "
+          "partie de son fonctionnement (géographie des cartes, droits des joueurs) n'existe que côté serveur. "
+          "Vient ensuite la **maîtrise** : comme l'outil est destiné à être distribué, je dois comprendre chaque "
+          "étape de son installation pour pouvoir, plus tard, l'automatiser pour d'autres MJ."),
+    ("p", "Une visite suit le chemin `Nginx → Gunicorn → Django / Wagtail → SQLite` : Nginx sert lui-même les "
+          "fichiers statiques et les médias, Gunicorn fait tourner l'application en permanence, et SQLite suffit à "
+          "un site dont seul le MJ modifie les contenus."),
+
+    ("h3", "3. Mise en ligne"),
+    ("li", "**En local** : versions figées dans `requirements.txt`, secrets et données exclus de Git (`.gitignore`), "
+           "code poussé sur GitHub."),
+    ("li", "**Sur le serveur**, par SSH : `git clone`, environnement Python, `pip install -r requirements.txt`, puis "
+           "envoi de la base et des médias avec `scp` (Git transporte le code, pas les données)."),
+    ("li", "**`sudo publier`** enchaîne six étapes : vérification du projet, réglages de production, migrations et "
+           "`collectstatic`, Gunicorn, Nginx, puis certificat HTTPS gratuit (Let's Encrypt)."),
+    ("li", "**Réglages de production**, dans `local.py` sur le serveur et jamais dans Git : `DEBUG = False`, clé "
+           "secrète propre, `ALLOWED_HOSTS` limité à l'adresse du site, formulaires acceptés seulement en HTTPS."),
+    ("li", "**Après publication** : dans « Paramètres avancés › Sites », `localhost` (venu de ma base) remplacé par le "
+           "vrai nom d'hôte, port 443 ; sinon le plan du site enverrait les moteurs vers `localhost`."),
+    ("p", "**Nom de domaine** : le site est publié sur un **sous-domaine** du domaine de la promotion, "
+          "`quentin.bdx-certif-cms.tech`, grâce à un enregistrement DNS qui pointe vers l'adresse du serveur. "
+          "Pour un vrai client, j'achèterais le domaine vérifié lors du cadrage, **talesomnibus.com**, et je "
+          "créerais le même enregistrement chez le registraire pour le faire pointer vers le serveur."),
+    ("p", "Le site en ligne, adresse et cadenas HTTPS visibles, est présenté en **Annexe 5**."),
+
+    ("h3", "4. Analyse de trafic"),
+    ("p", "La fréquentation est mesurée avec **GoatCounter**, gratuit et sans cookie de suivi. Google Analytics n'a "
+          "pas été retenu par manque de temps : compte Google, propriété à configurer et bandeau de consentement aux "
+          "cookies. C'est aussi cohérent avec le RGPD du projet : comme pour les polices, rien ne part chez Google."),
+    ("p", "**Adapté à un outil distribué** : le compte n'est pas écrit dans le gabarit (chaque MJ enverrait sinon ses "
+          "statistiques sur le mien) mais réglé dans « Paramètres du site ». Le script n'est chargé que pour le "
+          "public (ni en développement, ni pour un visiteur connecté), et les mentions légales ajoutent seules une "
+          "section « Mesure d'audience »."),
+    ("p", "Le tableau de bord GoatCounter, avec les premières visites enregistrées, est présenté en **Annexe 5**."),
+
+    ("h3", "5. Stratégie de mise à jour"),
+    ("p", "**Le code** suit le chemin `git push`, puis `git pull` et `sudo publier` sur le serveur. Les contenus ne "
+          "se modifient **qu'en ligne** : la base n'étant pas versionnée, un `git pull` ne peut pas les écraser. "
+          "**Wagtail, Django et les extensions** se mettent à jour en cinq étapes :"),
+    ("li", "**Surveiller** les notes de version de Wagtail et de Django, en priorité les correctifs de sécurité, "
+           "et privilégier les versions LTS (support long) de Wagtail."),
+    ("li", "**Sauvegarder** la base du serveur (`cp db.sqlite3 sauvegarde-<date>.sqlite3`)."),
+    ("li", "**Tester en local** : nouvelle version dans `requirements.txt`, migrations, 201 tests, entretien. Les "
+           "versions y sont figées (`wagtail==8.1`) : une mise à jour est une décision, jamais une surprise."),
+    ("li", "**Déployer** : `git push`, puis sur le serveur `git pull`, `pip install -r requirements.txt` et `sudo publier`."),
+    ("li", "**Vérifier** le site en ligne (pages, formulaire, administration) et revenir à la sauvegarde en cas de problème."),
 
     # ================================================================ PARTIE 4
     ("h1s", "Partie n° 4"),
@@ -348,7 +357,7 @@ CONTENU = [
     ("table", ([
         ["Objectif du cadrage", "Bilan"],
         ["Visibilité", "Titres et descriptions automatiques pour chaque page, sitemap, robots.txt, aperçus de liens "
-                       "pour les réseaux. Atteint, à confirmer une fois en ligne."],
+                       "pour les réseaux. Atteint : le site est en ligne, son plan du site annonce la bonne adresse."],
         ["Encyclopédie consultable", "Recherche, filtres par campagne, catégorie, lieu et tags, cartes interactives "
                                      "reliées entre elles, fiches liées. Atteint, au-delà du cadrage."],
         ["Autonomie du MJ", "Aucun code à toucher : éditeur de carte, thèmes, structure et démonstration en un clic, "
@@ -360,16 +369,16 @@ CONTENU = [
           "relient automatiquement les héros, les événements et les lieux ; les thèmes, qui changent "
           "entièrement l'ambiance sans toucher à la mise en page ; la démonstration, qui permet de présenter "
           "le site complet en un clic."),
-    ("p", "**Ce qui reste à faire** : le site doit encore être mis en ligne, et l'installation par un autre MJ "
-          "demande pour l'instant quelques commandes ; un installeur la rendra accessible à tous. Écart avec le "
-          "cadrage : celui-ci prévoyait une case de consentement sous les formulaires ; elle a été remplacée par "
-          "une mention d'information, plus juste juridiquement pour un simple formulaire de contact."),
+    ("p", "**Ce qui reste perfectible** : en ligne, les e-mails des formulaires sont écrits dans le journal du "
+          "serveur, pas envoyés (il faudra un serveur d'envoi pour que le joueur contacté les reçoive) ; l'en-tête "
+          "de sécurité des images SVG, posé par Django, est à reporter dans Nginx, qui sert les médias seul. Écart "
+          "avec le cadrage : la case de consentement prévue sous les formulaires est devenue une mention "
+          "d'information, plus juste juridiquement pour un formulaire de contact."),
     ("h2", "Améliorations envisagées"),
     ("li", "**Un installeur « clé en main »**, condition de la distribution gratuite : un autre MJ installe son propre "
            "site sans rien connaître au code (nom de l'univers, case « Créer la structure », case « Installer la "
            "démo »). Les briques existent déjà ; reste à choisir la forme (image Docker ou script de déploiement)."),
     ("li", "**Des packs d'icônes** interchangeables (villes, donjons, villages) colorés par le thème."),
-    ("li", "**Un espace pour les spectateurs** : programme des prochains lives, rappel des épisodes manqués."),
     ("li", "**Un circuit de validation** : les modifications des joueurs relues par le MJ avant publication (workflows de Wagtail)."),
 
     # ================================================================ CONCLUSION
@@ -398,11 +407,21 @@ CONTENU = [
     ("h2", "Annexe 2 : Schéma fonctionnel"),
     ("img", ("16_schema_fonctionnel", 16, "Schéma fonctionnel de Tales Omnibus.")),
     ("h2", "Annexe 3 : Wireframes"),
-    ("todo", "Insérer ici les wireframes (Tales_Omnibus_Wireframe.zip), exportés en images : Accueil, Univers, Campagne, Héros, Carte, Chronologie, Événement, Encyclopédie, Lieu, Lore, Contact & Prestations, Mentions légales."),
+    ("p", "Les quinze wireframes, réalisés avant le développement (palette : gris pour la structure, ocre et jaune pour ce que le client modifie)."),
+    ("img", ("wf_planche_1", 16, "Accueil, en trois écrans.")),
+    ("img", ("wf_planche_2", 16, "Univers, Campagne et liste des héros.")),
+    ("img", ("wf_planche_3", 16, "Fiche héros, Carte et Chronologie.")),
+    ("img", ("wf_planche_4", 16, "Événement, Encyclopédie et fiche lieu.")),
+    ("img", ("wf_planche_5", 16, "Fiche lore, Contact et prestations, Mentions légales.")),
     ("h2", "Annexe 4 : Captures complémentaires"),
+    ("img", ("09_grimoire_campagne", 13, "La page Campagne avec le thème Grimoire : par rapport au wireframe, seules les variables et les décors changent.")),
     ("img", ("04_fiche_heros", 13, "Fiche de héros (palette du wireframe).")),
     ("img", ("10_grimoire_lore", 13, "Fiche de lore avec le thème Grimoire : lettrines et enluminures.")),
     ("img", ("14_admin_parametres", 12, "Paramètres du site : nom, logo, dorure et choix du thème.")),
     ("img", ("15_admin_categories", 12, "Les catégories, gérées dans le menu « Organisation ».")),
     ("img", ("06_encyclopedie_filtres", 12, "Les filtres de l'encyclopédie : campagne, catégorie, lieu, tags rangés par familles.")),
+    ("h2", "Annexe 5 : Preuves du déploiement"),
+    ("todo", "Capture du site en ligne : adresse https://quentin.bdx-certif-cms.tech et cadenas visibles dans la barre du navigateur."),
+    ("todo", "Capture du tableau de bord GoatCounter avec au moins une visite."),
+    ("todo", "Captures avant / après pour chaque retour du relecteur (Partie 3, phases de test)."),
 ]

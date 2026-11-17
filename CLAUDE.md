@@ -351,10 +351,15 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   .docx (template de l'école), son PDF, les captures et `outils/` (le texte
   dans `contenu_rapport.py`, le générateur, le template décompressé, les
   scripts Word -> PDF -> PNG ; mode d'emploi dans `outils/LISEZMOI.md`). Les
-  emplacements `[À COMPLÉTER]` sont surlignés. Le corps fait EXACTEMENT 15
-  pages (la limite) : ajouter le déploiement oblige à couper ailleurs. Le
-  .docx commité date du 15/11 au matin : le régénérer (la conclusion a changé
-  dans `contenu_rapport.py`). ATTENTION : régénérer écrase le .docx ; si
+  emplacements `[À COMPLÉTER]` sont surlignés. Partie 3 (déploiement)
+  RÉDIGÉE le 17/11 d'après le brief C8 et le guide (5 points : tests,
+  hébergement comparé, mise en ligne + DNS, GoatCounter, mise à jour en 5
+  étapes) ; ses preuves (site en ligne, GoatCounter, avant/après du
+  relecteur) vont en Annexe 5. Wireframes : `rapport/wireframes/` (PNG) ;
+  planches de l'Annexe 3 et wireframe Campagne recadré (comparé au rendu en
+  C5) dans `captures/`. Le corps va de la page 3 à la page 17 = 15 pages,
+  la LIMITE (la conclusion déborde de deux lignes sur la 17 : il reste
+  presque une page). Mesurer après chaque ajout. ATTENTION : régénérer écrase le .docx ; si
   Quentin l'a retouché dans Word, reporter ses retouches dans
   `contenu_rapport.py` d'abord. La conclusion est SA partie : l'éthique dont
   il parle est celle de la PROTECTION des IA (éviter les abus, refuser les
