@@ -75,7 +75,9 @@
             {# par famille (snippet « Familles de tags »), dans l'ordre choisi.    #}
             {% if groupes_de_tags %}
                 <fieldset class="filtres-tags">
-                    <legend>Par catégorie (tags)</legend>
+                    {# « Par mot-clé » et pas « Par catégorie (tags) » : deux filtres nommés #}
+                    {# « Par catégorie » semaient le doute (retour d'un relecteur)          #}
+                    <legend>Par mot-clé</legend>
                     <ul class="tags-list">
                         <li>
                             <label class="tag tag--choix">

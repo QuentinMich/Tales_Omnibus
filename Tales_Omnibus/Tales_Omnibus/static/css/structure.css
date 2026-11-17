@@ -2116,10 +2116,14 @@ span.carte-map-img {
 /* ÉCRAN TITRE : image plein écran, placée AVANT le header (block before_header).
    Image + header = exactement un écran : --header-height est mesurée par
    home/static/js/ecran_titre.js (5rem en attendant le JS).
-   svh : hauteur d'écran fiable sur mobile (malgré la barre d'adresse). */
+   svh : hauteur d'écran fiable sur mobile (malgré la barre d'adresse).
+   max(…, 18rem) : un plancher. Téléphone tourné à l'horizontale (375 px de
+   haut, dont 210 pour le header), l'écran titre tombait à 165 px et la
+   bannière devenait un timbre-poste (retour d'un relecteur). Il fait alors
+   plus d'un écran : le header arrive en faisant défiler, c'est voulu. */
 .home-hero {
     position: relative;  /* repère pour la flèche "Entrer" */
-    height: calc(100svh - var(--header-height, 5rem));
+    height: max(calc(100svh - var(--header-height, 5rem)), 18rem);
     background: var(--color-surface-strong);
 }
 

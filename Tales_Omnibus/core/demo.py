@@ -242,7 +242,7 @@ HEROS = {
                          "Une cartographe qui dessine les routes avant qu'elles bougent.", ["runes", "prophétie"], True,
                          'joueur', False),
     "Brann le Rouquin": ("Héros", "Joueur B", "Hameau des Saules",
-                         "Un bûcheron convaincu que son hache est hantée. Elle l'est.", ["esprit", "pouet"], False,
+                         "Un bûcheron convaincu que sa hache est hantée. Elle l'est.", ["esprit", "pouet"], False,
                          'joueur', False),
     "Pip Chardon": ("Héros", "Joueuse C", "Port-Lanterne",
                     "Une voleuse halfeline qui jure n'avoir jamais rien volé. Ses poches disent le contraire.",

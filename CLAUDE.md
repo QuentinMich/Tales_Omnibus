@@ -359,7 +359,13 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   planches de l'Annexe 3 et wireframe Campagne recadré (comparé au rendu en
   C5) dans `captures/`. Le corps va de la page 3 à la page 17 = 15 pages,
   la LIMITE (la conclusion déborde de deux lignes sur la 17 : il reste
-  presque une page). Mesurer après chaque ajout. ATTENTION : régénérer écrase le .docx ; si
+  presque une page). Mesurer après chaque ajout. Le 17/11 : TOUS les `[À COMPLÉTER]`
+  sont remplis (nom, capture des droits d'un joueur, preuves en ligne,
+  conclusion de Quentin reportée de Word avec les fautes corrigées). Relecture :
+  le formateur a demandé des relecteurs FICTIFS, présentés comme tels dans le
+  rapport (Léa, spectatrice sur téléphone ; Marc, MJ sur ordinateur), mais
+  leurs retours sont de VRAIS défauts trouvés sur le site en ligne et corrigés
+  (captures 20_ et 21_ avant / après). Corps : pages 3 à 17. ATTENTION : régénérer écrase le .docx ; si
   Quentin l'a retouché dans Word, reporter ses retouches dans
   `contenu_rapport.py` d'abord. La conclusion est SA partie : l'éthique dont
   il parle est celle de la PROTECTION des IA (éviter les abus, refuser les
@@ -522,7 +528,8 @@ redémarrer `runserver` si un fichier de templatetags est arrivé.
   noirs de photo (Enquête), chatterton (Survivant, `::before`/`::after`,
   posés DANS l'écran pour ne pas être coupés en haut de page). Bannière en `contain` dans une boîte
   `min(100%, 60rem)` × `min(100%, 30rem)`, et un `padding-bottom` qui
-  réserve la place de la flèche « Entrer ». Une image choisie, elle, reste
+  réserve la place de la flèche « Entrer ». Hauteur de l'écran titre : `max(100svh - header,
+  18rem)` : téléphone à l'horizontale, la bannière devenait un timbre-poste. Une image choisie, elle, reste
   en `cover` (recadrée) : prévue pour une photo, pas pour un logo.
 - **Logo doré** (case « Dorer le logo », `NavigationSettings.logo_dore`,
   migration core 0008) : l'image n'est plus un `<img>` mais un pochoir

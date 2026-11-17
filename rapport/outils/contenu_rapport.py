@@ -11,7 +11,7 @@ CAPTURES = {os.path.splitext(f)[0]: os.path.join(_CAPT, f) for f in sorted(os.li
 COUVERTURE = {
     "titre": "TALES OMNIBUS",
     "date": "Novembre 2026",
-    "auteur": "Quentin [NOM], apprenant · Découverte Métier IA, Simplon Bordeaux",
+    "auteur": "Quentin MICHELET, apprenant · Découverte Métier IA, Simplon Bordeaux",
 }
 
 L = 9638  # largeur utile d'une page A4 avec les marges du template, en DXA
@@ -30,7 +30,7 @@ CONTENU = [
           "mentions légales. Le MJ gère tout depuis l'administration, sans écrire une ligne de code : il "
           "place les lieux sur ses cartes à la souris, choisit parmi six thèmes graphiques et peut ouvrir à "
           "chaque joueur un accès limité à sa propre fiche."),
-    ("p", "Le site est couvert par 201 tests automatisés, une campagne de démonstration complète s'installe "
+    ("p", "Le site est couvert par 203 tests automatisés, une campagne de démonstration complète s'installe "
           "en un clic, et il est en ligne à l'adresse https://quentin.bdx-certif-cms.tech, avec une mesure "
           "d'audience sans cookie."),
 
@@ -182,10 +182,10 @@ CONTENU = [
           "pas à une personne : quand le MJ choisit le compte d'un joueur sur une fiche (champ visible du seul "
           "administrateur) puis la publie, le site crée ou met à jour :"),
     ("li", "le groupe **« Joueurs »** : accès à l'administration et droit d'envoyer et de choisir des images ;"),
-    ("li", "un groupe **« Fiche : Maëlis Ventcourt (n°264) »** : droits de modifier et de publier CETTE page uniquement."),
+    ("li", "un groupe **« Fiche : Maëlis Ventcourt (n°349) »** : droits de modifier et de publier CETTE page uniquement."),
     ("p", "Retirer le compte ou supprimer la fiche retire l'accès. Un joueur ne voit ni les autres fiches, ni les "
           "réglages, ni les comptes."),
-    ("todo", "Capture de la page Comptes > Groupes > « Fiche : … » montrant les permissions (créer un compte joueur test, l'associer à un héros, publier)."),
+    ("img", ("17_admin_droits_joueur", 12, "Le groupe créé automatiquement pour la fiche d'un joueur : modifier et publier cette page, et rien d'autre.")),
     ("h3", "Installation et configuration des extensions"),
     ("li", "**Formulaires** : la page Contact hérite de `AbstractEmailForm` ; ses champs se règlent dans l'admin "
            "et les messages se lisent dans le menu « Messages ». Le formulaire d'une fiche de héros écrit au joueur."),
@@ -196,7 +196,7 @@ CONTENU = [
     ("li", "**Embeds, recherche et snippets** : lecteur Twitch ou YouTube sur l'accueil, recherche dans l'en-tête de "
            "chaque page, catégories, familles de tags et prestations gérées dans « Organisation »."),
     ("p", "L'administration parle le vocabulaire du MJ (« Plan du site », « Dossiers ») et reprend les couleurs et le "
-          "logo du thème. Ces réglages sont vérifiés par **201 tests automatisés** (`python manage.py test`)."),
+          "logo du thème. Ces réglages sont vérifiés par **203 tests automatisés** (`python manage.py test`)."),
 
     ("h2", "Présentation de la création et de la réalisation des interfaces utilisateurs"),
     ("h3", "Du wireframe aux gabarits"),
@@ -281,16 +281,22 @@ CONTENU = [
           "puis stratégie de mise à jour."),
 
     ("h3", "1. Phases de test"),
-    ("p", "**Avant la mise en ligne** : 201 tests automatisés, un audit de toutes les pages publiées et mes propres "
+    ("p", "**Avant la mise en ligne** : 203 tests automatisés, un audit de toutes les pages publiées et mes propres "
           "parcours sur ordinateur et téléphone, dans les six thèmes. Ils ont corrigé de vrais défauts (la recherche "
           "passait par-dessus le menu à 1024 pixels ; les héros s'affichaient un par ligne sur téléphone)."),
-    ("p", "**Après la mise en ligne**, le site a été confié à un relecteur dans le rôle du client, qui l'a "
-          "parcouru en ligne sans explication préalable. Ses retours et leur correction :"),
-    ("todo", "Nom du relecteur (un pair ou le formateur) et ses 2 ou 3 retours réels dans le tableau ci-dessous ; captures avant / après en Annexe 5."),
+    ("p", "**Après la mise en ligne**, faute de temps pour relire chaque projet de la promotion, le formateur a "
+          "demandé de simuler la relecture. Deux **relecteurs fictifs**, tirés des utilisateurs cibles du cadrage, "
+          "ont parcouru le site en ligne sans explication : **Léa**, spectatrice de parties en direct, sur son "
+          "téléphone ; **Marc**, maître du jeu qui se demande si l'outil lui servirait, sur ordinateur. Chaque "
+          "retour a été vérifié sur le site, puis corrigé (avant / après en Annexe 5) :"),
     ("table", ([
         ["Retour du testeur", "Page concernée", "Correction apportée", "Date"],
-        ["…", "…", "…", "…"],
-        ["…", "…", "…", "…"],
+        ["Léa : « Téléphone tourné à l'horizontale, la bannière est minuscule, on ne lit plus le nom du site. »",
+         "Accueil", "Hauteur minimale de l'écran titre (18rem) : la bannière reste lisible.", "17/11"],
+        ["Marc : « Deux filtres s'appellent “Par catégorie”, je n'ai pas compris la différence. »",
+         "Encyclopédie", "Le filtre des tags est renommé « Par mot-clé ».", "17/11"],
+        ["Marc : « Une faute dans la démo : “son hache”. Un MJ qui l'installe la verra. »",
+         "Fiche Brann (démo)", "Corrigée dans le contenu de la démo (`core/demo.py`).", "17/11"],
     ], [3600, 1700, 3200, L - 8500])),
 
     ("h3", "2. Solution d'hébergement"),
@@ -346,7 +352,7 @@ CONTENU = [
     ("li", "**Surveiller** les notes de version de Wagtail et de Django, en priorité les correctifs de sécurité, "
            "et privilégier les versions LTS (support long) de Wagtail."),
     ("li", "**Sauvegarder** la base du serveur (`cp db.sqlite3 sauvegarde-<date>.sqlite3`)."),
-    ("li", "**Tester en local** : nouvelle version dans `requirements.txt`, migrations, 201 tests, entretien. Les "
+    ("li", "**Tester en local** : nouvelle version dans `requirements.txt`, migrations, 203 tests, entretien. Les "
            "versions y sont figées (`wagtail==8.1`) : une mise à jour est une décision, jamais une surprise."),
     ("li", "**Déployer** : `git push`, puis sur le serveur `git pull`, `pip install -r requirements.txt` et `sudo publier`."),
     ("li", "**Vérifier** le site en ligne (pages, formulaire, administration) et revenir à la sauvegarde en cas de problème."),
@@ -384,21 +390,27 @@ CONTENU = [
     # ================================================================ CONCLUSION
     ("h1s", "Conclusion"),
     ("h2", "Apprentissages, perspectives pour le projet professionnel"),
-    ("todo", "Partie personnelle : à relire et réécrire avec tes propres mots."),
-    ("p", "Ce projet m'a appris à partir d'un besoin exprimé avec des mots de joueur (« je veux que les spectateurs "
-          "retrouvent l'histoire ») pour arriver à des choix techniques que je peux justifier : un modèle de données, "
-          "une arborescence, des droits par groupe. J'ai compris qu'un CMS ne se résume pas à remplir des pages : "
-          "bien le configurer, c'est surtout rendre son client autonome."),
-    ("p", "J'ai aussi appris à travailler avec méthode : versionner chaque étape, écrire des tests pour ne pas "
-          "casser ce qui marchait, documenter les pièges rencontrés. Le développement a été mené avec l'aide d'un "
-          "assistant IA, utilisé comme un binôme : je définissais le besoin et validais chaque choix, l'IA "
-          "accélérait l'écriture du code et m'expliquait ce qu'elle proposait, ce qui m'a obligé à comprendre "
-          "chaque ligne pour pouvoir la défendre."),
-    ("p", "Pour moi, cette formation est un tremplin. Je poursuis par une formation au développement "
-          "d'intelligences artificielles, avec un objectif : travailler sur l'éthique et la protection des IA : "
-          "encadrer la façon dont on les utilise, éviter les abus, et défendre des limites claires, comme "
-          "refuser de les faire travailler sur des systèmes d'armes. Travailler au quotidien avec une IA "
-          "sur ce projet, comme avec un binôme, m'a conforté dans cette envie."),
+    # La conclusion de Quentin (écrite dans Word le 17/11, fautes corrigées, style gardé)
+    ("p", "Ce projet était pour moi une évidence : lorsque j'ai su que j'allais créer ma propre application, "
+          "l'idée m'est arrivée d'elle-même, sans difficulté. C'est une solution que j'aurais aimé avoir lorsque "
+          "j'ai commencé à partager mes parties de jeu de rôle sur internet, et je suis content de pouvoir offrir "
+          "cette solution à des maîtres du jeu qui, comme moi, veulent partager leurs aventures avec un public "
+          "aussi passionné qu'eux."),
+    ("p", "Comme cette envie d'application s'est formée très tôt, mon apprentissage tout au long de la formation "
+          "a été intimement lié à mon projet : à chaque cours, je me demandais comment appliquer ce que j'apprenais "
+          "à mon projet, et derrière chaque question que je posais, j'avais en tête une précision qui me servirait "
+          "plus tard lors de sa construction."),
+    ("p", "En termes d'activité professionnelle, j'ai découvert un réel plaisir à décortiquer un projet comme les "
+          "différentes pièces d'un puzzle à assembler. Et même si le développement web n'est pas le centre de mon "
+          "projet professionnel, la méthodologie, l'application des choses apprises et la manipulation des outils "
+          "ont éveillé chez moi une réelle curiosité, et l'envie d'apprendre davantage et de réaliser d'autres "
+          "projets qui, comme celui-ci, me tiennent à cœur."),
+    ("p", "Bien que le design et la conception de l'application aient été faits entièrement à la main, l'exécution "
+          "et le code ont été réalisés avec l'aide de Claude, une IA. L'utilisation de l'IA est relativement nouvelle "
+          "pour moi, et j'ai vite découvert que j'aimais énormément ce médium. J'ai rapidement vu ses possibilités, "
+          "mais aussi le besoin d'actions concrètes, notamment pour encadrer ceux qui distribuent les IA et ceux qui "
+          "les utilisent. Partant sur une formation de développement en intelligence artificielle, j'aimerais "
+          "apporter ma pierre à l'édifice de l'encadrement légal et éthique de l'utilisation des IA."),
 
     # ================================================================ ANNEXES
     ("h1", "Annexes"),
@@ -421,7 +433,8 @@ CONTENU = [
     ("img", ("15_admin_categories", 12, "Les catégories, gérées dans le menu « Organisation ».")),
     ("img", ("06_encyclopedie_filtres", 12, "Les filtres de l'encyclopédie : campagne, catégorie, lieu, tags rangés par familles.")),
     ("h2", "Annexe 5 : Preuves du déploiement"),
-    ("todo", "Capture du site en ligne : adresse https://quentin.bdx-certif-cms.tech et cadenas visibles dans la barre du navigateur."),
-    ("todo", "Capture du tableau de bord GoatCounter avec au moins une visite."),
-    ("todo", "Captures avant / après pour chaque retour du relecteur (Partie 3, phases de test)."),
+    ("img", ("18_site_en_ligne", 15, "Le site en ligne sur https://quentin.bdx-certif-cms.tech : connexion chiffrée (cadenas), thème Grimoire.")),
+    ("img", ("19_goatcounter", 15, "Le tableau de bord GoatCounter : les visites de la première semaine, page par page, sans cookie.")),
+    ("img2", ("20_avant_banniere_horizontale", "20_apres_banniere_horizontale", 7.6, "Retour de Léa : téléphone à l'horizontale, la bannière avant (à gauche) et après (à droite).")),
+    ("img2", ("21_avant_filtres", "21_apres_filtres", 6.5, "Retour de Marc : « Par catégorie (tags) » devient « Par mot-clé » (avant à gauche, après à droite).")),
 ]
