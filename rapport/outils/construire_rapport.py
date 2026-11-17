@@ -28,6 +28,8 @@ compteur = {"doc": 100}
 
 def runs(texte, base_rpr=""):
     """Petit balisage : **gras**, `code`, _italique_ (entre soulignés simples)."""
+    # Espaces insécables dans les guillemets : sinon Word peut laisser « seul en fin de ligne
+    texte = texte.replace("« ", "« ").replace(" »", " »")
     morceaux = re.split(r"(\*\*[^*]+\*\*|`[^`]+`|(?<![\w])_[^_]+_(?![\w]))", texte)
     xml = []
     for m in morceaux:

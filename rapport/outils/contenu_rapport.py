@@ -323,7 +323,7 @@ CONTENU = [
            "code poussé sur GitHub."),
     ("li", "**Sur le serveur**, par SSH : `git clone`, environnement Python, `pip install -r requirements.txt`, puis "
            "envoi de la base et des médias avec `scp` (Git transporte le code, pas les données)."),
-    ("li", "**`sudo publier`** enchaîne six étapes : vérification du projet, réglages de production, migrations et "
+    ("li", "`sudo publier` enchaîne six étapes : vérification du projet, réglages de production, migrations et "
            "`collectstatic`, Gunicorn, Nginx, puis certificat HTTPS gratuit (Let's Encrypt)."),
     ("li", "**Réglages de production**, dans `local.py` sur le serveur et jamais dans Git : `DEBUG = False`, clé "
            "secrète propre, `ALLOWED_HOSTS` limité à l'adresse du site, formulaires acceptés seulement en HTTPS."),
