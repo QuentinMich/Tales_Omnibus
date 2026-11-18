@@ -774,7 +774,7 @@ def partie_2():
     code(s, 0.8, 4.4, 5.6, 2.3, ["User-agent: *", "Disallow: /admin/", "Disallow: /django-admin/",
                                  "Disallow: /search/", "Sitemap: https://quentin.bdx-certif-cms.tech/sitemap.xml"],
          taille=12, legende="/robots.txt")
-    emplacement(s, 6.8, 1.75, 5.7, 4.95, "/sitemap.xml en ligne", "La page du plan du site")
+    image(s, SLIDES / "captures" / "sitemap.jpg", 6.8, 1.75, 5.7, 4.95, nom="sitemap.xml en ligne")
 
     # 4b. Adresses automatiques (slugs)
     s = d.slide("SEO : des adresses automatiques", "Le MJ n’y touche pas, il ne peut pas les casser",
@@ -795,7 +795,7 @@ def partie_2():
                                  "def slug_voulu(self):",
                                  "    return self.slug_fixe or slug_lisible(self.title)"],
          taille=12, legende="core/slugs.py · SlugAutomatiqueMixin")
-    emplacement(s, 6.8, 1.75, 5.7, 4.95, "Onglet Promotion de l’admin", "Le champ « Adresse de la page » grisé")
+    image(s, SLIDES / "captures" / "onglet_promotion.jpg", 6.8, 1.75, 5.7, 4.95, nom="Onglet Promotion")
 
     # 4c. Titres et descriptions automatiques
     s = d.slide("SEO : titres et descriptions automatiques", "200 à 300 fiches : impossible de tout remplir à la main",
@@ -828,7 +828,9 @@ def partie_2():
 
     # 5. SEO améliorations
     s = d.slide("SEO : ce qu’il reste", "Des améliorations honnêtes",
-                notes="≈ 1 min\n(À CONFIRMER avec Lighthouse.)\n- Données structurées schema.org (fiches, événements).\n"
+                notes="≈ 1 min\n- Lighthouse est à 100 partout : il ne signale plus rien. Mais un score de 100 vérifie la "
+                      "technique d'une page, pas le référencement réel (être trouvé, avoir des liens, du contenu qui "
+                      "répond aux recherches).\n- Données structurées schema.org (fiches, événements).\n"
                       "- Images d'origine encore lourdes (les vignettes, elles, sont en WebP).\n"
                       "- Sous-domaine de la formation : pas de vrai nom de domaine, pas encore de Search Console.\n"
                       "- La description de l'accueil est générique : à écrire dans l'onglet Promotion.")
@@ -841,7 +843,13 @@ def partie_2():
         numero(s, 0.8, y + 0.05, str(k + 1), d=0.6, taille=16)
         texte(s, 1.65, y, 4.8, 0.45, nom, taille=21, couleur=OR_CLAIR, police=TITRE)
         texte(s, 1.65, y + 0.47, 4.8, 0.4, detail, taille=15, couleur=DOUX)
-    emplacement(s, 6.8, 1.75, 5.7, 4.95, "Ce que Lighthouse signale encore", "Section « Opportunités »")
+    carte(s, 6.8, 1.75, 5.7, 4.95)
+    texte(s, 7.1, 2.0, 5.1, 0.6, "100 ≠ terminé", taille=30, couleur=OR_CLAIR, police=TITRE, align=PP_ALIGN.CENTER)
+    texte(s, 7.1, 2.9, 5.1, 3.5,
+          "Lighthouse ne signale plus rien : il vérifie la technique d’une page.\n\n"
+          "Il ne voit pas si le site est trouvé, ni si son contenu répond à ce que cherchent les joueurs "
+          "et les spectateurs.\n\nC’est là que se jouent les prochaines étapes.",
+          taille=16, align=PP_ALIGN.CENTER, interligne=1.15)
 
     # 6. Synthèse
     s = d.slide("Synthèse", notes="≈ 1 min 30\n- Lire la phrase, puis commenter le tableau : où ça a le plus progressé, "
