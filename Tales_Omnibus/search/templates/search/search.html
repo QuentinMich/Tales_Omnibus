@@ -36,7 +36,7 @@
         {# Même composant que l'encyclopédie (.timeline) : une carte par résultat #}
         <ul class="timeline">
             {% for resultat in search_results %}
-                <li class="timeline-item fiche-typee"{% if resultat.couleur %} style="--type-color: {{ resultat.couleur }};"{% endif %}>
+                <li class="timeline-item fiche-typee"{% if resultat.style_couleur %} style="{{ resultat.style_couleur }}"{% endif %}>
                     <a href="{% pageurl resultat %}" class="timeline-media" tabindex="-1" aria-hidden="true">
                         {% if resultat.image_resultat %}
                             {% image resultat.image_resultat fill-300x240-c50 alt="" loading="lazy" class="timeline-img" %}

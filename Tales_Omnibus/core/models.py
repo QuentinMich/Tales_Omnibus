@@ -16,6 +16,7 @@ from wagtail.admin.forms import WagtailAdminModelForm
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 
 from core.blocks import BaseStreamBlock
+from core.couleurs_admin import encre_lisible
 from core.slugs import SlugAutomatiqueMixin
 
 # Liste unique des réseaux sociaux, partagée par le site et les fiches Héros
@@ -245,6 +246,20 @@ class Categorie(models.Model):
     def couleur_effective(self):
         """Sa couleur, sinon celle du plus proche ancêtre qui en a une."""
         return next((c.couleur for c in reversed(self.ancetres()) if c.couleur), "")
+
+    @property
+    def encre_effective(self):
+        """Texte blanc ou noir, le plus lisible sur couleur_effective."""
+        couleur = self.couleur_effective
+        return encre_lisible(couleur) if couleur else ""
+
+    @property
+    def style_couleur(self):
+        """Variables CSS de l'étiquette : la couleur et l'encre qui va avec."""
+        couleur = self.couleur_effective
+        if not couleur:
+            return ""
+        return f"--type-color: {couleur}; --color-type-text: {self.encre_effective};"
 
     @property
     def icone_effective(self):

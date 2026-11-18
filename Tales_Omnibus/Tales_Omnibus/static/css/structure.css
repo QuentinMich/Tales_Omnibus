@@ -38,7 +38,7 @@
     /* --- Couleurs : types de fiches (encyclopédie, fiches liées) --- */
     --color-type-heros: #A23B3B;      /* rouge */
     --color-type-lieux: #3B6EA2;      /* bleu */
-    --color-type-evenements: #4E8A3E; /* vert */
+    --color-type-evenements: #41803A; /* vert (4,8:1 avec le blanc) */
     --color-type-lore: #6B4C9A;       /* violet */
     --color-type-text: #FFFFFF;
 
@@ -413,10 +413,19 @@ figure {
 }
 
 .footer-links {
-    text-align: right;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-xs) var(--space-md);
 }
 
+/* Zone à toucher d'au moins 24 × 24 px (WCAG 2.5.8) : le padding agrandit
+   la cible sans changer la taille du texte. Lighthouse mobile signalait
+   « Mentions légales » et « Contact » trop petits et trop serrés. */
 .footer-links a {
+    display: inline-block;
+    min-height: 24px;
+    padding: var(--space-xs) var(--space-sm);
     text-decoration: none;
 }
 
@@ -2529,7 +2538,7 @@ html:has(.template-home) {
     }
 
     .footer-links {
-        text-align: center;
+        justify-content: center;
     }
 
 }

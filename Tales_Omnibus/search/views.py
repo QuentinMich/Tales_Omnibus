@@ -27,6 +27,7 @@ def habiller(page, nom_du_site):
     # Le type affiché : « Déité majeure », « Ville »… sinon « Campagne », « Carte »…
     page.libelle_type = categorie.nom if categorie else page._meta.verbose_name.capitalize()
     page.couleur = categorie.couleur_effective if categorie else ""
+    page.style_couleur = categorie.style_couleur if categorie else ""
     page.image_resultat = image_seo(page)
     page.accroche = description_seo(page, nom_du_site)
     return page

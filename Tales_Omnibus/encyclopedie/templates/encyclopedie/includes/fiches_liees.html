@@ -6,7 +6,7 @@
         <ul class="cards-grid">
             {% for fiche in fiches %}
                 <li>
-                    <a href="{% pageurl fiche %}" class="mini-card fiche-typee" data-type="{{ fiche.type_cle }}"{% with couleur=fiche.categorie_affichee.couleur_effective %}{% if couleur %} style="--type-color: {{ couleur }};"{% endif %}{% endwith %}>
+                    <a href="{% pageurl fiche %}" class="mini-card fiche-typee" data-type="{{ fiche.type_cle }}"{% with style=fiche.categorie_affichee.style_couleur %}{% if style %} style="{{ style }}"{% endif %}{% endwith %}>
                         {% if fiche.main_image %}
                             {% image fiche.main_image fill-400x240-c50 alt="" loading="lazy" class="mini-card-img" %}
                         {% else %}

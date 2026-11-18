@@ -65,11 +65,39 @@ def css_couleurs_admin(theme):
     return ":root { " + " ".join(lignes) + " }"
 
 
-def contraste_avec_le_blanc(hexa):
-    """Rapport de contraste WCAG entre cette couleur et du texte blanc (1 à 21)."""
+def luminance(hexa):
+    """Luminance relative WCAG d'une couleur #RRGGBB (0 = noir, 1 = blanc)."""
     def canal(c):
         c = c / 255
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
     r, g, b = (int(hexa[i:i + 2], 16) for i in (1, 3, 5))
-    luminance = 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b)
-    return 1.05 / (luminance + 0.05)
+    return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b)
+
+
+def contraste_avec_le_blanc(hexa):
+    """Rapport de contraste WCAG entre cette couleur et du texte blanc (1 à 21)."""
+    return 1.05 / (luminance(hexa) + 0.05)
+
+
+def contraste_avec_le_noir(hexa):
+    """Rapport de contraste WCAG entre cette couleur et du texte noir (1 à 21)."""
+    return (luminance(hexa) + 0.05) / 0.05
+
+
+# Couleurs du texte posé sur une couleur choisie par le MJ (étiquettes des
+# catégories) : un noir et un blanc purs, ceux qui donnent le meilleur contraste.
+ENCRE_CLAIRE = "#FFFFFF"
+ENCRE_SOMBRE = "#000000"
+
+
+def encre_lisible(hexa):
+    """
+    Le texte (blanc ou noir) le plus lisible sur ce fond.
+    Toujours au moins 4,58:1 (WCAG AA) : le pire cas est le gris où les deux
+    se valent, (L + 0,05)² = 1,05 × 0,05. Le MJ peut donc choisir N'IMPORTE
+    quelle couleur de catégorie, son nom restera lisible.
+    """
+    if contraste_avec_le_blanc(hexa) >= contraste_avec_le_noir(hexa):
+        return ENCRE_CLAIRE
+    return ENCRE_SOMBRE
+

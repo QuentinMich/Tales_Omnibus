@@ -846,3 +846,32 @@ class SlugsAvecLigaturesTests(TestCase):
         campagne = accueil.add_child(instance=CampagnePage(title="Sœurs de Feiri"))
         self.assertEqual(campagne.slug, "soeurs-de-feiri")
 
+
+
+class CouleursDesCategoriesTests(TestCase):
+    """
+    Le nom d'une catégorie s'écrit sur sa couleur (étiquettes de l'encyclopédie).
+    Lighthouse signalait « Événement » en blanc sur un vert trop clair (4,18:1).
+    """
+
+    def test_l_encre_suit_la_couleur(self):
+        from core.couleurs_admin import encre_lisible
+        self.assertEqual(encre_lisible("#1E3F7A"), "#FFFFFF")  # bleu nuit -> blanc
+        self.assertEqual(encre_lisible("#E0A100"), "#000000")  # jaune -> noir
+
+    def test_l_etiquette_porte_sa_couleur_et_son_encre(self):
+        from core.models import Categorie
+        fete = Categorie(nom="Fête", couleur="#E0A100")
+        self.assertEqual(fete.style_couleur, "--type-color: #E0A100; --color-type-text: #000000;")
+        self.assertEqual(Categorie(nom="Sans couleur").style_couleur, "")
+
+    def test_n_importe_quelle_couleur_reste_lisible(self):
+        """Blanc ou noir, le meilleur des deux passe toujours le seuil WCAG AA."""
+        from core.couleurs_admin import contraste_avec_le_blanc, contraste_avec_le_noir, encre_lisible
+        for r in range(0, 256, 15):
+            for g in range(0, 256, 15):
+                for b in range(0, 256, 15):
+                    couleur = f"#{r:02X}{g:02X}{b:02X}"
+                    contraste = (contraste_avec_le_blanc(couleur) if encre_lisible(couleur) == "#FFFFFF"
+                                 else contraste_avec_le_noir(couleur))
+                    self.assertGreaterEqual(contraste, 4.5, couleur)
